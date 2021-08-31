@@ -1,0 +1,128 @@
+PVObject_=pvGInverter
+  Comment=SMA	SC3000-EV APP01	Datasheet, MfrONDfile
+  Version=6.75
+  ParObj1=2016
+  Flags=$000A1062
+
+  PVObject_Commercial=pvCommercial
+    Comment=www.sma.de
+    Flags=$0041
+    Manufacturer=SMA
+    Model=SC3000-EV APP01
+    DataSource=Datasheet, MfrONDfile
+    YearBeg=2016
+    Width=2.780
+    Height=2.318
+    Depth=1.588
+    Weight=3400.000
+    NPieces=0
+    PriceDate=13/06/16 00:00
+    Currency=EUR
+    Remarks, Count=4
+      Str_1=Created by: SG 08/14/2019
+      Str_2=Approved by:
+      Str_3
+      Str_4
+    End of Remarks
+  End of PVObject pvCommercial
+
+  Converter=TConverter
+    PNomConv=3000.000
+    PMaxOUT=3000.000
+    VOutConv=600.0
+    VMppMin=927
+    VMPPMax=1425
+    Vmpp_PMax=956.0
+    VAbsMax=1500
+    PSeuil=4449.0
+    EfficMax=97.00
+    EfficEuro=95.00
+    FResNorm=3.00
+    ModeOper=MPPT
+    CompPMax=Lim
+    CompVMax=Lim
+    MonoTri=Tri
+    ModeAffEnum=Efficiencyf_POut
+    UnitAffEnum=kW
+    IDCMax=0.0
+    IMaxDC=6400.0
+    INomDC=1400.0
+    INomAC=2646.0
+    IMaxAC=2646.0
+    TPNom=35.0
+    TPMax=15.0
+    TPLim1=50.0
+    TPLimAbs=60.0
+    PLim1=2700.000
+    PInEffMax =913891.100
+    HasdefaultPThresh=False
+    VNomEff=927.0,1060.0,1200.0,
+    EfficMaxV=98.730,98.540,98.480,
+    EfficEuroV=98.574,98.373,98.285,
+
+    ProfilPIOV1=TCubicProfile
+      NPtsMax=11
+      NPtsEff=8
+      LastCompile=$8089
+      Mode=1
+      Point_1=2000.0,0.0
+      Point_2=154099.0,150000.0
+      Point_3=305188.2,300000.0
+      Point_4=608149.2,600000.0
+      Point_5=911577.0,900000.0
+      Point_6=1823893.0,1800000.0
+      Point_7=2434817.9,2400000.0
+      Point_8=3048470.6,3000000.0
+      Point_9=0.0,0.0
+      Point_10=0.0,0.0
+      Point_11=0.0,0.0
+    End of TCubicProfile
+
+    ProfilPIOV2=TCubicProfile
+      NPtsMax=11
+      NPtsEff=8
+      LastCompile=$8089
+      Mode=1
+      Point_1=4449.0,0.0
+      Point_2=155376.0,150000.0
+      Point_3=306529.1,300000.0
+      Point_4=609694.1,600000.0
+      Point_5=913334.7,900000.0
+      Point_6=1826854.8,1800000.0
+      Point_7=2438033.3,2400000.0
+      Point_8=3051571.6,3000000.0
+      Point_9=0.0,0.0
+      Point_10=0.0,0.0
+      Point_11=0.0,0.0
+    End of TCubicProfile
+
+    ProfilPIOV3=TCubicProfile
+      NPtsMax=11
+      NPtsEff=8
+      LastCompile=$8089
+      Mode=1
+      Point_1=2000.0,0.0
+      Point_2=156022.5,150000.0
+      Point_3=307440.0,300000.0
+      Point_4=610252.2,600000.0
+      Point_5=913891.1,900000.0
+      Point_6=1828153.6,1800000.0
+      Point_7=2439520.3,2400000.0
+      Point_8=3052813.8,3000000.0
+      Point_9=0.0,0.0
+      Point_10=0.0,0.0
+      Point_11=0.0,0.0
+    End of TCubicProfile
+  End of TConverter
+  NbInputs=24
+  NbMPPT=1
+  NbMSInterne=2
+  MasterSlave=No_M_S
+  IsolSurvey =Yes
+  DC_Switch=Yes
+  AC_Switch=Yes
+  MS_Thresh=0.8
+  Aux_Thresh=2000.00
+  Aux_Loss=2000.00
+  Night_Loss=370.00
+End of PVObject pvGInverter
