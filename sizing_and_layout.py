@@ -67,7 +67,7 @@ StorageEff = 0.85
 
 coordinates = [(-18.7692,133.1659,'Suncable_Site', 00, 'Australia/Darwin')]
 
-weather = pd.read_csv('Data\WeatherData\Solcast_PT60M.csv', index_col=0,
+weather = pd.read_csv(os.path.join('Data','WeatherData','Solcast_PT60M.csv'), index_col=0,
                          infer_datetime_format=True,parse_dates=[1],low_memory=False)
 
 # weather = weather.drop(weather.columns[4],1)
@@ -89,7 +89,7 @@ weather['precipitable_water'] = weather['precipitable_water']/10
 
 # Import Suncable Module Database
 
-suncable_modules = pd.read_csv('Data\SystemData\Suncable_module_database.csv', index_col=0,skiprows=[1,2]).T
+suncable_modules = pd.read_csv(os.path.join('Data','SystemData','Suncable_module_database.csv'), index_col=0,skiprows=[1,2]).T
 
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
@@ -218,9 +218,9 @@ SystemLink = {'ScenarioID': [4, 4, 4, 4, 4], 'ScenarioSystemID': [15, 16, 17, 18
 SYScostdata = pd.DataFrame(SystemLink, columns=[
                            'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
-# SCNcostdata.to_csv('Data\CostData\Scenariolist.csv', index=False)
+# SCNcostdata.to_csv(os.path.join('Data','CostData','Scenariolist.csv'), index=False)
 
-# SYScostdata.to_csv('Data\CostData\SystemLink.csv', index=False)
+# SYScostdata.to_csv(os.path.join('Data','CostData','SystemLink.csv'), index=False)
 
 # Option 2: Specify components for system, quantity and year
 # costdbcol = ['ModuleA','ModuleB','ModuleC','SAT1','SAT2','SAT3','MAV','InverterA','InverterB',
@@ -253,7 +253,7 @@ component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutpu
 
 
 YearlyRev.index = cash_flow_by_year.index
-# YearlyCostsdf = pd.read_csv('Data\CostData\Cash_flow_by_year.csv', sep =',', low_memory=False)
+# YearlyCostsdf = pd.read_csv(os.path.join('Data','CostData','Cash_flow_by_year.csv'), sep =',', low_memory=False)
 
 # Convert to datetime and groupby year
 #YearlyCostsdf['Time'] = pd.to_datetime(YearlyCostsdf['Year'], format='%Y')
