@@ -17,10 +17,10 @@ scenario_list, scenario_system_link, system_list, system_component_link, compone
 
 
 # Replacing some tables from csv - not needed if you already have some pandas dataframes
-scenario_list_new = pd.read_csv('inputs/Scenariolist.csv')
+scenario_list_new = pd.read_csv(os.path.join('inputs','Scenariolist.csv'))
 print(scenario_list)
 print(scenario_list_new)
-scenario_system_link_new = pd.read_csv('inputs/SystemLink.csv')
+scenario_system_link_new = pd.read_csv(os.path.join('inputs','SystemLink.csv'))
 print(scenario_system_link_new)
 print(scenario_system_link)
 new_data_tables = scenario_list_new, scenario_system_link_new, system_list, system_component_link, component_list, currency_list, costcategory_list
