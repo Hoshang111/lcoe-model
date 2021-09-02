@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Sizing and costing model.
 # import python libraries
 from pvlib.modelchain import ModelChain
 from pvlib.location import Location
