@@ -15,7 +15,7 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 * Thermal modelling and effects
 
 ### Cost
-* Probabilistic Analysis
+* Probabilistic Analysis - ID alternative methods **(Nathan)**
 
 ### Interface
 * Send and recieve SCOPTI inputs / outputs.
