@@ -106,7 +106,14 @@ rack = suncable_racks['SAT_1']
 Modules_per_rack = rack['Modules_per_rack']
 Rackfloat = DCTotal/(FieldNum*Modules_per_rack*module['STC'])
 Racknumber = round(Rackfloat)
+RackInterval = 2
+
+# Variations to rack number
+RackNums = pd.Series(range(Racknumber-5*RackInterval, Racknumber+6*RackInterval, RackInterval))
+
+# Convert to number of modules for GCR calculations
 Modulenumber = Racknumber*Modules_per_rack
+ModuleNums = RackNums*Modules_per_rack
 
 # This is a fudge for the moment given our dodgy revenue calculation
 ExportLimit = TRANSlimit/Modulenumber
@@ -131,8 +138,9 @@ temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
 
 # define gcr via number of modules and area (approximation)
 GCR = module['A_c']*Modulenumber/FieldArea
+GCRlist = module['A_c']*ModuleNums/FieldArea
 
-print (GCR)
+print(GCRlist)
 
 # this should ultimately change to an if/else statement based on rack type
 mount = pvlib.pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True, gcr=GCR, cross_axis_tilt=0,
