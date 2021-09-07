@@ -31,7 +31,10 @@ mpl.rcParams['ytick.color'] = COLOR
 # SCPIdf = pd.read_csv('', sep =',', low_memory=False)
 # SCNdf = pd.read_csv('', sep = '', low_memory=False)
 
-#Number of Fields, used to determine export limits etc.
+# Initial Guess at total DC power
+DCTotal = 1e10
+
+# Number of Fields, used to determine export limits etc.
 FieldNum = 500
 
 # Area for Field in m2
@@ -49,12 +52,12 @@ FixedPrice = 40
 
 # Define System Variations, These should be based on scenario and scopti inputs
 
-# Initial Number of modules per field, set by racks
-RackNum = 368
-ModulesperRack = 120
-ModuleNum = RackNum*ModulesperRack
+# Initial Number of modules per field, set by racks, overwritten by new code to import from database
+# RackNum = 368
+# ModulesperRack = 120
+# ModuleNum = RackNum*ModulesperRack
 
-ExportLimit = TRANSlimit/(ModuleNum*FieldNum)
+# ExportLimit = TRANSlimit/(ModuleNum*FieldNum)
 
 # Storage Efficiency, used for internal dispatch profiles
 StorageEff = 0.85
@@ -90,13 +93,27 @@ weather['precipitable_water'] = weather['precipitable_water']/10
 
 # Import Suncable Module Database
 
-suncable_modules = pd.read_csv(os.path.join('Data','SystemData','Suncable_module_database.csv'), index_col=0,skiprows=[1,2]).T
+suncable_modules = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0, skiprows=[1,2]).T
 
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
+# Import Rack Data from database
+suncable_racks = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0, skiprows=[1]).T
+
+rack = suncable_racks['SAT_1']
+
+# Determine Rack and Module numbers
+Modules_per_rack = rack['Modules_per_rack']
+Rackfloat = DCTotal/(FieldNum*Modules_per_rack*module['STC'])
+Racknumber = round(Rackfloat)
+Modulenumber = Racknumber*Modules_per_rack
+
+# This is a fudge for the moment given our dodgy revenue calculation
+ExportLimit = TRANSlimit/Modulenumber
+
 # print (module.dtypes)
 
-sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
+# sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
 
 sapm_inverters = pvlib.pvsystem.retrieve_sam('cecinverter')
 
@@ -113,10 +130,11 @@ temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
 # wind_speed = 0
 
 # define gcr via number of modules and area (approximation)
-GCR = module['A_c']*ModuleNum/FieldArea
+GCR = module['A_c']*Modulenumber/FieldArea
 
 print (GCR)
 
+# this should ultimately change to an if/else statement based on rack type
 mount = pvlib.pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True, gcr=GCR, cross_axis_tilt=0,
                                               racking_model='open_rack', module_height=2)
 
