@@ -2,10 +2,13 @@ import os.path
 import os
 import sys
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Set path to source code
 sys.path.append(os.path.join(".\\src"))
 import SuncableCost as SunCost
+
 
 
 # Airtable Import
@@ -17,10 +20,10 @@ scenario_list, scenario_system_link, system_list, system_component_link, compone
 
 
 # Replacing some tables from csv - not needed if you already have some pandas dataframes
-scenario_list_new = pd.read_csv(os.path.join('inputs','Scenariolist.csv'))
+scenario_list_new = pd.read_csv(os.path.join('Data','CostData','Scenariolist.csv'))
 print(scenario_list)
 print(scenario_list_new)
-scenario_system_link_new = pd.read_csv(os.path.join('inputs','SystemLink.csv'))
+scenario_system_link_new = pd.read_csv(os.path.join('Data','CostData','SystemLink.csv'))
 print(scenario_system_link_new)
 print(scenario_system_link)
 new_data_tables = scenario_list_new, scenario_system_link_new, system_list, system_component_link, component_list, currency_list, costcategory_list
@@ -40,9 +43,10 @@ for (scenarios, title) in [
     scenario_costs_by_year = pd.pivot_table(scenario_costs, values='TotalCostAUDY', index='Year', aggfunc=np.sum,
                                             columns=['CostCategory_ShortName'])
     scenario_costs_by_year.plot.bar(stacked=True, title='Total Costs by Year - ' + title)
-
+    plt.show()
     scenario_costs_maintenance = scenario_costs[scenario_costs['CostCategoryID'] == '7']
     scenario_costs_maintenance_by_year = pd.pivot_table(scenario_costs_maintenance, values='TotalCostAUDY',
                                                         index='Year', aggfunc=np.sum,
                                                         columns=['CostCategory_ShortName'])
     scenario_costs_maintenance_by_year.plot.bar(stacked=True, title='Maintenance Costs by Year - ' + title)
+    plt.show()
