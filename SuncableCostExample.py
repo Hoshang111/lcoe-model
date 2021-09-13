@@ -13,6 +13,7 @@ import SuncableCost as SunCost
 # Options
 option_use_airtable = False
 option_use_custom_scenarios = True
+option_use_monte_carlo = False
 
 # Either import from airtable (takes longer, up to date data) or from BaselineDatabase excel.
 if option_use_airtable:
@@ -23,19 +24,25 @@ if option_use_airtable:
 else:
     data_tables = SunCost.import_excel_data('BaselineDatabase.xlsx')
 
-scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
+
 
 
 if option_use_custom_scenarios:
+    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
     # Replacing some tables from csv - not needed if you already have some pandas dataframes
     scenario_list_new = pd.read_csv(os.path.join('Data','CostData','Scenariolist.csv'))
     scenario_system_link_new = pd.read_csv(os.path.join('Data','CostData','SystemLink.csv'))
-    new_data_tables = scenario_list_new, scenario_system_link_new, system_list, system_component_link, component_list, currency_list, costcategory_list
-    # Running the cost calculations
-    outputs = SunCost.CalculateScenarios(new_data_tables, year_start=2024, analyse_years=30)
+    data_tables = scenario_list_new, scenario_system_link_new, system_list, system_component_link, component_list, currency_list, costcategory_list
+
+
+if option_use_monte_carlo:
+    iteration_data_tables = SunCost.create_iteration_tables(data_tables, 50, iteration_start=0)
+
+
+    #outputs = SunCost.CalculateScenarios(data_tables, year_start=2024, analyse_years=30)
 else:
     # Running the cost calculations
-    outputs = SunCost.CalculateScenarios (data_tables, year_start=2024, analyse_years=30)
+    outputs = SunCost.CalculateScenarios(data_tables, year_start=2024, analyse_years=30)
 
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = outputs
 
