@@ -2,7 +2,7 @@
 from airtable import Airtable
 import datetime
 import time as time
-
+import os
 import numpy as np
 import pandas as pd
 
@@ -90,6 +90,16 @@ def import_airtable_data(base_id, api_key):
 
     return scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list
 
+def import_excel_data(excel_file_name):
+    scenario_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='ScenarioList',index_col=0)
+    system_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='SystemList',index_col=0)
+    scenario_system_link = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='ScenarioSystemLink',index_col=0)
+    component_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='ComponentList',index_col=0)
+    system_component_link = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='SystemComponentLink',index_col=0)
+    currency_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='CurrencyList',index_col=0)
+    costcategory_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='CostCategoryList',index_col=0)
+
+    return scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list
 
 def CalculateScenarios(input_tables, year_start, analyse_years):
 

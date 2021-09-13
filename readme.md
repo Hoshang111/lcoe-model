@@ -16,6 +16,7 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 ### Cost
 * Probabilistic Analysis - ID alternative methods **(Nathan)**
+* Add option to import from excel rather than airtable - faster for debugging **(Nathan)**
 
 ### Interface
 * Send and recieve SCOPTI inputs / outputs.
