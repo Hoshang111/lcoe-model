@@ -5,17 +5,24 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 ### Yield
 
 * *Simple modelling of Mavs (1 east, 1 west-facing array, separate)* **(Baran)**
-* Soiling
+* Tracking Algorithms
 * Future module database
+* Thermal modelling and effects
+* Monte-Carlo Analysis
+* Soiling
+* Incident angle modifiers
 * Inverters 
 * Balance of system
-* Incident angle modifiers
 * SAT Tracker claims
+* Mis-match/Module Variation
+* Failure/Downtime
+  * Monte-Carlo input
+  * Distinguish failures from degradation?
 * *Degradation* **(Jono)**
-* Thermal modelling and effects
 
 ### Cost
-* Probabilistic Analysis
+* Probabilistic Analysis - ID alternative methods **(Nathan)**
+* Add option to import from excel rather than airtable - faster for debugging **(Nathan - DONE)**
 
 ### Interface
 * Send and recieve SCOPTI inputs / outputs.
