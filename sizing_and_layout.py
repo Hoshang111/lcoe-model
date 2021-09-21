@@ -139,26 +139,33 @@ temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS[
 # define gcr via number of modules and area (approximation)
 GCR = module['A_c']*Modulenumber/FieldArea
 GCRlist = module['A_c']*ModuleNums/FieldArea
+gcrrange = ModuleNums.size
 
 print(GCRlist)
 
+energies = {}
+ACoutput = {}
+Arrays = [0,0,0,0,0,0,0,0,0,0,0]
+
 # this should ultimately change to an if/else statement based on rack type
-mount = pvlib.pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True, gcr=GCR, cross_axis_tilt=0,
+for i in range(gcrrange):
+    gcr = GCRlist[i]
+    ModuleNumber = ModuleNums[i]
+
+    mount = pvlib.pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True, gcr=gcr, cross_axis_tilt=0,
                                               racking_model='open_rack', module_height=2)
 
-array = pvlib.pvsystem.Array(mount=mount, module_parameters=module,
+    Arrays[i] = pvlib.pvsystem.Array(mount=mount, module_parameters=module,
                              temperature_model_parameters=temperature_model_parameters)
 
-system = PVSystem(arrays=[array], inverter_parameters=inverter)
-
-energies = {}
+system = pvlib.pvsystem.PVSystem(arrays=Arrays, inverter_parameters=inverter)
 
 for latitude, longitude, name, altitude, timezone in coordinates:
  #   naive_times=weather.index
  #   weather.index = weather.index.tz_localize(timezone)
  #   times = weather.index + pd.DateOffset(minutes=30)
     location = Location(latitude, longitude, name=name, altitude=altitude,
-                        tz=timezone)
+               tz=timezone)
  #   solar_position = location.get_solarposition(times,temperature=weather['temp_air'])
  #   solar_position.index = solar_position.index + pd.DateOffset(minutes=-30)
  #   print (solar_position.dtypes)
@@ -168,10 +175,14 @@ for latitude, longitude, name, altitude, timezone in coordinates:
 #    weather = location.get_clearsky(times)
     mc = ModelChain(system, location)
     mc.run_model(weather)
-    annual_energy = mc.results.ac.sum()
-    energies[name] = annual_energy
+    DCoutput = mc.results.dc
+    DCpower = [df['p_mp'] for df in DCoutput]
+    energies = [sum(tup) for tup in DCpower]
 
 energies = pd.Series(energies)
+
+Yieldseries = energies*ModuleNums
+LayoutList = pd.DataFrame([ModuleNums, GCRlist, Yieldseries], index=['Number of Modules', 'gcr', 'Yield'])
 
 print(energies.round(0))
 # verified it runs to this point and returns total energy, will instead need to export energy timeseries and convert to revenue
@@ -181,6 +192,7 @@ print(energies.round(0))
 # Assign Revenue Generation based on exporting at capacity, with excess stored and subsequently exported
 # This will need to become significantly more complex to handle battery operation and more complex tariffs
 
+# up to this point we have calculated for a range of layouts, now need to perform comparison with costs
 GrossAC = mc.results.ac
 
 ExportAC = GrossAC.clip(lower=None, upper=ExportLimit)
