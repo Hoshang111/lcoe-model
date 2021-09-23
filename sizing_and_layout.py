@@ -179,7 +179,7 @@ energies = [sum(tup) for tup in DCppm]
 energies = pd.Series(energies)
 DCSeries = pd.DataFrame(DCppm).T
 DCSeries.columns = RackNums
-DCpower = DCSeries.mul(ModuleNums)
+DCpower = DCSeries.mul(ModuleNums.values, axis=1)
 
 Yieldseries = energies*ModuleNums
 LayoutList = pd.DataFrame([RackNums, ModuleNums, GCRlist, energies, Yieldseries], index=[
