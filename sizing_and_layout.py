@@ -115,9 +115,6 @@ RackNums = pd.Series(range(Racknumber-5*RackInterval, Racknumber+6*RackInterval,
 Modulenumber = Racknumber*Modules_per_rack
 ModuleNums = RackNums*Modules_per_rack
 
-# This is a fudge for the moment given our dodgy revenue calculation
-ExportLimit = TRANSlimit/Modulenumber
-
 # print (module.dtypes)
 
 # sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
@@ -176,13 +173,18 @@ for latitude, longitude, name, altitude, timezone in coordinates:
     mc = ModelChain(system, location)
     mc.run_model(weather)
     DCoutput = mc.results.dc
-    DCpower = [df['p_mp'] for df in DCoutput]
-    energies = [sum(tup) for tup in DCpower]
+    DCppm = [df['p_mp'] for df in DCoutput]
 
+energies = [sum(tup) for tup in DCppm]
 energies = pd.Series(energies)
+DCSeries = pd.DataFrame(DCppm).T
+DCSeries.columns = RackNums
+DCpower = DCSeries.mul(ModuleNums)
 
 Yieldseries = energies*ModuleNums
-LayoutList = pd.DataFrame([ModuleNums, GCRlist, Yieldseries], index=['Number of Modules', 'gcr', 'Yield'])
+LayoutList = pd.DataFrame([RackNums, ModuleNums, GCRlist, energies, Yieldseries], index=[
+    'Number of Racks', 'Number of Modules', 'gcr', 'Yield_per_module', 'Yield'])
+
 
 print(energies.round(0))
 # verified it runs to this point and returns total energy, will instead need to export energy timeseries and convert to revenue
@@ -195,7 +197,7 @@ print(energies.round(0))
 # up to this point we have calculated for a range of layouts, now need to perform comparison with costs
 GrossAC = mc.results.ac
 
-ExportAC = GrossAC.clip(lower=None, upper=ExportLimit)
+ExportAC = GrossAC.clip(lower=None, upper=TRANSlimit)
 
 StoredAC = GrossAC-ExportAC
 
