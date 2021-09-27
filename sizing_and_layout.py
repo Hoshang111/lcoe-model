@@ -195,55 +195,61 @@ print(energies.round(0))
 # This will need to become significantly more complex to handle battery operation and more complex tariffs
 
 # up to this point we have calculated for a range of layouts, now need to perform comparison with costs
-GrossAC = mc.results.ac
+# GrossAC = mc.results.ac
 
-ExportAC = GrossAC.clip(lower=None, upper=TRANSlimit)
+ExportDC = DCpower.clip(lower=None, upper=TRANSlimit)
 
-StoredAC = GrossAC-ExportAC
+StoredDC = DCpower-ExportDC
 
-ExportREV = ExportAC*FixedPrice
+ExportREV = ExportDC*FixedPrice
 
-StoredREV = StoredAC*StorageEff*FixedPrice
+StoredREV = StoredDC*StorageEff*FixedPrice
+
+TotalREV = ExportREV+StoredREV
+
 # This gives us our primary outputs, a time series of system yield and revenue generation
 # Further manipulation should group these into yearly outputs for comparison with cost data timeseries
 
+YearlyRev = TotalREV.groupby(TotalREV.index.year).sum()
+
 # Just some code to visualise the outputs and check it works as intended
-Stored_Ratio = StoredREV/ExportREV
+# Stored_Ratio = StoredREV/ExportREV
 
-YieldRev = {'Time': mc.results.times, 'AC_output': GrossAC, 'Export_W': ExportAC, 'Export_$': ExportREV, 'Store_W': StoredAC,
-            'Store_$': StoredREV, 'Store_Ratio': Stored_Ratio}
+# YieldRev = {'Time': mc.results.times, 'AC_output': GrossAC, 'Export_W': ExportAC, 'Export_$': ExportREV, 'Store_W': StoredAC,
+#             'Store_$': StoredREV, 'Store_Ratio': Stored_Ratio}
 
-YieldRevData = pd.DataFrame(YieldRev, columns=[
-                            'Time', 'AC_output', 'Export_W', 'Export_$', 'Store_W', 'Store_$', 'Store_Ratio'])
+# YieldRevData = pd.DataFrame(YieldRev, columns=[
+#                             'Time', 'AC_output', 'Export_W', 'Export_$', 'Store_W', 'Store_$', 'Store_Ratio'])
 
-YieldRevData['month'] = YieldRevData['Time'].dt.month
+# YieldRevData['month'] = YieldRevData['Time'].dt.month
+#
+# YieldRevData['hour'] = YieldRevData['Time'].dt.hour
 
-YieldRevData['hour'] = YieldRevData['Time'].dt.hour
+# OutputPlot = YieldRevData.pivot_table(values='Store_Ratio', index=[
+#                                       'month'], columns=['hour'], aggfunc=np.mean).round(3)
 
-OutputPlot = YieldRevData.pivot_table(values='Store_Ratio', index=[
-                                      'month'], columns=['hour'], aggfunc=np.mean).round(3)
-
-YearlyOutput = YieldRevData.groupby(YieldRevData['Time'].dt.year).sum()
+# YearlyOutput = YieldRevData.groupby(YieldRevData['Time'].dt.year).sum()
 
 # Manipulating the output to match the timeframe of the cost model 2024-2058
-YearlyRev = pd.DataFrame(np.zeros(shape=(31,8)),columns=['AC_output','Export_W','Export_$',
-                                                         'Store_W','Store_$','Store_Ratio','month','hour'])
+# YearlyRev = pd.DataFrame(np.zeros(shape=(31,8)),columns=['AC_output','Export_W','Export_$',
+#                                                         'Store_W','Store_$','Store_Ratio','month','hour'])
+CashIn = pd.DataFrame(np.zeros(shape=(31,11)), columns=RackNums)
 
-YearlyRev[5:15] = YearlyOutput[4:14]
-YearlyRev[15:25] = YearlyOutput[4:14]
-YearlyRev[25:31] = YearlyOutput[4:10]
+CashIn[5:15] = YearlyRev[4:14]
+CashIn[15:25] = YearlyRev[4:14]
+CashIn[25:31] = YearlyRev[4:10]
 
 #cYearlyRev.index = [list(range(2024,2059,1))]
 
 # YearlyRev = YearlyRev.rename('Year')
 
 # Graphing details for test plot
-plt.matshow(OutputPlot, cmap='YlOrRd', aspect='auto')
-cbar = plt.colorbar()
-cbar.set_label('Stored Ratio')
-plt.xlabel('Hour of Day')
-plt.ylabel('Month')
-plt.show()
+# plt.matshow(OutputPlot, cmap='YlOrRd', aspect='auto')
+# bar = plt.colorbar()
+# cbar.set_label('Stored Ratio')
+# plt.xlabel('Hour of Day')
+# plt.ylabel('Month')
+# plt.show()
 
 # Call costing tool
 # Option 1: Call as zones, installation year
@@ -293,7 +299,7 @@ costoutputs = SunCost.CalculateScenarios (new_data_tables, year_start=2024, anal
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
 
 
-YearlyRev.index = cash_flow_by_year.index
+CashIn.index = cash_flow_by_year.index
 # YearlyCostsdf = pd.read_csv(os.path.join('Data','CostData','Cash_flow_by_year.csv'), sep =',', low_memory=False)
 
 # Convert to datetime and groupby year
@@ -301,5 +307,5 @@ YearlyRev.index = cash_flow_by_year.index
 # YearlyCosts = YearlyCostsdf.groupby(YearlyCostsdf['Time'].dt.year).sum()
 
 # Add costs and revenues
-NetCashflow = YearlyRev['Export_$'] + YearlyRev['Store_$'] - cash_flow_by_year[4] 
+NetCashflow = CashIn - cash_flow_by_year[4]
 
