@@ -116,6 +116,7 @@ Modulenumber = Racknumber*Modules_per_rack
 ModuleNums = RackNums*Modules_per_rack
 
 # print (module.dtypes)
+#temporarily put airtable call here
 
 # sandia_modules = pvlib.pvsystem.retrieve_sam('SandiaMod')
 
@@ -253,17 +254,7 @@ CashIn[25:31] = YearlyRev[4:10]
 
 # Call costing tool
 # Option 1: Call as zones, installation year
-ScenarioList = {'Scenario': ['SAT ramp installation'],
-                'ScenarioID': [4], 'Scenario_Tag': ['S5']}
 
-SCNcostdata = pd.DataFrame(ScenarioList, columns=[
-                           'Scenario', 'ScenarioID', 'Scenario_Tag'])
-
-SystemLink = {'ScenarioID': [4, 4, 4, 4, 4], 'ScenarioSystemID': [15, 16, 17, 18, 19], 'InstallNumber': [105, 105, 105, 105, 105],
-              'SystemID': [8, 8, 8, 8, 8], 'InstallDate': [2024, 2025, 2026, 2027, 2028]}
-
-SYScostdata = pd.DataFrame(SystemLink, columns=[
-                           'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
 # SCNcostdata.to_csv(os.path.join('Data','CostData','Scenariolist.csv'), index=False)
 
@@ -281,6 +272,35 @@ SYScostdata = pd.DataFrame(SystemLink, columns=[
 # Import .csv output from cost model
 
 # Option 3 Call code directly and overwrite values as required
+ScenarioList = {'Scenario_Name': RackNums,
+                'ScenarioID': RackNums, 'Scenario_Tag': RackNums}
+
+SCNcostdata = pd.DataFrame(ScenarioList, columns=[
+                           'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+
+
+SystemLinkracks = {'ScenarioID': RackNums, 'ScenarioSystemID': RackNums, 'InstallNumber': RackNums,
+              'SystemID': RackNums, 'InstallDate': RackNums}
+
+SYScostracks = pd.DataFrame(SystemLinkracks, columns=[
+                           'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+SYScostracks['SystemID'] = 13
+SYScostracks['InstallDate'] = 2025
+
+SystemLinkfixed = {'ScenarioID': RackNums, 'ScenarioSystemID': RackNums, 'InstallNumber': RackNums,
+              'SystemID': RackNums, 'InstallDate': RackNums}
+
+SYScostfixed = pd.DataFrame(SystemLinkfixed, columns=[
+                           'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+SYScostfixed['SystemID'] = 14
+SYScostfixed['InstallDate'] = 2025
+SYScostfixed['InstallNumber'] = 1
+
+SYScostData = SYScostracks.append(SYScostfixed)
+
+SYScostData['ScenarioSystemID'] = range(1, 2*len(RackNums)+1)
 
 # Airtable Import
 api_key = 'keyJSMV11pbBTdswc'
@@ -291,7 +311,7 @@ scenario_list, scenario_system_link, system_list, system_component_link, compone
 
 
 # Replacing some tables from specified inputs
-new_data_tables = SCNcostdata, SYScostdata, system_list, system_component_link, component_list, currency_list, costcategory_list
+new_data_tables = SCNcostdata, SYScostData, system_list, system_component_link, component_list, currency_list, costcategory_list
 
 # Running the cost calculations
 # outputs = SunCost.CalculateScenarios (data_tables, year_start=2024, analyse_years=30)
@@ -308,4 +328,8 @@ CashIn.index = cash_flow_by_year.index
 
 # Add costs and revenues
 NetCashflow = CashIn - cash_flow_by_year[4]
+
+Yearoffset = pd.Series(range(0,30))
+
+DiscountRate = 0.07
 
