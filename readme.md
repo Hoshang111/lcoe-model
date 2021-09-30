@@ -6,6 +6,7 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 * *Simple modelling of Mavs (1 east, 1 west-facing array, separate)* **(Baran)**
 * Tracking Algorithms
+* Tracking for different rows
 * Future module database **(Phill)**
 * Thermal modelling and effects
 * Monte-Carlo Analysis
