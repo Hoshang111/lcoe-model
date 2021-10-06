@@ -13,11 +13,12 @@ In this initial design, we are focusing on the DC yield of the array"""
 # %%
 import pandas as pd
 import numpy as np
-import matplotlib as plt
-import pvlib
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+# mpl.use('Qt5Agg')
+# mpl.use('TkAgg')
 import pytz
 import os
-
 from pvlib import pvsystem
 from pvlib.pvsystem import PVSystem, FixedMount
 from pvlib.location import Location
@@ -96,12 +97,13 @@ array_two = pvsystem.Array(mount=mount2,
 
 mav_system = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter)
 # %% Model-Chain
-coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'UTC')]
+coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]
 latitude, longitude, name, altitude, timezone = coordinates[0]
 location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
 mc = ModelChain(mav_system, location, aoi_model='ashrae')
-#mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
+# mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 mc.run_model(weather_simulation)
+# The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
 # %%
 dc_results_a1 = mc.results.dc[0]['p_mp'].sum()/1000  # kWh
 dc_results_a2 = mc.results.dc[1]['p_mp'].sum()/1000  # kWh

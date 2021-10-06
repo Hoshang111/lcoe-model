@@ -13,7 +13,6 @@ import pvlib
 import os.path
 import os
 import sys
-
 import SuncableCost as SunCost
 
 
