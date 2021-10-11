@@ -1,4 +1,4 @@
-Rack_ID,Modules_per_rack,rack_type,elevation,rear_shading
-,#,#,m,%
-5B_MAV,120,east_west,0.1,1
-SAT_1,120,SAT,2,0.05
+Rack_ID,Modules_per_rack,rack_type,elevation,rear_shading,tilt
+,#,#,m,%,
+5B_MAV,120,east_west,0.1,1,10
+SAT_1,120,SAT,2,0.05,NA

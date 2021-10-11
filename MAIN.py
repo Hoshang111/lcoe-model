@@ -42,6 +42,7 @@ cost function also give the Monte-Carlo distribution.
 # %% Import
 import pandas as pd
 import numpy as np
+import Simulation_functions as func
 
 # %%
 # Sizing
@@ -51,16 +52,19 @@ module_per_mav  # (within sizing function)
 
 # ======================================
 # Weather
-weather_simulation = weather_func(weather_file_name, year_simulation)
+simulation_years = [2018, 2019, 2020]
+weather_simulation = func.weather(simulation_years)
 
 
 # ======================================
 # Rack_module
-rack_params, module_params = rack_module_func(rack_type, module_type)
+rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+module_type = 'Jinko_JKM575M_7RL4_TV_PRE'  # Enter one of the modules from the SunCable module database
+rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
 # ========================================
 # DC/AC yield
-dc_yield = yield_func(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
+dc_yield = yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
 # number of mavs/racks etc.
 
 # ac_yield  # (optional at this stage)
