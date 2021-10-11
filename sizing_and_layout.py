@@ -326,9 +326,15 @@ CashIn.index = cash_flow_by_year.index
 # YearlyCosts = YearlyCostsdf.groupby(YearlyCostsdf['Time'].dt.year).sum()
 
 # Add costs and revenues
-NetCashflow = CashIn - cash_flow_by_year[4]
+NetCashflow = CashIn - cash_flow_by_year
 
-Yearoffset = pd.Series(range(0,30))
+Yearoffset = pd.Series(range(0, 31))
+Yearoffset.index = NetCashflow.index
 
 DiscountRate = 0.07
+
+YearlyFactor = 1/(1+DiscountRate)**Yearoffset
+YearlyNPV = NetCashflow.mul(YearlyFactor, axis=0)
+
+NPV = YearlyNPV.sum(axis=0)
 
