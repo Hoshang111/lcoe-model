@@ -336,5 +336,7 @@ DiscountRate = 0.07
 YearlyFactor = 1/(1+DiscountRate)**Yearoffset
 YearlyNPV = NetCashflow.mul(YearlyFactor, axis=0)
 
+# Need to add any external costs for transmission etc.
+
 NPV = YearlyNPV.sum(axis=0)
 

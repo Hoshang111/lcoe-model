@@ -44,22 +44,17 @@ import pandas as pd
 import numpy as np
 import Simulation_functions as func
 
-
-
 # %%
 # Sizing
-# Call the constants from the database - unneeded if we just pass module class?
+# Call the constants from the database
 module_per_rack  # (within sizing function)
 module_per_mav  # (within sizing function)
-
-# call the sizing functions
-racknums = sizing.get_racks(DCTotal, FieldNum, module, rack)
 
 # ======================================
 # Weather
 simulation_years = [2018, 2019, 2020]
-weather_file = 'Solcast_PT60M.csv'
-weather = weather.get_weather(weather_file, simulation_years)
+weather_simulation = func.weather(simulation_years)
+
 
 # ======================================
 # Rack_module
