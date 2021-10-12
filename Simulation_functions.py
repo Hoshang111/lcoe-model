@@ -193,13 +193,8 @@ def dc_yield(rack_params,
         ''' DC modelling for SATs '''
         print('dcg')
 
-
-
-
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
-
-
 
 
     # num_of_inv_per_zone = np.ceil(zone_rated_power / (module['STC'] / 1000 * num_of_mod_per_inverter))  # TODO: This is an
