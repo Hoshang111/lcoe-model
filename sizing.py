@@ -5,7 +5,7 @@ def get_racks(DCTotal, FieldNum, module, rack, field_area):
     rackfloat = DCTotal/(FieldNum*rack['Modules_per_rack']*module['STC'])
     rack_num_init = round(rackfloat)
     rack_interval = round(rackfloat*0.04)
-    racknums, module_nums = get_racknums(rack_num_init, rack_interval)
+    racknums, module_nums = get_racknums(rack_num_init, rack_interval, rack)
     if rack['rack_type'] == 'SAT':
         gcr = module['A_c']*module_nums/field_area
     elif rack['rack_type'] == 'east_west':

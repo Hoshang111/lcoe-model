@@ -1,3 +1,6 @@
+import pandas as pd
+import os
+import sizing
 # Initial Guess at total DC power
 DCTotal = 1e10
 
@@ -14,6 +17,6 @@ module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 # Import Rack Data from database
 suncable_racks = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0, skiprows=[1]).T
 
-rack = suncable_racks['SAT_1']
+rack = suncable_racks['5B_MAV']
 
-racknums = sizing.get_racks(DCTotal, FieldNum, module, rack)
+racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack, FieldArea)

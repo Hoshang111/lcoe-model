@@ -49,11 +49,10 @@ import Simulation_functions as func
 # %%
 # Sizing
 # Call the constants from the database - unneeded if we just pass module class?
-module_per_rack  # (within sizing function)
-module_per_mav  # (within sizing function)
+
 
 # call the sizing functions
-racknums = sizing.get_racks(DCTotal, FieldNum, module, rack)
+racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack)
 
 # ======================================
 # Weather
