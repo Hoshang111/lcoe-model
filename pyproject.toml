@@ -10,7 +10,6 @@ pandas = "^1.3.2"
 matplotlib = "^3.4.3"
 pvlib = {git = "https://github.com/yildizba/pvlib-python.git"}
 airtable = "^0.4.8"
-
 [tool.poetry.dev-dependencies]
 
 [build-system]
