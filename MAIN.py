@@ -68,7 +68,7 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
 # ========================================
 # DC/AC yield
-dc_yield = yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
+dc_yield = dc_yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
 # number of mavs/racks etc.
 
 # ac_yield  # (optional at this stage)
