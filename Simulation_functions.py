@@ -13,17 +13,22 @@ from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
+
 def weather(simulation_years,
+            weather_file,
             weather_file_path=None):
     """
         weather function uploads the relevant weather variables for simulations
         Parameters
         ----------
-        weather_file_path: str
-            Absolute path for the weather file if provided
-
         simulation_years: numeric
             Array of years for DC output simulations
+
+        weather_file: str
+            Name of the weather file
+
+        weather_file_path: str
+            Absolute path for the weather file if provided
 
         Returns
         -------
@@ -33,11 +38,11 @@ def weather(simulation_years,
     if weather_file_path is None:
         # If no path is specified for the weather file, then download from the default weather data folder.
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
-        weather = pd.read_csv(os.path.join('Data', 'WeatherData', 'Solcast_PT60M.csv'), index_col=0)
+        weather_data = pd.read_csv(os.path.join('Data', 'WeatherData', weather_file), index_col=0)
     else:
-        weather = pd.read_csv(weather_file_path, index_col=0)
+        weather_data = pd.read_csv(weather_file_path, index_col=0)
 
-    weather.set_index(pd.to_datetime(weather.index), inplace=True)  # set index to datetime format (each index now
+    weather_data.set_index(pd.to_datetime(weather_data.index), inplace=True)  # set index to datetime format (each index now
     # represents end of the hourly period: i.e. 2007-01-01 02:00:00 represents the measurements between 1-2 am
 
     # Change the timezone of the datetime to Australia/Darwin
@@ -45,11 +50,11 @@ def weather(simulation_years,
     # dummy = [str(i)[0:19] for i in weather.index]
     # weather.set_index(pd.DatetimeIndex(dummy, tz='UTC'), inplace=True)
 
-    weather = weather.rename(columns={'Ghi': 'ghi', 'Dni': 'dni', 'Dhi': 'dhi', 'AirTemp': 'temp_air',
+    weather_data = weather_data.rename(columns={'Ghi': 'ghi', 'Dni': 'dni', 'Dhi': 'dhi', 'AirTemp': 'temp_air',
                                       'WindSpeed10m': 'wind_speed', 'PrecipitableWater': 'precipitable_water'})
 
-    dummy = [weather[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water']].copy()[str(sy)] for sy in
-             simulation_years]  # get required PVlib weather variables for desired simulation years
+    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water']].copy()[str(sy)] for sy
+             in simulation_years]  # get required PVlib weather variables for desired simulation years
     weather_simulation = pd.concat(dummy)
     weather_simulation['precipitable_water'] = weather_simulation[
                                                    'precipitable_water'] / 10  # formatting for PV-lib
@@ -86,15 +91,75 @@ def rack_module_params(rack_type,
     return rack_params, module_params
 
 
+def array_config(DC_total,
+                 field_area,
+                 rack_params,
+                 module_params,
+                 zone_rated_power=20,
+                 number_of_zones_per_field=20
+                 ):
+    """
+        array_config function builds the array configuration based on the DC_total and rack_type:
+        number of racks, rack interval, number of modules etc.
+
+        Zone: 20 MW (can be MAV or SAT):
+        Field: 20 zones make up a field (~400 MW)
+        Solar Precinct: 36 fields make up the total array of SunCable
+
+        Parameters
+        ----------
+        DC_total: numeric
+            Total DC rated power of the simulated solar farm in MW
+
+        field_area: numeric
+            Total area of the field
+
+        rack_params: pandas series or dataframe
+            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
+
+        module_params: pandas series or dataframe
+            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
+
+        zone_rated_power: numeric
+            The rated power of a single zone
+
+        number_of_zones_per_field: numeric
+            Number of zones per field
+
+        Returns
+        -------
+        number_of_modules, number_of_racks, number_of_fields: Numeric
+
+    """
+
+    rack_power = rack_params['Modules_per_rack'] * module_params['STC'] / 1e6  # conversion of units to MW
+    number_of_racks_per_zone = round(zone_rated_power/rack_power)
+    number_of_racks_per_field = number_of_racks_per_zone * number_of_zones_per_field
+    field_power = number_of_racks_per_field * rack_power
+    number_of_fields = round(DC_total/field_power)
+    number_of_modules = rack_params['Modules_per_rack'] * number_of_racks_per_field * number_of_fields
+    number_of_racks = number_of_racks_per_field * number_of_fields
+
+    if rack_params['rack_type'] == 'SAT':
+        rack_spacing_perc = 10  # 10% of the rack area as spacing between each rack. This is dummy and will be modified.
+        gcr = rack_params['Area'] *number_of_racks_per_field* (1+rack_spacing_perc/100) / field_area
+    elif rack_params['rack_type'] == 'east_west':
+        rack_spacing_perc = 1  # 1% of rack area as spacing between each rack. This is dummy and will be modified.
+        gcr = rack_params['Area'] * number_of_racks_per_field * (1 + rack_spacing_perc / 100) / field_area
+    else:
+        raise ValueError('unrecognised rack type')
+
+    return number_of_racks, number_of_modules, gcr
+
+
 def dc_yield(rack_params,
              module_params,
              weather_simulation,
              gcr,
-             zone_rated_power=2000,
              num_of_mav_per_inv=4,
              num_of_mod_per_string=30,
              num_of_strings_per_mav=4,
-             num_of_mod_per_mav=120):
+             ):
     """ dc_yield function finds the dc output of the array for the simulation period
         The model has two options: 5B_MAV or SAT_1
 
@@ -188,7 +253,6 @@ def dc_yield(rack_params,
 
         mc.run_model(weather_simulation)
         # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
-
 
     elif rack_params.name == 'SAT_1':
         ''' DC modelling for SATs '''
