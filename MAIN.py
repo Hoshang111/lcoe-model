@@ -45,15 +45,6 @@ import numpy as np
 import Simulation_functions as func
 import airtable
 
-
-# %%
-# Sizing
-# Call the constants from the database - unneeded if we just pass module class?
-
-
-# call the sizing functions
-#racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack)
-
 # ======================================
 # Weather
 simulation_years = [2018, 2019, 2020]
@@ -65,6 +56,15 @@ weather = func.weather(simulation_years, weather_file)
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'Jinko_JKM575M_7RL4_TV_PRE'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
+
+# %%
+# Sizing
+# Call the constants from the database - unneeded if we just pass module class?
+
+
+# call the sizing functions
+#racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack)
+
 
 #%% ========================================
 # DC/AC yield

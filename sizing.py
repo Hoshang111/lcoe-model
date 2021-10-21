@@ -1,38 +1,76 @@
 # Code to spit out rack splits, technology agnostic
 import pandas as pd
 
+
 def get_racks(DCTotal,
-              FieldNum,
-              module,
-              rack,
-              field_area,
-              interval_ratio):
+              number_of_zones,
+              module_params,
+              rack_params,
+              zone_area,
+              rack_interval_ratio):
     """
-    Function to vary the number of racks per field
-    :param DCTotal:
-    :param FieldNum:
-    :param module:
-    :param rack:
-    :param field_area:
-    :param interval_ratio:
-    :return:
+        get_racks function finds the number of racks and modules based on the parameters described below:
+
+        According to info from SunCable
+        Zone: 20 MW (can be MAV or SAT):
+        Field: 20 zones make up a field (~400 MW)
+        Solar Precinct: 36 fields make up the total array of SunCable
+
+        Parameters
+        ----------
+        DCTotal: numeric
+            Total DC rated power of the simulated solar farm in MW
+
+        number_of_zones: numeric
+            The number of zones that the solar farm consists of
+
+        module_params: pandas series or dataframe
+            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
+
+        rack_params: pandas series or dataframe
+            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
+
+        zone_area: numeric
+            The area of the zone to find the ground coverage ratio.
+
+        rack_interval_ratio: float
+            A ratio used to create a range of rack numbers within the zone for searching optimal NPV.
+            Must be between 0 to 1
+            (No fixed size at 20 MW per zone)
+
+        Returns
+        -------
+        rack_num_range: pd.series
+            A range of values for number of racks
+
+        module_num_range: pd.series
+            A range of values for number of modules (based on the number of racks)
+
+        gcr_range: pd.series
+            A range of values for ground coverage ratio (based on the number of racks)
+
     """
 
-    rackfloat = DCTotal/(FieldNum*rack['Modules_per_rack']*module['STC'])
-    rack_num_init = round(rackfloat)
-    rack_interval = round(rackfloat*interval_ratio)
+    rack_per_zone_float = DCTotal/(number_of_zones*rack_params['Modules_per_rack']*module_params['STC']/1e6)
+    rack_per_zone_init = round(rack_per_zone_float)
+    rack_interval = round(rack_per_zone_float*rack_interval_ratio)
+    # Rack interval needs to be equal of greater than
     if rack_interval < 1:
         rack_interval = 1
-    racknums = pd.Series(range(rack_num_init - 5 * rack_interval, rack_num_init + 6 * rack_interval, rack_interval))
-    module_nums = racknums * rack['Modules_per_rack']
-    if rack['rack_type'] == 'SAT':
-        gcr = module['A_c']*module_nums/field_area
-    elif rack['rack_type'] == 'east_west':
-        gcr = racknums*rack['Area']/field_area
-    else:
-        raise Exception('unrecognised rack type')
+    rack_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init + 6 * rack_interval,
+                                     rack_interval))
+    module_num_range = rack_num_range * rack_params['Modules_per_rack']
 
-    return racknums, module_nums, gcr
+    # Raise an error if any of the gcr_range is more than 1.
+    if rack_params['rack_type'] == 'SAT':
+        gcr_range = module_params['A_c']*module_num_range/zone_area
+    elif rack_params['rack_type'] == 'east_west':
+        gcr_range = rack_num_range*rack_params['Area'] * np.cos(10 * np.pi/180)/zone_area  # multiply by cos(10)
+    else:
+        raise ValueError('unrecognised rack type')
+
+    return rack_num_range, module_num_range, gcr_range
+
 
 def get_revenue(Yieldseries,
                 Trans_limit,

@@ -91,65 +91,78 @@ def rack_module_params(rack_type,
     return rack_params, module_params
 
 
-def array_config(DC_total,
-                 field_area,
-                 rack_params,
-                 module_params,
-                 zone_rated_power=20,
-                 number_of_zones_per_field=20
-                 ):
+def get_racks(DCTotal,
+              number_of_zones,
+              module_params,
+              rack_params,
+              zone_area,
+              rack_interval_ratio):
     """
-        array_config function builds the array configuration based on the DC_total and rack_type:
-        number of racks, rack interval, number of modules etc.
+        get_racks function finds a range of possible numbers for racks and modules based on the parameters:
 
+        According to info from SunCable
         Zone: 20 MW (can be MAV or SAT):
         Field: 20 zones make up a field (~400 MW)
         Solar Precinct: 36 fields make up the total array of SunCable
 
         Parameters
         ----------
-        DC_total: numeric
+        DCTotal: numeric
             Total DC rated power of the simulated solar farm in MW
 
-        field_area: numeric
-            Total area of the field
-
-        rack_params: pandas series or dataframe
-            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
+        number_of_zones: numeric
+            The number of zones that the solar farm consists of
 
         module_params: pandas series or dataframe
             Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
 
-        zone_rated_power: numeric
-            The rated power of a single zone
+        rack_params: pandas series or dataframe
+            Includes information such as modules_per_rack, rack_type, elevation, rear_shading, tilt, length, width, area
 
-        number_of_zones_per_field: numeric
-            Number of zones per field
+        zone_area: numeric
+            The area of the zone to find the ground coverage ratio.
+
+        rack_interval_ratio: numeric
+            A ratio used to create a range of rack numbers within the zone for searching optimal NPV.
+            Choose this between 0-0.3 (i.e. up to 30%)
+            (No fixed size at 20 MW per zone)
 
         Returns
         -------
-        number_of_modules, number_of_racks, number_of_fields: Numeric
+        rack_num_range: pd.series
+            A range of values for number of racks
+
+        module_num_range: pd.series
+            A range of values for number of modules (based on the number of racks)
+
+        gcr_range: pd.series
+            A range of values for ground coverage ratio (based on the number of racks)
 
     """
+    rack_per_zone_float = DCTotal/(number_of_zones*rack_params['Modules_per_rack']*module_params['STC']/1e6)
+    rack_per_zone_init = round(rack_per_zone_float)
+    rack_interval = round(rack_per_zone_float*rack_interval_ratio)
+    # Rack interval needs to be equal of greater than
+    if rack_interval < 1:
+        rack_interval = 1
+    rack_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init + 6 * rack_interval,
+                                     rack_interval))
 
-    rack_power = rack_params['Modules_per_rack'] * module_params['STC'] / 1e6  # conversion of units to MW
-    number_of_racks_per_zone = round(zone_rated_power/rack_power)
-    number_of_racks_per_field = number_of_racks_per_zone * number_of_zones_per_field
-    field_power = number_of_racks_per_field * rack_power
-    number_of_fields = round(DC_total/field_power)
-    number_of_modules = rack_params['Modules_per_rack'] * number_of_racks_per_field * number_of_fields
-    number_of_racks = number_of_racks_per_field * number_of_fields
+    rack_num_range.drop(rack_num_range.index[(rack_num_range < 0)], inplace=True)
+    rack_num_range = rack_num_range.reindex()
+    # drop any negative values which may result due to inappropriate rack_interval_ratio
 
+    module_num_range = rack_num_range * rack_params['Modules_per_rack']
+
+    # Raise an error if any of the gcr_range is more than 1.
     if rack_params['rack_type'] == 'SAT':
-        rack_spacing_perc = 10  # 10% of the rack area as spacing between each rack. This is dummy and will be modified.
-        gcr = rack_params['Area'] *number_of_racks_per_field* (1+rack_spacing_perc/100) / field_area
+        gcr_range = module_params['A_c']*module_num_range/zone_area
     elif rack_params['rack_type'] == 'east_west':
-        rack_spacing_perc = 1  # 1% of rack area as spacing between each rack. This is dummy and will be modified.
-        gcr = rack_params['Area'] * number_of_racks_per_field * (1 + rack_spacing_perc / 100) / field_area
+        gcr_range = rack_num_range*rack_params['Area'] * np.cos(10 * np.pi/180)/zone_area  # multiply by cos(10)
     else:
         raise ValueError('unrecognised rack type')
 
-    return number_of_racks, number_of_modules, gcr
+    return rack_num_range, module_num_range, gcr_range
 
 
 def dc_yield(rack_params,
@@ -194,6 +207,7 @@ def dc_yield(rack_params,
 
         Return
         ------
+        DC_output_range: Pd series
 
     """
     coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
@@ -261,6 +275,7 @@ def dc_yield(rack_params,
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
+        # Todo: make sure to check consistency between the TMY data that are used for simulations.
 
     # num_of_inv_per_zone = np.ceil(zone_rated_power / (module['STC'] / 1000 * num_of_mod_per_inverter))  # TODO: This is an
     # important assumption to check (i.e., ceil of floor)...
