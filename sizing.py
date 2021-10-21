@@ -59,6 +59,11 @@ def get_racks(DCTotal,
         rack_interval = 1
     rack_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init + 6 * rack_interval,
                                      rack_interval))
+
+    rack_num_range.drop(rack_num_range.index[(rack_num_range < 0)], inplace=True)
+    rack_num_range = rack_num_range.reindex()
+    # drop any negative values which may result due to inappropriate rack_interval_ratio
+
     module_num_range = rack_num_range * rack_params['Modules_per_rack']
 
     # Raise an error if any of the gcr_range is more than 1.
