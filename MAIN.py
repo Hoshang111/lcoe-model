@@ -43,7 +43,7 @@ cost function also give the Monte-Carlo distribution.
 import pandas as pd
 import numpy as np
 import Simulation_functions as func
-
+import airtable
 
 
 # %%
@@ -52,23 +52,23 @@ import Simulation_functions as func
 
 
 # call the sizing functions
-racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack)
+#racknums, module_nums, gcr = sizing.get_racks(DCTotal, FieldNum, module, rack)
 
 # ======================================
 # Weather
 simulation_years = [2018, 2019, 2020]
 weather_file = 'Solcast_PT60M.csv'
-weather = weather.get_weather(weather_file, simulation_years)
+weather = func.weather(simulation_years, weather_file)
 
-# ======================================
+#%% ======================================
 # Rack_module
-rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'Jinko_JKM575M_7RL4_TV_PRE'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
-# ========================================
+#%% ========================================
 # DC/AC yield
-dc_yield = yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
+dc_yield = dc_yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
 # number of mavs/racks etc.
 
 # ac_yield  # (optional at this stage)
