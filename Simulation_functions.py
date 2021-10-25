@@ -92,7 +92,7 @@ def rack_module_params(rack_type,
 
 
 def get_racks(DCTotal,
-              number_of_zones,
+              num_of_zones,
               module_params,
               rack_params,
               zone_area,
@@ -110,7 +110,7 @@ def get_racks(DCTotal,
         DCTotal: numeric
             Total DC rated power of the simulated solar farm in MW
 
-        number_of_zones: numeric
+        num_of_zones: numeric
             The number of zones that the solar farm consists of
 
         module_params: pandas series or dataframe
@@ -139,18 +139,19 @@ def get_racks(DCTotal,
             A range of values for ground coverage ratio (based on the number of racks)
 
     """
-    rack_per_zone_float = DCTotal/(number_of_zones*rack_params['Modules_per_rack']*module_params['STC']/1e6)
+    rack_per_zone_float = DCTotal/(num_of_zones*rack_params['Modules_per_rack']*module_params['STC']/1e6)
     rack_per_zone_init = round(rack_per_zone_float)
     rack_interval = round(rack_per_zone_float*rack_interval_ratio)
-    # Rack interval needs to be equal of greater than
+    # Rack interval needs to be equal of greater than 1
     if rack_interval < 1:
         rack_interval = 1
     rack_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init + 6 * rack_interval,
                                      rack_interval))
 
+    # Drop any negative values which may result due to inappropriate rack_interval_ratio input
     rack_num_range.drop(rack_num_range.index[(rack_num_range < 0)], inplace=True)
     rack_num_range = rack_num_range.reindex()
-    # drop any negative values which may result due to inappropriate rack_interval_ratio
+
 
     module_num_range = rack_num_range * rack_params['Modules_per_rack']
 
@@ -164,17 +165,19 @@ def get_racks(DCTotal,
 
     return rack_num_range, module_num_range, gcr_range
 
-
 def dc_yield(rack_params,
              module_params,
              weather_simulation,
-             gcr,
-             num_of_mav_per_inv=4,
-             num_of_mod_per_string=30,
+             rack_num_range,
+             module_num_range,
+             gcr_range,
+             num_of_mav_per_inverter=4,
+             num_of_sat_per_inverter=4,
+             num_of_module_per_string=30,
              num_of_strings_per_mav=4,
              ):
-    """ dc_yield function finds the dc output of the array for the simulation period
-        The model has two options: 5B_MAV or SAT_1
+    """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
+        The model has two options rack options: 5B_MAV or SAT_1
 
         Parameters
         ----------
@@ -187,23 +190,27 @@ def dc_yield(rack_params,
         weather_simulation : Dataframe
             weather data to be used for simulations
 
-        gcr: Int/List
-            ground coverage ratio used for single axis tracking simulations
+        rack_num_range: pandas series
+            possible number of racks for the given DC size
 
-        zone_rated_power: Int
-            the rater power of the SunCable zone, currently set to 2000 kW (20 MW)
+        module_num_range: pandas series
+            possible number of modules for the given DC size
 
-        num_of_mav_per_inv: Int
+        gcr_range: pandas series
+            possible number of ground coverage ratio (gcr) for the given DC size. This info is more relevant for the
+            single axis tracking (SAT) simulations
+
+        num_of_mav_per_inverter: Int
             number of 5B Mavericks per inverter, currently set to 4
 
-        num_of_mod_per_string: Int
+        num_of_mav_per_inverter: Int
+            number of single axis tracker (SAT) per inverter, currently set to 4
+
+        num_of_module_per_string: Int
             number of modules per string, currently set to 30
 
         num_of_strings_per_mav: Int
             number of parallel strings per mav, currently set to 4
-
-        num_of_mod_per_mav: Int
-            number of modules per 5B Mavericks, currently set to 30 * 4 = 120
 
         Return
         ------
@@ -211,13 +218,16 @@ def dc_yield(rack_params,
 
     """
     coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
-    # Todo :
-    if rack_params.name == '5B_MAV':
-        ''' DC modelling for 5B Mavericks '''
+    latitude, longitude, name, altitude, timezone = coordinates[0]
+    location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
+
+    if rack_params['rack_type'] == 'east_west':
+        ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
 
         # Inverter (this part finds an inverter from the CEC list that matches the DC output of the system)
-        num_of_mod_per_inverter = num_of_mav_per_inv * num_of_mod_per_mav  # 480 modules per inverter
-        dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output
+        num_of_mod_per_inverter = num_of_mav_per_inverter * rack_params['Modules_per_rack']
+        dc_rated_power = module_params[
+                             'STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
         inverter_list = pvsystem.retrieve_sam('cecinverter')
@@ -231,9 +241,8 @@ def dc_yield(rack_params,
         if inverter_candidates is None:
             inverter_params = inverter_candidates['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
         else:
-            inverter_params = inverter_candidates.iloc['Sungrow_Power_Supply_Co___Ltd___SC250KU__480V_']
+            inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
 
-        #  Mounting
         module_tilt = rack_params['tilt']
         mount1 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
         mount2 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
@@ -242,42 +251,82 @@ def dc_yield(rack_params,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
         # Define two arrays resembling Maverick design: one east facing & one west facing
-        # For now we are designing at the inverter level with 4 MAVs per inverter
+        # For now we are designing at the inverter level with 4 MAVs per inverter. Half of the array is assigned with
+        # mount 1 (east facing) and the other half is assigned with mount 2 (west facing)
         array_one = pvsystem.Array(mount=mount1,
                                    module_parameters=module_params,
                                    temperature_model_parameters=temperature_model_parameters,
-                                   modules_per_string=num_of_mod_per_string,
-                                   strings=num_of_strings_per_mav * num_of_mav_per_inv / 2)
+                                   modules_per_string=num_of_module_per_string,
+                                   strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
 
         array_two = pvsystem.Array(mount=mount2,
                                    module_parameters=module_params,
                                    temperature_model_parameters=temperature_model_parameters,
-                                   modules_per_string=num_of_mod_per_string,
-                                   strings=num_of_strings_per_mav * num_of_mav_per_inv / 2)
+                                   modules_per_string=num_of_module_per_string,
+                                   strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
 
-        mav_system = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
+        inverter_mav_system = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
 
         # Model-Chain
-        latitude, longitude, name, altitude, timezone = coordinates[0]
-        location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
 
         # Todo: We can try different angle of irradiance (aoi) models down the track
-        mc = ModelChain(mav_system, location, aoi_model='ashrae')
+        mc = ModelChain(inverter_mav_system, location, aoi_model='ashrae')
         # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 
         mc.run_model(weather_simulation)
-        # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
 
-    elif rack_params.name == 'SAT_1':
-        ''' DC modelling for SATs '''
-        print('dcg')
+        # For different number of modules given in module_num_range, find the total DC output and store in a list
+        dc_results = []
+        for module_num in module_num_range:
+            dc_results.append(mc.results.dc[0]['p_mp'] * (module_num/2)/(num_of_mod_per_inverter/2) +
+                              mc.results.dc[1]['p_mp'] * (module_num/2)/(num_of_mod_per_inverter/2))
 
+    elif rack_params['rack_type'] == 'SAT':
+        ''' DC modelling for single axis tracking (SAT) system '''
+
+        # Inverter (this part finds an inverter from the CEC list that matches the DC output of the system)
+        # Todo: Currently number of SAT per inverter is set to 4. Get more info from SunCable...
+        # Todo: If these parts are essentially same for MAV and SAT move this code prior to the IF for mounting type
+        num_of_mod_per_inverter = num_of_sat_per_inverter * rack_params['Modules_per_rack']
+        dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
+        dc_to_ac = 1.2
+        ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
+        inverter_list = pvsystem.retrieve_sam('cecinverter')
+
+        # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...
+        inv_dc_idx = (inverter_list.loc['Pdco'] >= dc_rated_power * 1000 * 0.95) & \
+                     (inverter_list.loc['Pdco'] <= dc_rated_power * 1000 * 1.05)
+
+        inverter_candidates = inverter_list.T[inv_dc_idx]
+        # If no inverters match the criteria, choose a micro-inverter. If there are candidates choose one of them.
+        if inverter_candidates is None:
+            inverter_params = inverter_candidates['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
+        else:
+            inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
+
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+
+        dc_results = []
+        # TODO IMPORTANT: WITH THIS SAT DESIGN, WHERE DO WE INPUT THE AREA? SO THE PV SYSTEM UNDERSTANDS TO TOTAL DC SIZE
+        for gcr, module_num in zip(gcr_range, module_num_range):
+            mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
+                                                    gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                                    module_height=2)
+
+            sat_array = pvsystem.Array(mount=mount, module_parameters=module_params,
+                                        temperature_model_parameters=temperature_model_parameters)
+
+            system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+
+            mc = ModelChain(system, location)
+            mc.run_model(weather_simulation)
+            dc_results.append(mc.results['p_mp'])
+        # Todo: we can try different back-tracking algorithms for SAT as well
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-        # Todo: make sure to check consistency between the TMY data that are used for simulations.
 
-    # num_of_inv_per_zone = np.ceil(zone_rated_power / (module['STC'] / 1000 * num_of_mod_per_inverter))  # TODO: This is an
-    # important assumption to check (i.e., ceil of floor)...
-    # ac_yield  # (optional at this stage)
-    # optional inputs: temp/rack coeff, back-tracking algo, aoi model
+
+
+    # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
+    # Todo: make sure to check consistency between the TMY data that are used for simulations.
