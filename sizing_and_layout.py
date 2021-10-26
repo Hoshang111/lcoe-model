@@ -339,4 +339,3 @@ YearlyNPV = NetCashflow.mul(YearlyFactor, axis=0)
 # Need to add any external costs for transmission etc.
 
 NPV = YearlyNPV.sum(axis=0)
-

@@ -53,7 +53,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 #%% ======================================
 # Rack_module
-rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'Jinko_JKM575M_7RL4_TV_PRE'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
@@ -68,16 +68,12 @@ rack_num_range, module_num_range, gcr_range = func.get_racks(DCTotal, num_of_zon
                                                              zone_area, rack_interval_ratio)
 
 #%% ========================================
-# DC/AC yield
-dc_yield = dc_yield(number_of_modules, type_of_module, mounting_type, weather_simulation, gcr)  # number of modules or
-# number of mavs/racks etc.
-
-# ac_yield  # (optional at this stage)
-# define coordinates within the function
-# optional inputs: temp/rack coeff, back-tracking algo, aoi model
+# DC yield
+dc_results = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range, gcr_range)
 
 
-# ==========================================
+
+#%% ==========================================
 # Revenue and storage behaviour
 revenue = revenue_func(dc_yield, export_lim)
 
