@@ -10,7 +10,6 @@ from pvlib.location import Location
 from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 
-
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
 
@@ -175,6 +174,7 @@ def dc_yield(rack_params,
              num_of_sat_per_inverter=4,
              num_of_module_per_string=30,
              num_of_strings_per_mav=4,
+             num_of_strings_per_sat=4
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -211,6 +211,9 @@ def dc_yield(rack_params,
 
         num_of_strings_per_mav: Int
             number of parallel strings per mav, currently set to 4
+
+        num_of_strings_per_sat: Int
+            number of parallel strings per sat, currently set to 4
 
         Return
         ------
@@ -277,9 +280,10 @@ def dc_yield(rack_params,
 
         # For different number of modules given in module_num_range, find the total DC output and store in a list
         dc_results = []
+
         for module_num in module_num_range:
-            dc_results.append(mc.results.dc[0]['p_mp'] * (module_num/2)/(num_of_mod_per_inverter/2) +
-                              mc.results.dc[1]['p_mp'] * (module_num/2)/(num_of_mod_per_inverter/2))
+            multiplication_coeff = module_num/num_of_mod_per_inverter
+            dc_results.append((mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff)
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -307,25 +311,30 @@ def dc_yield(rack_params,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
         dc_results = []
-        # TODO IMPORTANT: WITH THIS SAT DESIGN, WHERE DO WE INPUT THE AREA? SO THE PV SYSTEM UNDERSTANDS TO TOTAL DC SIZE
+        # TODO IMPORTANT: WITH THE SAT DESIGN, DO WE KNOW HOW MANY MODULES PER SAT/ HOW MANY SAT PER INVERTER
         for gcr, module_num in zip(gcr_range, module_num_range):
             mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
                                                     module_height=2)
 
-            sat_array = pvsystem.Array(mount=mount, module_parameters=module_params,
-                                        temperature_model_parameters=temperature_model_parameters)
+            sat_array = pvsystem.Array(mount=mount,
+                                       module_parameters=module_params,
+                                       temperature_model_parameters=temperature_model_parameters,
+                                       modules_per_string=num_of_module_per_string,
+                                       strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
-            system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
 
-            mc = ModelChain(system, location)
+            inverter_sat_system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+
+            mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            dc_results.append(mc.results['p_mp'])
+            multiplication_coeff = module_num/(num_of_sat_per_inverter * rack_params['Modules_per_rack'])
+            dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
         # Todo: we can try different back-tracking algorithms for SAT as well
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-
+    return dc_results
 
 
     # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
