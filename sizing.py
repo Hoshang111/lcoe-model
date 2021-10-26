@@ -1,5 +1,7 @@
 # Code to spit out rack splits, technology agnostic
 import pandas as pd
+import airtable
+import SuncableCost as suncost
 
 
 def get_racks(DCTotal,
@@ -104,15 +106,68 @@ def get_revenue(Yieldseries,
 
     return Yearly_direct, Yearly_storage, Yearly_total
 
-def get_costs(num_of_racks, install_year,):
+def get_costs(num_of_racks, rack_params, module_params, install_year):
 
-    """
-    Function to return a timeseries of yearly costs for specified
-    system configuration based on fixed and scalar costs.
-    :param num_of_racks:
-    :param install_year:
-    :return:
-    """
+   """
+   Function to return a yearly timeseries of costs for installing different numbers of racks
+   :param num_of_racks:
+   :param rack_params:
+   :param module_params:
+   :param install_year:
+   :return:
+   """
+    # Option 3 Call code directly and overwrite values as required
+    ScenarioList = {'Scenario_Name': num_of_racks,
+                    'ScenarioID': num_of_racks, 'Scenario_Tag': num_of_racks}
+
+    SCNcostdata = pd.DataFrame(ScenarioList, columns=[
+        'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+
+    SystemLinkracks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
+                       'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+    SYScostracks = pd.DataFrame(SystemLinkracks, columns=[
+        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+    if rack_params['rack_type'] == 'SAT':
+        SYScostracks['SystemID'] = 13
+        SYScostfixed['SystemID'] = 14
+    elif rack_params['rack_type'] == 'east_west':
+        SYScostracks['SystemID'] = 17
+        SYScostfixed['SystemID'] = 19
+
+    SYScostracks['InstallDate'] = install_year
+
+    SystemLinkfixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
+                       'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+    SYScostfixed = pd.DataFrame(SystemLinkfixed, columns=[
+        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+
+    SYScostfixed['InstallDate'] = install_year
+    SYScostfixed['InstallNumber'] = 1
+
+    SYScostData = SYScostracks.append(SYScostfixed)
+
+    SYScostData['ScenarioSystemID'] = range(1, 2 * len(RackNums) + 1)
+
+    # Airtable Import
+    api_key = 'keyJSMV11pbBTdswc'
+    base_id = 'appjQftPtMrQK04Aw'
+
+    data_tables = SunCost.import_airtable_data(base_id=base_id, api_key=api_key)
+    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
+
+    # Replacing some tables from specified inputs
+    new_data_tables = SCNcostdata, SYScostData, system_list, system_component_link, component_list, currency_list, costcategory_list
+
+    # Running the cost calculations
+    # outputs = SunCost.CalculateScenarios (data_tables, year_start=2024, analyse_years=30)
+    costoutputs = SunCost.CalculateScenarios(new_data_tables, year_start=2024, analyse_years=30)
+    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
+
+    CashIn.index = cash_flow_by_year.index
 
 def get_npv(yearly_costs,
             yearly_revenue,
@@ -135,6 +190,7 @@ def get_npv(yearly_costs,
     NPV = YearlyNPV.sum(axis=0)
 
     return NPV, YearlyNPV
+
 
 
 
