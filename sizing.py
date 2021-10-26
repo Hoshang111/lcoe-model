@@ -92,22 +92,31 @@ def get_revenue(Yieldseries,
     :return:
     """
 
-    Fixed_Price = 0.4
     Direct_Export = Yieldseries.clip(lower=None, upper=TRANSlimit)
     Store_Avail = Yieldseries-Direct_Export
     Daily_store_pot = Store_Avail.groupby(Store_Avail.index.day).sum()
     Daily_store = Daily_store_pot.clip(lower=None, upper=storage_capacity)
-    Direct_Revenue = Direct_Export*Fixed_Price
-    Store_Revenue = Daily_store*Fixed_Price*0.85
+    Direct_Revenue = Direct_Export*price_schedule
+    Store_Revenue = Daily_store*price_schedule*0.85
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
 
     return Yearly_direct, Yearly_storage, Yearly_total
 
+def get_costs(num_of_racks, install_year,):
+
+    """
+    Function to return a timeseries of yearly costs for specified
+    system configuration based on fixed and scalar costs.
+    :param num_of_racks:
+    :param install_year:
+    :return:
+    """
+
 def get_npv(yearly_costs,
             yearly_revenue,
-            discount_rate):
+            discount_rate=0.07):
     """
     Function to determine the npv from a time series (yearly)
     of costs and revenue
