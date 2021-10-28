@@ -77,8 +77,8 @@ dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation
 #%% ==========================================
 # Revenue and storage behaviour
 export_lim = 3.2e6/num_of_zones
-storage_capacity = 4e4
-revenue = sizing.get_revenue(dc_results, export_lim, 0.04, storage_capacity)
+storage_capacity = 4e7
+revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
 
 
 

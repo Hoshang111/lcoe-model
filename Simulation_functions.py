@@ -334,7 +334,7 @@ def dc_yield(rack_params,
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-    dc_df = pd.Dataframe(dc_results)
+    dc_df = pd.DataFrame(dc_results).T
     dc_df.columns = rack_num_range
 
     return dc_results, dc_df

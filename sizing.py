@@ -1,7 +1,7 @@
 # Code to spit out rack splits, technology agnostic
 import pandas as pd
 import airtable
-import SuncableCost as suncost
+import SuncableCost as Suncost
 
 
 def get_racks(DCTotal,
@@ -80,7 +80,7 @@ def get_racks(DCTotal,
 
 
 def get_revenue(Yieldseries,
-                Trans_limit,
+                export_limit,
                 price_schedule,
                 storage_capacity):
 
@@ -94,12 +94,13 @@ def get_revenue(Yieldseries,
     :return:
     """
 
-    Direct_Export = Yieldseries.clip(lower=None, upper=TRANSlimit)
+    Direct_Export = Yieldseries.clip(lower=None, upper=export_limit)
     Store_Avail = Yieldseries-Direct_Export
-    Daily_store_pot = Store_Avail.groupby(Store_Avail.index.day).sum()
+    Daily_store_pot = Store_Avail.groupby(Store_Avail.index.date).sum()
     Daily_store = Daily_store_pot.clip(lower=None, upper=storage_capacity)
     Direct_Revenue = Direct_Export*price_schedule
     Store_Revenue = Daily_store*price_schedule*0.85
+    Store_Revenue.index = pd.to_datetime(Store_Revenue.index)
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
@@ -116,6 +117,8 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    :param install_year:
    :return:
    """
+   import SuncableCost as Suncost
+
    # Option 3 Call code directly and overwrite values as required
    ScenarioList = {'Scenario_Name': num_of_racks,
                    'ScenarioID': num_of_racks, 'Scenario_Tag': num_of_racks}
@@ -129,6 +132,12 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    SYScostracks = pd.DataFrame(SystemLinkracks, columns=[
        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
+   SystemLinkfixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
+                      'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+   SYScostfixed = pd.DataFrame(SystemLinkfixed, columns=[
+       'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
    if rack_params['rack_type'] == 'SAT':
        SYScostracks['SystemID'] = 13
        SYScostfixed['SystemID'] = 14
@@ -138,18 +147,12 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
 
    SYScostracks['InstallDate'] = install_year
 
-   SystemLinkfixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
-                      'SystemID': num_of_racks, 'InstallDate': num_of_racks}
-
-   SYScostfixed = pd.DataFrame(SystemLinkfixed, columns=[
-       'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
-
    SYScostfixed['InstallDate'] = install_year
    SYScostfixed['InstallNumber'] = 1
 
    SYScostData = SYScostracks.append(SYScostfixed)
 
-   SYScostData['ScenarioSystemID'] = range(1, 2 * len(RackNums) + 1)
+   SYScostData['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
 
    # Airtable Import
    api_key = 'keyJSMV11pbBTdswc'
