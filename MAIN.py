@@ -70,28 +70,29 @@ rack_num_range, module_num_range, gcr_range = func.get_racks(DCTotal, num_of_zon
 
 #%% ========================================
 # DC yield
-dc_results = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range, gcr_range)
+dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range, gcr_range)
 
 
 
 #%% ==========================================
 # Revenue and storage behaviour
 export_lim = 3.2e6/num_of_zones
-revenue = sizing.get_revenue(dc_yield, export_lim, 0.04)
+storage_capacity = 4e4
+revenue = sizing.get_revenue(dc_results, export_lim, 0.04, storage_capacity)
 
 
 
 
 # ==========================================
 # Cost
-cost = sizing.get_costs(size)
-
+costoutputs = sizing.get_costs(rack_num_range, rack_params, module_params)
+component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
 
 
 
 # ==========================================
 # Net present value (NPV)
-npv = sizing.get_npv(revenue, cost)
+npv = sizing.get_npv(revenue, cash_flow_by_year)
 
 
 
@@ -101,6 +102,7 @@ npv = sizing.get_npv(revenue, cost)
 rack_interval = rack_num_range[2]-rack_num_range[1]
 
 while rack_interval > 1:
+    print(npv)
     index_min = npv.idxmin()
     DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] * 1e6
     new_interval_ratio = rack_interval/index_min/5
@@ -111,10 +113,10 @@ while rack_interval > 1:
     dc_results = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range,
                                gcr_range)
     revenue = sizing.get_revenue(dc_yield, export_lim, 0.04)
-    cost = sizing.get_costs(size)
-    npv = npv_func(revenue, cost)
+    cost = sizing.get_costs(rack_num_range, rack_params, module_params)
+    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
+    npv = npv_func(revenue, cash_flow_by_year)
 
-print(npv)
 
 
 

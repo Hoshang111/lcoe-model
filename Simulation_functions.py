@@ -1,6 +1,6 @@
 """ Functions for finding the DC output of the MAV or SAT system """
-import pydantic
-import pytest
+# import pydantic
+# import pytest
 import pandas as pd
 import numpy as np
 import os
@@ -334,7 +334,10 @@ def dc_yield(rack_params,
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-    return dc_results
+    dc_df = pd.Dataframe(dc_results)
+    dc_df.columns = rack_num_range
+
+    return dc_results, dc_df
 
 
     # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
