@@ -78,25 +78,29 @@ dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation
 # Revenue and storage behaviour
 export_lim = 3.2e6/num_of_zones
 storage_capacity = 4e7
-revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
+direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
 
 
 
 
-# ==========================================
+#%% ==========================================
 # Cost
-costoutputs = sizing.get_costs(rack_num_range, rack_params, module_params)
-component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
+cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
+component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
 
 
-# ==========================================
+#%% ==========================================
 # Net present value (NPV)
-npv = sizing.get_npv(revenue, cash_flow_by_year)
+# resize yield output to match cost time series
+
+revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
+
+npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 
 
-# ==========================================
+#%% ==========================================
 # find minimum npv and grid search
 
 rack_interval = rack_num_range[2]-rack_num_range[1]
@@ -106,16 +110,18 @@ while rack_interval > 1:
     index_min = npv.idxmin()
     DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] * 1e6
     new_interval_ratio = rack_interval/index_min/5
+    #%%
     rack_num_range, module_num_range, gcr_range = func.get_racks(DCpower_min, 1,
                                                                  module_params, rack_params,
                                                                  zone_area, new_interval_ratio)
     rack_interval = rack_num_range[2] - rack_num_range[1]
     dc_results = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range,
                                gcr_range)
-    revenue = sizing.get_revenue(dc_yield, export_lim, 0.04)
-    cost = sizing.get_costs(rack_num_range, rack_params, module_params)
-    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
-    npv = npv_func(revenue, cash_flow_by_year)
+    direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
+    cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
+    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
+    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
+    npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 
 

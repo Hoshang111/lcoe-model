@@ -1,5 +1,6 @@
 # Code to spit out rack splits, technology agnostic
 import pandas as pd
+import numpy as np
 import airtable
 import SuncableCost as Suncost
 
@@ -117,7 +118,6 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    :param install_year:
    :return:
    """
-   import SuncableCost as Suncost
 
    # Option 3 Call code directly and overwrite values as required
    ScenarioList = {'Scenario_Name': num_of_racks,
@@ -158,7 +158,7 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    api_key = 'keyJSMV11pbBTdswc'
    base_id = 'appjQftPtMrQK04Aw'
 
-   data_tables = SunCost.import_airtable_data(base_id=base_id, api_key=api_key)
+   data_tables = Suncost.import_airtable_data(base_id=base_id, api_key=api_key)
    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
 
    # Replacing some tables from specified inputs
@@ -166,10 +166,39 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
 
    # Running the cost calculations
    # outputs = SunCost.CalculateScenarios (data_tables, year_start=2024, analyse_years=30)
-   costoutputs = SunCost.CalculateScenarios(new_data_tables, year_start=2024, analyse_years=30)
+   costoutputs = Suncost.CalculateScenarios(new_data_tables, year_start=2024, analyse_years=30)
    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
 
    return costoutputs
+
+
+def align_cashflows(yearly_costs, yearly_revenue, start_year = 2029):
+
+    """
+    Function to align cash flows out with incoming revenues when they may be different
+    shapes. Aligns according to the cash flows out
+    :param yearly_costs:
+    :param yearly_revenues:
+    :param start_date:
+    :return:
+    """
+    cost_rows = yearly_costs.shape[0]
+    revenue_rows = yearly_revenue.shape[0]
+    repeats = cost_rows // revenue_rows + (cost_rows % revenue_rows > 0)
+    revenue_dummy = pd.concat([yearly_revenue] * repeats, ignore_index=True)
+    revenue_dummy.index = range(yearly_costs.index[0],
+                                yearly_costs.index[0] + revenue_dummy.shape[0])
+    revenue_series = revenue_dummy.reindex(yearly_costs.index)
+    revenue_series = revenue_series.T
+
+    for i in revenue_series.columns:
+        if i < start_year:
+            revenue_series[i] = np.zeros(revenue_series.shape[0])
+
+    revenue_series = revenue_series.T
+
+    return revenue_series
+
 
 
 def get_npv(yearly_costs,
