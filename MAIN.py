@@ -103,14 +103,16 @@ npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
 #%% ==========================================
 # find minimum npv and grid search
 
+
+
+#%% =========================================
 rack_interval = rack_num_range[2]-rack_num_range[1]
 
 while rack_interval > 1:
     print(npv)
-    index_min = npv.idxmin()
-    DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] * 1e6
-    new_interval_ratio = rack_interval/index_min/5
-    #%%
+    index_min = npv.idxmax()
+    DCpower_min = index_min * num_of_zones * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
+    new_interval_ratio = rack_interval / index_min / 5
     rack_num_range, module_num_range, gcr_range = func.get_racks(DCpower_min, 1,
                                                                  module_params, rack_params,
                                                                  zone_area, new_interval_ratio)
@@ -122,6 +124,7 @@ while rack_interval > 1:
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
     npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
+
 
 
 
