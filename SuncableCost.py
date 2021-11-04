@@ -280,6 +280,8 @@ def fill_random_data (parameters_file, ID_name, ID_value, parameter_name, dist_t
     if dist_type == 'two_half_log_normal':
         # this means a two-half log-normal distribution
         output_data[parameter_name] = output_data[parameter_name].apply(generate_log_normal_apply, args=(nom_in, low_in, high_in))
+        if 0 in output_data.index:
+            output_data.loc[0,parameter_name] = nom_in
 
 def generate_log_normal(nom, low, hi):
     if nom == 0:
