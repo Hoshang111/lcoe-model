@@ -102,6 +102,24 @@ else:
 # %% =========================================
 # Assign the results of sat to annual_yield_sat and assign the results of mav to annual_yield_mav
 
+# Plotting
+fig, ax = plt.subplots(figsize=(25, 20))
+labels = round(gcr_range, 2)
+x = np.arange(11)
+ax.bar(x, annual_yield_sat, label='SAT')
+ax.bar(x[-1] + 1, annual_yield_mav, label='MAV')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.set_ylabel('Annual yield (GWh)', **fontdict)
+ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
+ax.grid(b=True, which='major', color='gray', linestyle='-')
+ax.legend()
+plt.show()
+
+# %%
+figname='Annual yield comparison'
+path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
+plt.savefig(path,dpi=300,bbox_inches='tight')
 
 
 #%% ==========================================
