@@ -128,10 +128,10 @@ def get_racks(DCTotal,
 
         Returns
         -------
-        rack_num_range: pd.series
+        rack_per_zone_num_range: pd.series
             A range of values for number of racks
 
-        module_num_range: pd.series
+        module_per_zone_num_range: pd.series
             A range of values for number of modules (based on the number of racks)
 
         gcr_range: pd.series
@@ -144,32 +144,36 @@ def get_racks(DCTotal,
     # Rack interval needs to be equal of greater than 1
     if rack_interval < 1:
         rack_interval = 1
-    rack_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init + 6 * rack_interval,
-                                     rack_interval))
+    rack_per_zone_num_range = pd.Series(range(rack_per_zone_init - 5 * rack_interval, rack_per_zone_init +
+                                              6 * rack_interval, rack_interval))
 
     # Drop any negative values which may result due to inappropriate rack_interval_ratio input
-    rack_num_range.drop(rack_num_range.index[(rack_num_range < 0)], inplace=True)
-    rack_num_range = rack_num_range.reindex()
+    rack_per_zone_num_range.drop(rack_per_zone_num_range.index[(rack_per_zone_num_range < 0)], inplace=True)
+    rack_per_zone_num_range = rack_per_zone_num_range.reindex()
 
-
-    module_num_range = rack_num_range * rack_params['Modules_per_rack']
+    module_per_zone_num_range = rack_per_zone_num_range * rack_params['Modules_per_rack']
 
     # Raise an error if any of the gcr_range is more than 1.
     if rack_params['rack_type'] == 'SAT':
-        gcr_range = module_params['A_c']*module_num_range/zone_area
+        gcr_range = module_params['A_c']*module_per_zone_num_range/zone_area
     elif rack_params['rack_type'] == 'east_west':
-        gcr_range = rack_num_range*rack_params['Area'] * np.cos(10 * np.pi/180)/zone_area  # multiply by cos(10)
+        gcr_range = []  # in east west (MAV) gcr is not relevant at this stage
+    elif rack_params['rack_type'] == 'east_west_future':  # if we start taking inter-row spacing into acount for mav
+                                                         # in the future
+        gcr_range = rack_per_zone_num_range * rack_params['Area'] * np.cos(10 * np.pi / 180) / zone_area  # multiply by cos(10)
     else:
         raise ValueError('unrecognised rack type')
 
-    return rack_num_range, module_num_range, gcr_range
+    return rack_per_zone_num_range, module_per_zone_num_range, gcr_range
 
-def dc_yield(rack_params,
+def dc_yield(DCTotal,
+             rack_params,
              module_params,
              weather_simulation,
-             rack_num_range,
-             module_num_range,
+             rack_per_zone_num_range,
+             module_per_zone_num_range,
              gcr_range,
+             num_of_zones,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
              num_of_module_per_string=30,
@@ -181,6 +185,9 @@ def dc_yield(rack_params,
 
         Parameters
         ----------
+        DCTotal: numeric
+            Total DC rated power of the simulated solar farm in MW
+
         rack_params: Dataframe
             rack parameters for the array
 
@@ -190,20 +197,23 @@ def dc_yield(rack_params,
         weather_simulation : Dataframe
             weather data to be used for simulations
 
-        rack_num_range: pandas series
-            possible number of racks for the given DC size
+        rack_per_zone_num_range: pandas series
+            possible number of racks per zone
 
-        module_num_range: pandas series
-            possible number of modules for the given DC size
+        module_per_zone_num_range: pandas series
+            possible number of modules per zone
 
         gcr_range: pandas series
             possible number of ground coverage ratio (gcr) for the given DC size. This info is more relevant for the
             single axis tracking (SAT) simulations
 
+        num_of_zones: Int
+            number of zones withing the simulated DC farm
+
         num_of_mav_per_inverter: Int
             number of 5B Mavericks per inverter, currently set to 4
 
-        num_of_mav_per_inverter: Int
+        num_of_sat_per_inverter: Int
             number of single axis tracker (SAT) per inverter, currently set to 4
 
         num_of_module_per_string: Int
@@ -229,8 +239,9 @@ def dc_yield(rack_params,
 
         # Inverter (this part finds an inverter from the CEC list that matches the DC output of the system)
         num_of_mod_per_inverter = num_of_mav_per_inverter * rack_params['Modules_per_rack']
-        dc_rated_power = module_params[
-                             'STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
+        # in kW rated DC power output per inverter
+        dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter
+
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
         inverter_list = pvsystem.retrieve_sam('cecinverter')
@@ -271,19 +282,16 @@ def dc_yield(rack_params,
         inverter_mav_system = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
 
         # Model-Chain
-
         # Todo: We can try different angle of irradiance (aoi) models down the track
         mc = ModelChain(inverter_mav_system, location, aoi_model='ashrae')
         # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 
         mc.run_model(weather_simulation)
-
-        # For different number of modules given in module_num_range, find the total DC output and store in a list
-        dc_results = []
-
-        for module_num in module_num_range:
-            multiplication_coeff = module_num/num_of_mod_per_inverter
-            dc_results.append((mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff)
+        total_module_number = round(DCTotal/(module_params['STC'] / 1e6))
+        # Find the total DC output for the given DC size/total module number
+        # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
+        multiplication_coeff = total_module_number/num_of_mod_per_inverter
+        dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -311,8 +319,8 @@ def dc_yield(rack_params,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
         dc_results = []
-        # TODO IMPORTANT: WITH THE SAT DESIGN, DO WE KNOW HOW MANY MODULES PER SAT/ HOW MANY SAT PER INVERTER
-        for gcr, module_num in zip(gcr_range, module_num_range):
+
+        for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
             mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
                                                     module_height=2)
@@ -323,22 +331,21 @@ def dc_yield(rack_params,
                                        modules_per_string=num_of_module_per_string,
                                        strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
-
             inverter_sat_system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            multiplication_coeff = module_num/(num_of_sat_per_inverter * rack_params['Modules_per_rack'])
+            multiplication_coeff = module_num * num_of_zones/num_of_mod_per_inverter
             dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
         # Todo: we can try different back-tracking algorithms for SAT as well
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
     dc_df = pd.DataFrame(dc_results).T
-    dc_df.columns = rack_num_range
+    dc_df.columns = rack_per_zone_num_range
 
     return dc_results, dc_df
 
+    # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
 
-    # The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
-    # Todo: make sure to check consistency between the TMY data that are used for simulations.
+

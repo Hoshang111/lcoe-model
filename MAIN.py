@@ -45,15 +45,32 @@ import numpy as np
 import Simulation_functions as func
 import airtable
 import sizing
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-# ======================================
+# mpl.use('Qt5Agg')
+# mpl.use('TkAgg')
+
+
+# ================== Global parameters for fonts & sizes =================
+font_size = 30
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+      'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
+
+# For label titles
+fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
+# can add in above dictionary: 'verticalalignment': 'baseline'
+
+
+# %%
 # Weather
 simulation_years = [2018, 2019, 2020]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
 
-#%% ======================================
+# %% ======================================
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'Jinko_JKM575M_7RL4_TV_PRE'  # Enter one of the modules from the SunCable module database
@@ -69,9 +86,20 @@ rack_interval_ratio = 0.04
 rack_num_range, module_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params, rack_params,
                                                              zone_area, rack_interval_ratio)
 
-#%% ========================================
+# %% ========================================
 # DC yield
-dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range, gcr_range)
+dc_results = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
+                               module_per_zone_num_range, gcr_range, num_of_zones)
+
+if rack_type == '5B_MAV':
+    annual_yield = dc_results.sum()/1e9  # annual yield in GWh
+else:
+    annual_yield = np.array([y.sum()/1e9 for y in dc_results])  # annual yield in GWh
+    annual_yield_per_module = annual_yield * 1e6 / module_per_zone_num_range / num_of_zones  # annual yield per module in kWh
+
+
+# %% =========================================
+# Assign the results of sat to annual_yield_sat and assign the results of mav to annual_yield_mav
 
 
 
@@ -81,24 +109,19 @@ export_lim = 3.2e6/num_of_zones
 storage_capacity = 4e7
 direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
 
-
-
-
 #%% ==========================================
 # Cost
 cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
-
-
-#%% ==========================================
+# ==========================================
 # Net present value (NPV)
 # resize yield output to match cost time series
 
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
+# ==========================================
 npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, revenue_series)
-
 
 
 #%% ==========================================
