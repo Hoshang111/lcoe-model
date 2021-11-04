@@ -36,20 +36,28 @@ if option_use_custom_scenarios:
 
 
 if option_use_monte_carlo:
-    data_tables_iter = SunCost.create_iteration_tables(data_tables, 50, iteration_start=0)
+    data_tables_iter = SunCost.create_iteration_tables(data_tables, 500, iteration_start=0)
+    print('Iterations generated')
     outputs_iter = SunCost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
-
+    print('outputs calculated')
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
     # Basic graph for quick cross-check
 
     for (scenarios, title) in [
         # (['1'], 'MAV 14.4GW 2024'),(['2'],'SAT 10.5GW 2024'),(['3'],'MAV 14.4GW 5 yrs'),
-        (['4'], 'SAT 10.5GW 5 yrs')
+        (['3','4'], 'SAT 10.5GW 5 yrs')
     ]:
         scenario_costs_iter = total_cost_y_iter[total_cost_y_iter['ScenarioID'].isin(scenarios)]
         scenario_costs_by_year_iter = pd.pivot_table(scenario_costs_iter, values='TotalCostAUDY', index=['Iteration','Year'], aggfunc=np.sum,
                                                 columns=['CostCategory_ShortName'])
+        scenario_costs_total_nodiscount = pd.pivot_table(scenario_costs_iter, values='TotalCostAUDY', index=['Iteration'], aggfunc=np.sum,
+                                                columns=['ScenarioID'])
+        scenario_costs_total_nodiscount.plot.hist(bins=50,histtype='step')
+        plt.show()
+        print(scenario_costs_total_nodiscount.loc[0, :])
+
+
         scenario_costs_by_year_iter[scenario_costs_by_year_iter['Iteration']==0].plot.bar(stacked=True, title='Total Costs by Year - ' + title)
         plt.show()
 
