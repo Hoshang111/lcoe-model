@@ -218,10 +218,14 @@ def get_npv(yearly_costs,
 
     YearlyFactor = 1 / (1 + discount_rate) ** Yearoffset
     YearlyNPV = net_cashflow.mul(YearlyFactor, axis=0)
+    Yearly_NPV_costs = yearly_costs.mul(YearlyFactor, axis=0)
+    Yearly_NPV_revenue = yearly_revenue.mul(YearlyFactor, axis=0)
 
     NPV = YearlyNPV.sum(axis=0)
+    NPV_costs = Yearly_NPV_costs.sum(axis=0)
+    NPV_revenue = Yearly_NPV_revenue.sum(axis=0)
 
-    return NPV, YearlyNPV
+    return NPV, YearlyNPV, NPV_costs, NPV_revenue
 
 
 

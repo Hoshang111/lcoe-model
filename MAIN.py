@@ -45,6 +45,7 @@ import numpy as np
 import Simulation_functions as func
 import airtable
 import sizing
+import matplotlib.pyplot as plt
 
 # ======================================
 # Weather
@@ -61,9 +62,9 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 # %%
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 2000  # DC size in MW
-num_of_zones = 100  # Number of smaller zones that will make up the solar farm
-zone_area = 2e5   # Area in m2
+DCTotal = 10000  # DC size in MW
+num_of_zones = 267  # Number of smaller zones that will make up the solar farm
+zone_area = 4.1e5   # Area in m2
 rack_interval_ratio = 0.04
 rack_num_range, module_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params, rack_params,
                                                              zone_area, rack_interval_ratio)
@@ -96,40 +97,37 @@ component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outp
 
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
-npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
+npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 
 
 #%% ==========================================
 # find minimum npv and grid search
 
-
-
-#%% =========================================
 rack_interval = rack_num_range[2]-rack_num_range[1]
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 
 while rack_interval > 1:
     print(npv)
+    ax1.scatter(rack_num_range, npv)
+    ax2.scatter(rack_num_range, gcr_range)
+    ax3.scatter(rack_num_range, npv_cost)
+    ax3.scatter(rack_num_range, npv_revenue)
     index_min = npv.idxmax()
-    DCpower_min = index_min * num_of_zones * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
+    DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
     new_interval_ratio = rack_interval / index_min / 5
     rack_num_range, module_num_range, gcr_range = func.get_racks(DCpower_min, 1,
                                                                  module_params, rack_params,
                                                                  zone_area, new_interval_ratio)
     rack_interval = rack_num_range[2] - rack_num_range[1]
-    dc_results = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range,
-                               gcr_range)
+    dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range,
+                                      gcr_range)
     direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
     cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-    npv, yearly_npv = sizing.get_npv(cash_flow_by_year, revenue_series)
+    npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, revenue_series)
 
-
-
-
-
-
-
+plt.show()
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
