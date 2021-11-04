@@ -83,13 +83,14 @@ DCTotal = 10000  # DC size in MW
 num_of_zones = 267  # Number of smaller zones that will make up the solar farm
 zone_area = 4.1e5   # Area in m2
 rack_interval_ratio = 0.04
-rack_num_range, module_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params, rack_params,
-                                                             zone_area, rack_interval_ratio)
+rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
+                                                                               rack_params, zone_area,
+                                                                               rack_interval_ratio)
 
 # %% ========================================
 # DC yield
 dc_results = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
-                               module_per_zone_num_range, gcr_range, num_of_zones)
+                           module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
     annual_yield = dc_results.sum()/1e9  # annual yield in GWh
@@ -111,7 +112,7 @@ direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_
 
 #%% ==========================================
 # Cost
-cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
+cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
 # ==========================================
@@ -127,7 +128,7 @@ npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, reven
 #%% ==========================================
 # find minimum npv and grid search
 
-rack_interval = rack_num_range[2]-rack_num_range[1]
+rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 
 while rack_interval > 1:
