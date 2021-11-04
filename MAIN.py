@@ -89,7 +89,7 @@ rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(D
 
 # %% ========================================
 # DC yield
-dc_results = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
+dc_results, dc_df = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
                            module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
@@ -151,19 +151,19 @@ fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 
 while rack_interval > 1:
     print(npv)
-    ax1.scatter(rack_num_range, npv)
-    ax2.scatter(rack_num_range, gcr_range)
-    ax3.scatter(rack_num_range, npv_cost)
-    ax3.scatter(rack_num_range, npv_revenue)
-    index_min = npv.idxmax()
-    DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
+    ax1.scatter(rack_num_per_zone_range, npv)
+    ax2.scatter(rack_num_per_zone_range, gcr_range)
+    ax3.scatter(rack_num_per_zone_range, npv_cost)
+    ax3.scatter(rack_num_per_zone_range, npv_revenue)
+    index_max = npv.idxmax()
+    DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
     new_interval_ratio = rack_interval / index_min / 5
-    rack_num_range, module_num_range, gcr_range = func.get_racks(DCpower_min, 1,
+    rack_num_per_zone_range, module_num_per_zone_range, gcr_range = func.get_racks(DCpower_min, 1,
                                                                  module_params, rack_params,
                                                                  zone_area, new_interval_ratio)
-    rack_interval = rack_num_range[2] - rack_num_range[1]
-    dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_range, module_num_range,
-                                      gcr_range)
+    rack_interval = rack_num_per_zone_range[2] - rack_num_per_zone_range[1]
+    dc_results, dc_df = func.dc_yield(rack_params, module_params, weather_simulation, rack_num_per_zone_range,
+                                      module_num_per_zone_range, gcr_range)
     direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.04, storage_capacity)
     cost_outputs = sizing.get_costs(rack_num_range, rack_params, module_params)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
