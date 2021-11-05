@@ -292,7 +292,8 @@ def dc_yield(DCTotal,
         # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
         multiplication_coeff = total_module_number/num_of_mod_per_inverter
         dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
-
+        dc_size = total_module_number * module_params['STC'] / 1e6  # dc_size in MW
+        dc_df = pd.DataFrame(dc_results)
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
 
@@ -319,7 +320,7 @@ def dc_yield(DCTotal,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
         dc_results = []
-
+        dc_size = []
         for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
             mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
@@ -337,14 +338,16 @@ def dc_yield(DCTotal,
             mc.run_model(weather_simulation)
             multiplication_coeff = module_num * num_of_zones/num_of_mod_per_inverter
             dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
+            dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
         # Todo: we can try different back-tracking algorithms for SAT as well
+        dc_df = pd.DataFrame(dc_results).T
+        dc_df.columns = rack_per_zone_num_range
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-    dc_df = pd.DataFrame(dc_results).T
-    dc_df.columns = rack_per_zone_num_range
 
-    return dc_results, dc_df
+
+    return dc_results, dc_df, dc_size
 
     # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
 
