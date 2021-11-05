@@ -66,7 +66,7 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 # %%
 # Weather
-simulation_years = [2018, 2019, 2020]
+simulation_years = [2019]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
 
@@ -79,28 +79,29 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 # %%
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 10000  # DC size in MW
-num_of_zones = 267  # Number of smaller zones that will make up the solar farm
-zone_area = 4.1e5   # Area in m2
+DCTotal = 1000  # DC size in MW
+num_of_zones = 50  # Number of smaller zones that will make up the solar farm
+zone_area = 2.1e5   # Zone Area in m2
 rack_interval_ratio = 0.04
 rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
-                                                                               rack_params, zone_area,
-                                                                               rack_interval_ratio)
+                                                                             rack_params, zone_area, rack_interval_ratio)
 
 # %% ========================================
 # DC yield
-dc_results = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
+dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
                            module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
     annual_yield = dc_results.sum()/1e9  # annual yield in GWh
+    annual_yield_mav = annual_yield.copy()
 else:
     annual_yield = np.array([y.sum()/1e9 for y in dc_results])  # annual yield in GWh
     annual_yield_per_module = annual_yield * 1e6 / module_per_zone_num_range / num_of_zones  # annual yield per module in kWh
-
+    annual_yield_sat = annual_yield.copy()
 
 # %% =========================================
 # Assign the results of sat to annual_yield_sat and assign the results of mav to annual_yield_mav
+
 
 # Plotting
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -114,13 +115,34 @@ ax.set_ylabel('Annual yield (GWh)', **fontdict)
 ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
 ax.grid(b=True, which='major', color='gray', linestyle='-')
 ax.legend()
+
+ax2 = ax.twinx()
+ax2.plot(dc_size, '*-', color= 'red')
+ax2.set_ylabel('DC rated of the system (MW)', **fontdict)
+ax2.set_ylim(DCTotal*0.6, DCTotal*1.4)
+# dc_size.append(DCTotal)
 plt.show()
 
 # %%
-figname='Annual yield comparison'
+# Plotting per module output for SAT
+fig, ax = plt.subplots(figsize=(25, 20))
+labels = round(gcr_range, 2)
+x = np.arange(11)
+ax.bar(x, annual_yield_sat/module_per_zone_num_range/num_of_zones * 1e6, label='SAT')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.set_ylabel('Annual yield per module(kWh)', **fontdict)
+ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
+ax.grid(b=True, which='major', color='gray', linestyle='-')
+ax.legend()
+ax.set_ylabel()
+
+plt.show()
+
+# %%
+figname='Annual yield comparison_with size'
 path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
 plt.savefig(path,dpi=300,bbox_inches='tight')
-
 
 #%% ==========================================
 # Revenue and storage behaviour
