@@ -63,7 +63,6 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 # can add in above dictionary: 'verticalalignment': 'baseline'
 
-
 # %%
 # Weather
 simulation_years = [2019]
@@ -88,8 +87,9 @@ rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(D
 
 # %% ========================================
 # DC yield
-dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, weather_simulation, rack_per_zone_num_range,
-                           module_per_zone_num_range, gcr_range, num_of_zones)
+temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
+dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
+                                           rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
     annual_yield = dc_results.sum()/1e9  # annual yield in GWh
