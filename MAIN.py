@@ -45,6 +45,7 @@ import numpy as np
 import Simulation_functions as func
 import airtable
 import sizing
+import PyQt5
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
@@ -135,15 +136,28 @@ ax.set_ylabel('Annual yield per module(kWh)', **fontdict)
 ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
 ax.grid(b=True, which='major', color='gray', linestyle='-')
 ax.legend()
-ax.set_ylabel()
+# ax.set_ylabel()
 
+plt.show()
+# %%
+# Plotting performance difference between temperature models
+
+fig, ax = plt.subplots(figsize=(25, 20))
+x = np.arange(2)
+ax.bar(x, [annual_yield_sapm, annual_yield_pvsyst])
+ax.set_xticks(x)
+ax.set_xticklabels(['Sandia', 'PVSyst'], **fontdict)
+ax.set_ylabel('Annual yield (GWh)', **fontdict)
+ax.text(x[0], annual_yield_sapm + 50, str(np.round(annual_yield_sapm,0)))
+ax.text(x[1], annual_yield_pvsyst + 50, str(np.round(annual_yield_pvsyst,0)))
+ax.set_title('Annual yield for 1GW east-west calculated with different temperature models', **fontdict)
 plt.show()
 
 # %%
 figname='Annual yield comparison_with size'
-path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
-plt.savefig(path,dpi=300,bbox_inches='tight')
-
+path="C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures" + figname
+# path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
+plt.savefig(path, dpi=300, bbox_inches='tight')
 
 #%% ==========================================
 # Revenue and storage behaviour
