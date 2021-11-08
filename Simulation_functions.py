@@ -169,6 +169,7 @@ def get_racks(DCTotal,
 def dc_yield(DCTotal,
              rack_params,
              module_params,
+             temp_model,
              weather_simulation,
              rack_per_zone_num_range,
              module_per_zone_num_range,
@@ -193,6 +194,9 @@ def dc_yield(DCTotal,
 
         module_params : Dataframe
             module parameters for the array
+
+        temp_model : str
+            temperature model for calculating module temperature: Sandia ('sapm) or PVSyst ('pvsyst')
 
         weather_simulation : Dataframe
             weather data to be used for simulations
@@ -234,6 +238,14 @@ def dc_yield(DCTotal,
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
 
+    # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
+    if temp_model == 'sapm':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+    elif temp_model == 'pvsyst':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
+    else:
+        raise ValueError ('Please choose temperature model as Sandia: or PVSyst')
+
     if rack_params['rack_type'] == 'east_west':
         ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
 
@@ -260,9 +272,6 @@ def dc_yield(DCTotal,
         module_tilt = rack_params['tilt']
         mount1 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
         mount2 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
-
-        # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
-        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
 
         # Define two arrays resembling Maverick design: one east facing & one west facing
         # For now we are designing at the inverter level with 4 MAVs per inverter. Half of the array is assigned with
@@ -317,8 +326,6 @@ def dc_yield(DCTotal,
         else:
             inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
 
-        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-
         dc_results = []
         dc_size = []
         for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
@@ -344,8 +351,6 @@ def dc_yield(DCTotal,
         dc_df.columns = rack_per_zone_num_range
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
-
-
 
     return dc_results, dc_df, dc_size
 
