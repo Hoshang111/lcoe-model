@@ -12,6 +12,7 @@ pvlib = {git = "https://github.com/yildizba/pvlib-python.git"}
 airtable = "^0.4.8"
 pydantic = "^1.8.2"
 pytest = "^6.2.5"
+PyQt5 = "^5.15.6"
 [tool.poetry.dev-dependencies]
 
 [build-system]
