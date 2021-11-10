@@ -4,11 +4,12 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 ### Yield
 
-* *Simple modelling of Mavs (1 east, 1 west-facing array, separate)* **(Baran)**
+* Simple modelling of Mavs (1 east, 1 west-facing array, separate) **done**
+* *Benchmarking* **(Baran)**
 * Tracking Algorithms
 * Tracking for different rows
-* Future module database **(Phill)**
-* Thermal modelling and effects
+* *Future module database* **(Phill)**
+* *Thermal modelling and effects* **(Baran, Ruby)**
 * Monte-Carlo Analysis
 * Soiling
 * Incident angle modifiers
@@ -19,15 +20,17 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 * Failure/Downtime
   * Monte-Carlo input
   * Distinguish failures from degradation?
-* *Degradation* **(Jono)**
+* Degradation **on hold**
 
 ### Cost
 * Probabilistic Analysis - ID alternative methods **(Nathan)**
+* *Update costs with EPC input* **(Alwyn, Nathan)**
 * Add option to import from excel rather than airtable - faster for debugging **(Nathan - DONE)**
 
 ### Interface
-* Send and recieve SCOPTI inputs / outputs.
-* *Iterative Layout / Equipment Specification* **(Phil)**
+* *Send and recieve SCOPTI inputs / outputs.* **(Phill,Baran,Alwyn)**
+* Iterative Layout / Equipment Specification **done**
+* Battery operation and revenue generation
  
 
 ### Inputs
