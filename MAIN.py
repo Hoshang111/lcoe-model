@@ -79,9 +79,9 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 # %%
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 8000  # DC size in MW
-num_of_zones = 267  # Number of smaller zones that will make up the solar farm
-zone_area = 4.1e5   # Zone Area in m2
+DCTotal = 11000  # DC size in MW
+num_of_zones = 1068  # Number of smaller zones that will make up the solar farm
+zone_area = 1e5   # Zone Area in m2
 rack_interval_ratio = 0.04
 rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
                                                                              rack_params, zone_area, rack_interval_ratio)
