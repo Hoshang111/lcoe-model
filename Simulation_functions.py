@@ -343,7 +343,7 @@ def dc_yield(DCTotal,
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            multiplication_coeff = module_num * num_of_zones/num_of_mod_per_inverter
+            multiplication_coeff = module_num / num_of_mod_per_inverter
             dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
             dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
         # Todo: we can try different back-tracking algorithms for SAT as well
