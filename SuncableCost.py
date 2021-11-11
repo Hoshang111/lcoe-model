@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 import math
 import random as rd
+import numbers
+import matplotlib.pyplot as plt
+from scipy import stats
 
 data_file_location = '.\\outputs\\'
 log_file_location = '.\\AirtableLogs\\'
@@ -101,15 +104,17 @@ def import_excel_data(excel_file_name):
     costcategory_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),sheet_name='CostCategoryList',index_col=0)
     return scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list
 
-def create_iteration_tables(input_tables, num_iterations, iteration_start=0):
+def create_iteration_tables(input_tables, num_iterations, iteration_start=0 ):
     scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = input_tables
 
     scenario_iter = generate_iterations(scenario_list, index_name='ScenarioID',
                                                     index_description='Scenario_Tag', num_iterations=num_iterations,
                                                     iteration_start=iteration_start)
+
     scenario_system_iter = generate_iterations(scenario_system_link, index_name='ScenarioSystemID',
                                                     index_description='ScenarioSystemID', num_iterations=num_iterations,
                                                     iteration_start=iteration_start)
+
     system_iter = generate_iterations(system_list, index_name='SystemID',
                                                     index_description='SystemID', num_iterations=num_iterations,
                                                     iteration_start=iteration_start)
@@ -126,7 +131,24 @@ def create_iteration_tables(input_tables, num_iterations, iteration_start=0):
                                         index_description='CostCategoryID', num_iterations=num_iterations,
                                         iteration_start=iteration_start)
 
+
     return scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter
+
+def generate_parameters (data_tables_iter):
+    scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter = data_tables_iter
+    parameters = []
+    for (iteration_list, listid) in [
+        (scenario_iter, 'ScenarioID'),
+        (scenario_system_iter, 'ScenarioSystemID'),
+        (system_iter, 'SystemID'),
+        (system_component_iter, 'SystemComponentID'),
+        (component_iter, 'ComponentID'),
+        (currency_iter, 'CurrencyID'),
+        (costcategory_iter, 'CostCategoryID')
+    ]:
+        parameters = form_heirarchical_parameter_list(iteration_list, listid).join(parameters)
+
+    return parameters
 
 def generate_iterations(input_parameter_list, index_name, index_description, num_iterations, iteration_start=0, default_dist_type=None, skip_list=[],verbose=False):
     # First identify what parameters need data to be generated
@@ -235,6 +257,41 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
     output_table = output_table.reset_index()
     return output_table
 
+def form_heirarchical_parameter_list(input_iteration_list, index_name, index_descriptor = 'none', ID_filter='none',parameter_filter='none'):
+    internal_df = input_iteration_list.copy()
+    if not ID_filter == 'none':
+        internal_df = internal_df[internal_df[index_name].isin(filter)]
+    if not parameter_filter=='none':
+        internal_df = internal_df.loc[:,parameter_filter + ['Iteration',index_name]]
+
+    if index_descriptor != 'none':
+        internal_df[index_name] = internal_df[index_name].astype(str) + ': ' + internal_df[index_descriptor]
+
+    internal_df = internal_df.rename(columns = {index_name:'ID'})
+    output_df = internal_df.pivot(columns='ID',index='Iteration')
+    output_df.columns.names = ['VariableName','ID']
+    # add the index as the grouping ID
+    output_df = pd.concat([output_df], keys=[index_name], names=['GroupingID'],axis=1)
+    output_df = output_df.swaplevel(i=-2, j=-1, axis=1)
+    # If we want to remove any parameters that do not change, we can do so, but this is not a good idea.
+    print(index_name)
+    print(output_df.head())
+    remove_fixed(output_df)
+    # We want to remove any str based parameters, as they cannot be used for the contribution to variance analysis.
+    remove_string_variables(output_df)
+    print(output_df.head())
+    print('')
+    return output_df
+
+def remove_string_variables(df):
+    for col in df.columns:
+        if not isinstance(df[col][0], numbers.Number):
+            df.drop(col, inplace=True, axis=1)
+
+def remove_fixed(df):
+    for col in df.columns:
+        if len(df[col].unique()) == 1:
+            df.drop(col, inplace=True, axis=1)
 
 def fill_fixed_data (parameters_file, ID_name, ID_value, parameter_name, output_data, value=None):
     if value is None:
@@ -280,8 +337,10 @@ def fill_random_data (parameters_file, ID_name, ID_value, parameter_name, dist_t
     if dist_type == 'two_half_log_normal':
         # this means a two-half log-normal distribution
         output_data[parameter_name] = output_data[parameter_name].apply(generate_log_normal_apply, args=(nom_in, low_in, high_in))
-        if 0 in output_data.index:
-            output_data.loc[0,parameter_name] = nom_in
+    else:
+        print('**** ERROR - distribution not available')
+    if 0 in output_data.index:
+        output_data.loc[0,parameter_name] = nom_in
 
 def generate_log_normal(nom, low, hi):
     if nom == 0:
@@ -430,8 +489,91 @@ def CalculateScenariosIterations(iteration_input_tables, year_start, analyse_yea
     # Add up total costs per year for each ScenarioID.
     ############################################
 
-    cash_flow_year_iter = pd.pivot_table(combined_cost_usage_iter, values='TotalCostAUDY', index='Year',aggfunc=np.sum,columns='ScenarioID')
+    cash_flow_year_iter = pd.pivot_table(combined_cost_usage_iter, values='TotalCostAUDY', index=['Iteration','Year'],aggfunc=np.sum,columns='ScenarioID')
 
 
     return component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter
+
+
+
+def calculate_variance_contributions(input_factors, cost_result_name, num_table=20, num_graphs=5,
+                                     title=None, short_titles=False, xlabel=None, ylabel=None,
+                                    show_regression=True, show_r=True, show_r2=False
+                                     ):
+
+    # This removes first any input factors with no variation
+    filtered_factors = input_factors.loc[:, (input_factors.std() > 0)]
+
+    correlation_table = filtered_factors.corr()
+
+    correlation_table['variance'] = round((correlation_table[cost_result_name] * correlation_table[cost_result_name])*100,0)
+
+    total_variance = correlation_table['variance'].sum()
+    correlation_table['variance'] = correlation_table['variance'].fillna(0).astype(int)
+
+    input_factor_range = input_factors.describe(percentiles=(0.1,0.5, 0.9)).T.loc[:, ['10%','50%' ,'90%']].round(2)
+    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(str)
+
+    correlation_table['range'] = input_factor_range['range']
+    correlation_table['10th percentile'] = input_factor_range['10%']
+    correlation_table['50th percentile'] = input_factor_range['50%']
+    correlation_table['90th percentile'] = input_factor_range['90%']
+
+    print('Total Variance sum (should be 2.0) = ', total_variance)
+
+    print(correlation_table.sort_values(
+        by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table))
+
+    #Graph scatterplot:
+    parameter_list = correlation_table.sort_values(by='variance', ascending=False).loc[:,
+                     [cost_result_name, 'variance']].head(num_graphs + 1).index
+    print(parameter_list)
+    parameter_description_list = zip(parameter_list, parameter_list)
+    print(parameter_description_list)
+
+    for (parameter,label) in parameter_description_list:
+        print(parameter)
+        print(label)
+        if parameter != cost_result_name:
+            plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
+            if title is None:
+                if short_titles:
+                    this_title = 'Correlation to ' + cost_result_name
+                else:
+                    this_title = 'Impact of ' + str(parameter) + ' on ' + cost_result_name
+            plt.title(this_title)
+            if xlabel is None:
+                if short_titles:
+                    this_xlabel = str(label)
+                else:
+                    this_xlabel = 'Input Factor: ' + str(label)
+            else:
+                this_xlabel=xlabel
+            plt.xlabel(this_xlabel)
+            if ylabel is None:
+                if short_titles:
+                    this_ylabel = cost_result_name
+                else:
+                    this_ylabel='Output Factor: ' + cost_result_name
+            plt.ylabel(this_ylabel)
+
+            if show_regression:
+                slope, intercept, r_value, p_value, std_err = stats.linregress(input_factors[parameter],
+                                                                               input_factors[cost_result_name])
+
+                xmin, xmax = plt.xlim()
+                ymin = slope * xmin + intercept
+                ymax = slope * xmax + intercept
+
+                plt.annotate('',xy=(xmin,ymin),xycoords='data',xytext=(xmax,ymax),textcoords='data',arrowprops=dict(arrowstyle="-"))
+
+                if show_r:
+                    text = 'r = {0:.2f}'.format(r_value)
+                if show_r2:
+                    r2_value = r_value * r_value
+                    text = text + '\nr$^2$ = {0:.2f}'.format(r2_value)
+                plt.annotate(text, xy=(0.5,0.5), fontsize=20, xycoords='figure fraction')
+
+            plt.show()
+
 
