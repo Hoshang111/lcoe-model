@@ -45,24 +45,9 @@ import numpy as np
 import Simulation_functions as func
 import airtable
 import sizing
-import PyQt5
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+import Plotting as plot_func
 
-# mpl.use('Qt5Agg')
-# mpl.use('TkAgg')
-
-
-# ================== Global parameters for fonts & sizes =================
-font_size = 30
-rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
-      'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
-plt.rcParams.update(**rc)
-plt.rc('font', weight='bold')
-
-# For label titles
-fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
-# can add in above dictionary: 'verticalalignment': 'baseline'
+# TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
 
 # %%
 # Weather
@@ -100,64 +85,20 @@ else:
     annual_yield_per_module = annual_yield * 1e6 / module_per_zone_num_range / num_of_zones  # annual yield per module in kWh
     annual_yield_sat = annual_yield.copy()
 
-# %% =========================================
-# Assign the results of sat to annual_yield_sat and assign the results of mav to annual_yield_mav
+#%% Plotting
 
+# Un hash the lines below for desired plots...
 
-# Plotting
-fig, ax = plt.subplots(figsize=(25, 20))
-labels = round(gcr_range, 2)
-x = np.arange(11)
-ax.bar(x, annual_yield_sat, label='SAT')
-ax.bar(x[-1] + 1, annual_yield_mav, label='MAV')
-ax.set_xticks(x)
-ax.set_xticklabels(labels)
-ax.set_ylabel('Annual yield (GWh)', **fontdict)
-ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
-ax.grid(b=True, which='major', color='gray', linestyle='-')
-ax.legend()
+# plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
 
-ax2 = ax.twinx()
-ax2.plot(dc_size, '*-', color= 'red')
-ax2.set_ylabel('DC rated of the system (MW)', **fontdict)
-ax2.set_ylim(DCTotal*0.6, DCTotal*1.4)
-# dc_size.append(DCTotal)
-plt.show()
+# plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
 
-# %%
-# Plotting per module output for SAT
-fig, ax = plt.subplots(figsize=(25, 20))
-labels = round(gcr_range, 2)
-x = np.arange(11)
-ax.bar(x, annual_yield_sat/module_per_zone_num_range/num_of_zones * 1e6, label='SAT')
-ax.set_xticks(x)
-ax.set_xticklabels(labels)
-ax.set_ylabel('Annual yield per module(kWh)', **fontdict)
-ax.set_xlabel('Ground coverage ratio (GCR)', **fontdict)
-ax.grid(b=True, which='major', color='gray', linestyle='-')
-ax.legend()
-# ax.set_ylabel()
+# plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
+# and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
 
-plt.show()
-# %%
-# Plotting performance difference between temperature models
-
-fig, ax = plt.subplots(figsize=(25, 20))
-x = np.arange(2)
-ax.bar(x, [annual_yield_sapm, annual_yield_pvsyst])
-ax.set_xticks(x)
-ax.set_xticklabels(['Sandia', 'PVSyst'], **fontdict)
-ax.set_ylabel('Annual yield (GWh)', **fontdict)
-ax.text(x[0], annual_yield_sapm + 50, str(np.round(annual_yield_sapm,0)))
-ax.text(x[1], annual_yield_pvsyst + 50, str(np.round(annual_yield_pvsyst,0)))
-ax.set_title('Annual yield for 1GW east-west calculated with different temperature models', **fontdict)
-plt.show()
-
-# %%
-figname='Annual yield comparison_with size'
-path="C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures" + figname
-# path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
-plt.savefig(path, dpi=300, bbox_inches='tight')
+# fig_name =  #  enter the figure name
+# save_path = "C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
+# plot_func.plot_save(fig_name, save_path)
 
 #%% ==========================================
 # Revenue and storage behaviour
