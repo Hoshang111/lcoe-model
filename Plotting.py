@@ -19,6 +19,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 # can add in above dictionary: 'verticalalignment': 'baseline'
 
 # %% =======================================
+
+
 def plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size):
     """
         Function to plot the DC yield of 5B-MAV and SAT 1 (for difference gcr)
