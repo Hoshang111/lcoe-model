@@ -302,10 +302,12 @@ def dc_yield(DCTotal,
         multiplication_coeff = total_module_number/num_of_mod_per_inverter
         dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         dc_size = total_module_number * module_params['STC'] / 1e6  # dc_size in MW
-        # below is phill meddling to make it work with sizing functions
-        dc_per_rack = dc_results/total_module_number*rack_params['Modules_per_rack']
-        dc_df = pd.DataFrame(index=dc_results.index, columns=rack_per_zone_num_range)
 
+        # Converting MAV DC results to fit SAT results according to module_per_zone_num_range
+        dc_results_range = [dc_results.values/total_module_number * m * num_of_zones for m in module_per_zone_num_range]
+        dc_df = pd.DataFrame(dc_results_range).T
+        dc_df.columns = rack_per_zone_num_range
+        dc_df.set_index(dc_results.index, inplace=True, drop=True)
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -359,5 +361,6 @@ def dc_yield(DCTotal,
     return dc_results, dc_df, dc_size
 
     # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
+
 
 
