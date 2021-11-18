@@ -70,7 +70,6 @@ zone_area = 4e5   # Zone Area in m2
 rack_interval_ratio = 0.04
 rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
                                                                              rack_params, zone_area, rack_interval_ratio)
-
 # %% ========================================
 # DC yield
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
