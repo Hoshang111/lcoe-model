@@ -304,7 +304,10 @@ def dc_yield(DCTotal,
         dc_size = total_module_number * module_params['STC'] / 1e6  # dc_size in MW
         # below is phill meddling to make it work with sizing functions
         dc_per_rack = dc_results/total_module_number*rack_params['Modules_per_rack']
-        dc_racks = dc_per_rack*rack_per_zone_num_range
+        dc_rack_df = pd.DataFrame(shape=(len(dc_results),len(rack_per_zone_num_range)))
+        dc_rack_df['0'] = dc_results
+        dc_rack_df.columns=rack_per_zone_num_range
+
         dc_df = pd.DataFrame(dc_racks)
 
     elif rack_params['rack_type'] == 'SAT':
