@@ -307,7 +307,7 @@ def dc_yield(DCTotal,
         dc_results_range = [dc_results.values/total_module_number * m * num_of_zones for m in module_per_zone_num_range]
         dc_df = pd.DataFrame(dc_results_range).T
         dc_df.columns = rack_per_zone_num_range
-        dc_df.set_index(dc_results.index, inplace=True, drop=True)
+
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
