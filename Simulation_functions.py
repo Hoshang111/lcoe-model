@@ -302,7 +302,11 @@ def dc_yield(DCTotal,
         multiplication_coeff = total_module_number/num_of_mod_per_inverter
         dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         dc_size = total_module_number * module_params['STC'] / 1e6  # dc_size in MW
-        dc_df = pd.DataFrame(dc_results)
+        # below is phill meddling to make it work with sizing functions
+        dc_per_rack = dc_results/total_module_number*rack_params['Modules_per_rack']
+        dc_racks = dc_per_rack*rack_per_zone_num_range
+        dc_df = pd.DataFrame(dc_racks)
+
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
 
