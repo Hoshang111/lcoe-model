@@ -157,7 +157,7 @@ def get_racks(DCTotal,
     if rack_params['rack_type'] == 'SAT':
         gcr_range = module_params['A_c']*module_per_zone_num_range/zone_area
     elif rack_params['rack_type'] == 'east_west':
-        gcr_range = []  # in east west (MAV) gcr is not relevant at this stage
+        gcr_range = rack_per_zone_num_range * rack_params['Area'] * np.cos(10 * np.pi / 180) / zone_area  # edited to have values as mucks up later graphs
     elif rack_params['rack_type'] == 'east_west_future':  # if we start taking inter-row spacing into acount for mav
                                                          # in the future
         gcr_range = rack_per_zone_num_range * rack_params['Area'] * np.cos(10 * np.pi / 180) / zone_area  # multiply by cos(10)
