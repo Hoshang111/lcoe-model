@@ -241,6 +241,63 @@ def get_npv(yearly_costs,
 
     return NPV, YearlyNPV, NPV_costs, NPV_revenue, Yearly_NPV_revenue, Yearly_NPV_costs
 
+def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
 
+    """
+    Function to return monte-carlo generated set of cost outputs and data
+    :param num_of_racks:
+    :param rack_params:
+    :param module_params:
+    :param data_tables:
+    :param install_year:
+    :return:
+    """
+    ScenarioList = {'Scenario_Name': num_of_racks,
+                    'ScenarioID': num_of_racks, 'Scenario_Tag': num_of_racks}
+
+    SCNcostdata = pd.DataFrame(ScenarioList, columns=[
+        'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+
+    SystemLinkracks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
+                       'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+    SYScostracks = pd.DataFrame(SystemLinkracks, columns=[
+        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+    SystemLinkfixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, 'InstallNumber': num_of_racks,
+                       'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+    SYScostfixed = pd.DataFrame(SystemLinkfixed, columns=[
+        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+
+    if rack_params['rack_type'] == 'SAT':
+        SYScostracks['SystemID'] = 13
+        SYScostfixed['SystemID'] = 14
+    elif rack_params['rack_type'] == 'east_west':
+        SYScostracks['SystemID'] = 17
+        SYScostfixed['SystemID'] = 19
+
+    SYScostracks['InstallDate'] = install_year
+
+    SYScostfixed['InstallDate'] = install_year
+    SYScostfixed['InstallNumber'] = 1
+
+    SYScostData = SYScostracks.append(SYScostfixed)
+
+    SYScostData['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
+
+    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
+
+    # Replacing some tables from specified inputs
+    new_data_tables = SCNcostdata, SYScostData, system_list, system_component_link, component_list, currency_list, costcategory_list
+
+    # Run iterative monte-carlo analysis for specified system
+    data_tables_iter = SunCost.create_iteration_tables(new_data_tables, 500, iteration_start=0)
+
+    outputs_iter = SunCost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
+
+    component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
+
+    return component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter
 
 

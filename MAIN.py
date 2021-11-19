@@ -154,5 +154,12 @@ while rack_interval > 1:
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 plt.show()
+
+# %% ==========================================================
+# Perform probabalistic analysis: Part 1 - Costs
+racks_per_zone_max = npv.idxmax()
+component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
+    = sizing.get_mcanalysis(rack_per_zone_max, rack_params, module_params, data_tables)
+
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
