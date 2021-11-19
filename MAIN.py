@@ -148,7 +148,7 @@ while rack_interval > 1:
                                                rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                num_of_zones)
     direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.00004, storage_capacity)
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
