@@ -296,15 +296,15 @@ def dc_yield(DCTotal,
         # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 
         mc.run_model(weather_simulation)
-        # total_module_number = round(DCTotal/(module_params['STC'] / 1e6))
+        total_module_number = round(DCTotal/(module_params['STC'] / 1e6))
         # Find the total DC output for the given DC size/total module number
         # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
-        multiplication_coeff = module_per_zone_num_range/num_of_mod_per_inverter
+        multiplication_coeff = total_module_number/num_of_mod_per_inverter
         dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         dc_size = module_per_zone_num_range * module_params['STC'] / 1e6  # dc_size in MW
 
         # Converting MAV DC results to fit SAT results according to module_per_zone_num_range
-        # dc_results_range = [dc_results.values/module_per_zone_num_range * m * num_of_zones for m in module_per_zone_num_range]
+        dc_results_range = [dc_results.values/total_module_number * m for m in module_per_zone_num_range]
         dc_df = pd.DataFrame(dc_results)
         dc_df.columns = rack_per_zone_num_range
         dc_df.index = dc_results.index
