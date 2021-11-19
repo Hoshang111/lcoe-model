@@ -108,7 +108,7 @@ def get_revenue(Yieldseries,
 
     return Yearly_direct, Yearly_storage, Yearly_total
 
-def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
+def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
 
    """
    Function to return a yearly timeseries of costs for installing different numbers of racks
@@ -155,10 +155,10 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    SYScostData['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
 
    # Airtable Import
-   api_key = 'keyJSMV11pbBTdswc'
-   base_id = 'appjQftPtMrQK04Aw'
+   # api_key = 'keyJSMV11pbBTdswc'
+   # base_id = 'appjQftPtMrQK04Aw'
 
-   data_tables = Suncost.import_airtable_data(base_id=base_id, api_key=api_key)
+   # data_tables = Suncost.import_airtable_data(base_id=base_id, api_key=api_key)
    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
 
    # Replacing some tables from specified inputs
@@ -170,6 +170,20 @@ def get_costs(num_of_racks, rack_params, module_params, install_year=2025):
    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = costoutputs
 
    return costoutputs
+
+def get_airtable():
+    """
+
+    :return:
+    """
+
+    # Airtable Import
+    api_key = 'keyJSMV11pbBTdswc'
+    base_id = 'appjQftPtMrQK04Aw'
+
+    data_tables = Suncost.import_airtable_data(base_id=base_id, api_key=api_key)
+
+    return data_tables
 
 
 def align_cashflows(yearly_costs, yearly_revenue, start_year = 2029):
@@ -225,7 +239,7 @@ def get_npv(yearly_costs,
     NPV_costs = Yearly_NPV_costs.sum(axis=0)
     NPV_revenue = Yearly_NPV_revenue.sum(axis=0)
 
-    return NPV, YearlyNPV, NPV_costs, NPV_revenue
+    return NPV, YearlyNPV, NPV_costs, NPV_revenue, Yearly_NPV_revenue, Yearly_NPV_costs
 
 
 

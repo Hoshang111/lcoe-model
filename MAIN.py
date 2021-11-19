@@ -107,7 +107,8 @@ direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_
 
 #%% ==========================================
 # Cost
-cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params)
+data_tables = sizing.get_airtable()
+cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
 #%% ==========================================
@@ -117,7 +118,7 @@ component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outp
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
 # ==========================================
-npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, revenue_series)
+npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 
 #%% ==========================================
@@ -149,7 +150,7 @@ while rack_interval > 1:
     cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-    npv, yearly_npv, npv_cost, npv_revenue = sizing.get_npv(cash_flow_by_year, revenue_series)
+    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
 
 plt.show()
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
