@@ -46,6 +46,7 @@ import Simulation_functions as func
 import airtable
 import sizing
 import Plotting as plot_func
+import matplotlib as plt
 
 # TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
 
