@@ -305,7 +305,7 @@ def dc_yield(DCTotal,
 
         # Converting MAV DC results to fit SAT results according to module_per_zone_num_range
         dc_results_range = [dc_results.values/total_module_number * m for m in module_per_zone_num_range]
-        dc_df = pd.DataFrame(dc_results)
+        dc_df = pd.DataFrame(dc_results_range)
         dc_df.columns = rack_per_zone_num_range
         dc_df.index = dc_results.index
 
