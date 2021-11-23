@@ -84,11 +84,12 @@ def get_revenue(Yieldseries,
                 export_limit,
                 price_schedule,
                 storage_capacity):
-
     """
     Function to determine revenue generation from yield,
     At present very simple, future iterations will need storage
     capacity and operation
+    The function assumes all DC power smaller than export limit is exported and all DC power greater than export limit
+    is stored. This assumption may need to be revisited in the future as per info from SunCable.
     :param Yieldseries:
     :param Trans_limit:
     :param price_schedule:
