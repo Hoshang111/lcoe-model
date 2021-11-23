@@ -1,17 +1,17 @@
 """ This is the main script for the yield assessment. The script calls the functions below to calculate the Net Present Value
 (NPV) of the solar farm
 
-1) Sizing
-Input: DC size of the solar farm
-Output: Configuration in terms of number of single-axis tracking (SAT) racks or 5B Maverick units (MAV)
-
-2) Weather:
+1) Weather:
 Input: Weather file, year of simulation
 Output: Weather dataframe in the required format for PVlib simulatins
 
-3) Racks & modules:
+2) Racks & modules:
 Input: Type of module and rack
 Output: Module and rack parameters required for PVlib PVsystem extracted from the module & rack database
+
+3) Sizing
+Input: DC size of the solar farm
+Output: Configuration in terms of number of single-axis tracking (SAT) racks or 5B Maverick units (MAV)
 
 4) DC/AC Yield:
 Input: number of racks, number of MAVs, weather data, module name, mounting type (optional & future improvement:
@@ -78,7 +78,7 @@ dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, 
                                            rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
-    annual_yield = dc_results.sum()/1e9  # annual yield in GWh
+    annual_yield = np.array([y.sum()/1e9 for y in dc_results]) # annual yield in GWh
     annual_yield_mav = annual_yield.copy()
 else:
     annual_yield = np.array([y.sum()/1e9 for y in dc_results])  # annual yield in GWh
@@ -104,7 +104,9 @@ else:
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
-direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.00004, storage_capacity)
+price_schedule = 0.00004
+direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, price_schedule, storage_capacity)
+
 
 #%% ==========================================
 # Cost
