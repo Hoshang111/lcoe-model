@@ -160,8 +160,12 @@ plt.show()
 # %% ==========================================================
 # Perform probabalistic analysis: Part 1 - Costs
 racks_per_zone_max = npv.idxmax()
+rpzm_series = pd.Series(racks_per_zone_max)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
-    = sizing.get_mcanalysis(racks_per_zone_max, rack_params, module_params, data_tables)
+    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
 
+
+# %% ==========================================================
+# Present data from probabalistic analysis
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
