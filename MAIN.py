@@ -49,7 +49,6 @@ import Plotting as plot_func
 import matplotlib.pyplot as plt
 
 # TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
-
 # %%
 # Weather
 simulation_years = [2019]
@@ -90,30 +89,24 @@ else:
 # Un hash the lines below for desired plots...
 
 # plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
-
 # plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
-
 # plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
 # and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
 
 # fig_name =  #  enter the figure name
 # save_path = "C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
 # plot_func.plot_save(fig_name, save_path)
-
 #%% ==========================================
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
 price_schedule = 0.00004  # 4c/kWh (conversion from Wh to kWh)
 direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, price_schedule, storage_capacity)
-
-
 #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
 cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-
 #%% ==========================================
 # Net present value (NPV)
 # resize yield output to match cost time series
