@@ -172,6 +172,7 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
 
    return costoutputs
 
+
 def get_airtable():
     """
 
