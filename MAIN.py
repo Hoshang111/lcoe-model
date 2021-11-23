@@ -209,6 +209,7 @@ plt.show()
 # %% ==========================================================
 # Present data from probabalistic analysis
 
+cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), columns='Iteration', index='Year')
 
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
