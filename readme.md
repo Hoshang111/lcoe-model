@@ -25,13 +25,17 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 ### Cost
 * Probabilistic Analysis - ID alternative methods **(Nathan)**
 * *Update costs with EPC input* **(Alwyn, Nathan)**
+* *Determine method for aligning future module costs with technologies* **(Nathan, Phill)**
 * Add option to import from excel rather than airtable - faster for debugging **(Nathan - DONE)**
 
+
 ### Interface
-* *Send and recieve SCOPTI inputs / outputs.* **(Phill,Baran,Alwyn)**
+* *Align outputs with SCOPTI* **(Phill,Baran,Alwyn)**
 * Iterative Layout / Equipment Specification **done**
 * Battery operation and revenue generation
- 
+
+### Housekeeping
+* *Sort out poetry conflicts* **(Baran, Luke)**
 
 ### Inputs
 * Design point - accept multi-inputs
