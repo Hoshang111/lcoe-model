@@ -39,14 +39,13 @@ if option_use_monte_carlo:
     parameters_flat = parameters.copy()
     parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in parameters_flat.columns.values]
 
-    parameters_flat.to_csv('parameters_flat.csv')
+    # parameters_flat.to_csv('parameters_flat.csv')
 
     outputs_iter = SunCost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
     print('outputs calculated')
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-    # Basic graph for quick cross-check
-    cash_flow_by_year_iter.to_csv('cash_flow_by_year.csv')
+
 
     # %% Transform cash flow
     # Turn the cash_flow_by_year_iter to a format usable by the sizing module.
@@ -78,7 +77,7 @@ if option_use_monte_carlo:
 
 
 
-    # %% Import
+    # %%
     for (scenarios, title) in [
         # (['1'], 'MAV 14.4GW 2024'),(['2'],'SAT 10.5GW 2024'),(['3'],'MAV 14.4GW 5 yrs'),
         (['3', '4'], 'SAT 10.5GW 5 yrs')

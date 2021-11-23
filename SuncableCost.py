@@ -555,13 +555,13 @@ def calculate_variance_contributions(input_factors, cost_result_name, num_table=
     # Graph scatterplot:
     parameter_list = correlation_table.sort_values(by='variance', ascending=False).loc[:,
                      [cost_result_name, 'variance']].head(num_graphs + 1).index
-    print(parameter_list)
+    # print(parameter_list)
     parameter_description_list = zip(parameter_list, parameter_list)
-    print(parameter_description_list)
+    # print(parameter_description_list)
 
     for (parameter, label) in parameter_description_list:
-        print(parameter)
-        print(label)
+        # print(parameter)
+        # print(label)
         if parameter != cost_result_name:
             plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
             if title is None:
