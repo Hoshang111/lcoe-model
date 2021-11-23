@@ -47,6 +47,8 @@ import airtable
 import sizing
 import Plotting as plot_func
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+# mpl.use('Qt5Agg')
 
 # TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
 # %%
@@ -100,8 +102,8 @@ else:
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
-price_schedule = 0.00004  # 4c/kWh (conversion from Wh to kWh)
-direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, price_schedule, storage_capacity)
+scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
+direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
 #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
@@ -110,15 +112,66 @@ component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outp
 #%% ==========================================
 # Net present value (NPV)
 # resize yield output to match cost time series
-
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
 # ==========================================
 npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
 
+# %% =======================================
+# Simulations to find optimum NPV according to number of racks per zone
 
-#%% ==========================================
-# find minimum npv and grid search
+rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
+num_of_zones_sim = 1  # find the results per zone for now
+scheduled_price = 0.00004
+npv_array = []
+npv_cost_array = []
+npv_revenue_array = []
+gcr_range_array = []
+rack_per_zone_num_range_array = []
+iteration = 1
+
+while rack_interval > 1:
+    print('Max NPV is %d' % npv.max())
+    print('Iteration = %d' % iteration)
+    npv_array.append(npv)
+    npv_cost_array.append(npv_cost)
+    npv_revenue_array.append(npv_revenue)
+    gcr_range_array.append(gcr_range)
+    rack_per_zone_num_range_array.append(rack_per_zone_num_range)
+    index_max = npv.idxmax()
+    DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
+    new_interval_ratio = rack_interval / index_max / 5
+    if index_max == npv.index[0] or index_max == npv.index[10]:
+        new_interval_ratio = 0.04
+
+    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
+                                                                                   module_params, rack_params, zone_area,
+                                                                                   new_interval_ratio)
+    rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
+    dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
+                                               rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
+                                               num_of_zones)
+    direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
+    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
+    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
+    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
+    iteration += 1
+    if iteration >= 11:
+        break
+# %% ==========================================
+# Plotting NPV, GCR_range, NPV_cost, NPV_revenue
+plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array)
+# %% ==========================================================
+# Perform probabalistic analysis: Part 1 - Costs
+racks_per_zone_max = npv.idxmax()
+rpzm_series = pd.Series(racks_per_zone_max)
+component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
+    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
+
+# %%
+
+# find minimum npv and grid search (Phil's version// can be deleted after Phil's check)
 
 rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3)    # @Baran - make graph pretty :)
@@ -135,7 +188,8 @@ while rack_interval > 1:
     if index_max == npv.index[0] or index_max == npv.index[10]:
         new_interval_ratio = 0.04
 
-    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, 1,
+    num_of_zones_sim = 1
+    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
                                                                  module_params, rack_params,
                                                                  zone_area, new_interval_ratio)
     rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
@@ -150,12 +204,6 @@ while rack_interval > 1:
 
 plt.show()
 
-# %% ==========================================================
-# Perform probabalistic analysis: Part 1 - Costs
-racks_per_zone_max = npv.idxmax()
-rpzm_series = pd.Series(racks_per_zone_max)
-component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
-    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
 
 
 # %% ==========================================================

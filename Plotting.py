@@ -127,6 +127,28 @@ def plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size):
     plt.show()
 
 
+def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array):
+    rack_range_plot = np.array(rack_per_zone_num_range_array).flatten()
+    npv_plot = np.array(npv_array).flatten()
+    npv_cost_plot = np.array(npv_cost_array).flatten()
+    npv_revenue_plot = np.array(npv_revenue_array).flatten()
+    gcr_plot = np.array(gcr_range_array).flatten()
+
+    size = 100
+    fig, ax = plt.subplots(1, 3, figsize=(30, 20))
+    # fig.tight_layout()
+    ax[0].scatter(rack_range_plot, npv_plot / 1e6, s=size, color='C1')
+    ax[0].set_ylabel('NPV ($m)', **fontdict)
+    ax[1].scatter(rack_range_plot, gcr_plot, s=size, color='C2')
+    ax[1].set_ylabel('Ground coverage ratio (GCR)', **fontdict)
+    ax[1].set_xlabel('Number of racks per zone', **fontdict)
+    ax[2].scatter(rack_range_plot, npv_cost_plot / 1e6, s=size, color='C3')
+    ax[2].set_ylabel('Cost & revenue ($m)', **fontdict)
+    ax[2].scatter(rack_range_plot, npv_revenue_plot / 1e6, s=size, color='C4')
+    fig.legend(['NPV', 'GCR', 'Cost', 'Revenue'], loc='upper right', prop={'size': 24})
+    plt.show()
+
+
 def plot_save(fig_name, save_path):
     """
         Function to save the plot
