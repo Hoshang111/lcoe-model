@@ -72,7 +72,7 @@ def save_tables_as_excel(table_name_list):
     writer.save()
 
 
-def import_airtable_data(base_id, api_key):
+def import_airtable_data(base_id, api_key, save_tables=False):
     def my_get_airtable(table_name, sort_by, save_list):
         my_list = get_airtable(base_id, api_key, table_name, sort_by=sort_by)
         save_list.append((my_list, table_name))
@@ -88,7 +88,8 @@ def import_airtable_data(base_id, api_key):
     system_component_link = my_get_airtable('SystemComponentLink', 'SystemComponentID', excel_save_list)
     currency_list = my_get_airtable('CurrencyList', 'CurrencyID', excel_save_list)
     costcategory_list = my_get_airtable('CostCategoryList', 'CostCategoryID', excel_save_list)
-    save_tables_as_excel(excel_save_list)
+    if save_tables:
+        save_tables_as_excel(excel_save_list)
     print("Finished importing airtable data")
 
     return scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list
@@ -285,13 +286,13 @@ def form_heirarchical_parameter_list(input_iteration_list, index_name, index_des
     output_df = pd.concat([output_df], keys=[index_name], names=['GroupingID'], axis=1)
     output_df = output_df.swaplevel(i=-2, j=-1, axis=1)
     # If we want to remove any parameters that do not change, we can do so, but this is not a good idea.
-    print(index_name)
-    print(output_df.head())
+    # print(index_name)
+    # print(output_df.head())
     remove_fixed(output_df)
     # We want to remove any str based parameters, as they cannot be used for the contribution to variance analysis.
     remove_string_variables(output_df)
-    print(output_df.head())
-    print('')
+    # print(output_df.head())
+    # print('')
     return output_df
 
 
