@@ -293,9 +293,9 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
     new_data_tables = SCNcostdata, SYScostData, system_list, system_component_link, component_list, currency_list, costcategory_list
 
     # Run iterative monte-carlo analysis for specified system
-    data_tables_iter = SunCost.create_iteration_tables(new_data_tables, 500, iteration_start=0)
+    data_tables_iter = Suncost.create_iteration_tables(new_data_tables, 500, iteration_start=0)
 
-    outputs_iter = SunCost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
+    outputs_iter = Suncost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
 
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
