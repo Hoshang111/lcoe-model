@@ -1,3 +1,4 @@
+# %%
 import os
 import sys
 import pandas as pd
@@ -6,6 +7,7 @@ import matplotlib.pyplot as plt
 # Set path to source code
 sys.path.append(os.path.join(".\\src"))
 import SuncableCost as SunCost
+import pandas as pd
 
 # Options
 option_use_airtable = True
@@ -46,6 +48,37 @@ if option_use_monte_carlo:
     # Basic graph for quick cross-check
     cash_flow_by_year_iter.to_csv('cash_flow_by_year.csv')
 
+    # %% Transform cash flow
+    # Turn the cash_flow_by_year_iter to a format usable by the sizing module.
+    optimal_scenario = '1001'
+    alternate_scenario = '1002'
+    discount_rate = 0.06
+
+
+    cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), columns = 'Iteration',values=optimal_scenario,index='Year')
+    print(cash_flow_transformed.head())
+
+    dcf_opt = cash_flow_by_year_iter[[optimal_scenario]].reset_index()
+    dcf_opt['dcf_opt'] = dcf_opt[optimal_scenario] / (1 + discount_rate) ** (dcf_opt['Year']-2024)
+    dcf_opt_iter = pd.pivot_table(dcf, index='Iteration', values='dcf_opt', aggfunc=sum)
+
+    dcf_alt = cash_flow_by_year_iter[[alternate_scenario]].reset_index()
+    dcf_alt['dcf_alt'] = dcf_alt[alternate_scenario] / (1 + discount_rate) ** (dcf_alt['Year'] - 2024)
+    dcf_alt_iter = pd.pivot_table(dcf, index = 'Iteration', values='dcf_alt', aggfunc=sum)
+
+
+    print(dcf_opt_iter)
+    print(dcf_alt_iter)
+
+    dcf_graph = dcf_opt_iter.join(dcf_alt_iter)
+    print(dcf_graph)
+    dcf_graph.plot.hist(bins=50, histtype='step')
+    plt.show()
+
+
+
+
+    # %% Import
     for (scenarios, title) in [
         # (['1'], 'MAV 14.4GW 2024'),(['2'],'SAT 10.5GW 2024'),(['3'],'MAV 14.4GW 5 yrs'),
         (['3', '4'], 'SAT 10.5GW 5 yrs')
@@ -57,6 +90,7 @@ if option_use_monte_carlo:
         scenario_costs_total_nodiscount = pd.pivot_table(scenario_costs_iter, values='TotalCostAUDY',
                                                          index=['Iteration'], aggfunc=np.sum,
                                                          columns=['ScenarioID'])
+        print(scenario_costs_total_nodiscount.head())
         scenario_costs_total_nodiscount.plot.hist(bins=50, histtype='step')
         plt.show()
         print(scenario_costs_total_nodiscount.loc[0, :])
