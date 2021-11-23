@@ -231,7 +231,12 @@ def dc_yield(DCTotal,
 
         Return
         ------
-        DC_output_range: Pd series
+        dc_results: List
+            time series (Wh) of DC yield per zone for the studied TMYs according to the range of number of racks per zone
+        dc_df: Pandas DataFrame
+            dataframe (Wh) of dc_results with columns matched to the range of number of racks per zone
+        dc_size: Pandas series
+            dc rated power (MW) of the solar farm according to range of number of racks per zone
 
     """
     coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
@@ -300,15 +305,16 @@ def dc_yield(DCTotal,
         # Find the total DC output for the given DC size/total module number
         # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
         multiplication_coeff = total_module_number/num_of_mod_per_inverter
-        dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
-        dc_size = module_per_zone_num_range * module_params['STC'] / 1e6  # dc_size in MW
+        dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
+        # dc_results is the DC yield of the total solar farm
 
-        # Converting MAV DC results to fit SAT results according to module_per_zone_num_range
-        dc_results_range = [dc_results.values/total_module_number * m for m in module_per_zone_num_range]
-        dc_df = pd.DataFrame(dc_results_range).T
+        dc_size = module_per_zone_num_range * module_params['STC'] / 1e6 * num_of_zones  # dc_size in MW
+
+        # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
+        dc_results = [dc_results_total.values/total_module_number * m for m in module_per_zone_num_range]
+        dc_df = pd.DataFrame(dc_results).T
         dc_df.columns = rack_per_zone_num_range
-        dc_df.index = dc_results.index
-
+        dc_df.index = dc_results_total.index
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -359,6 +365,8 @@ def dc_yield(DCTotal,
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
+    # Change the time-stamp from UTC to Australia/Darwin
+    dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
     return dc_results, dc_df, dc_size
 
     # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
