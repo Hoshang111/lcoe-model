@@ -1,16 +1,4 @@
 [[package]]
-name = "airtable"
-version = "0.4.8"
-description = "Python client library for AirTable"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-requests = ">=2.20.0"
-six = "*"
-
-[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -379,10 +367,6 @@ python-versions = "^3.8"
 content-hash = "f2f457f5656610965f40179509229b00426ef386630557514b3477fe82180d4a"
 
 [metadata.files]
-airtable = [
-    {file = "airtable-0.4.8-py2.py3-none-any.whl", hash = "sha256:d653e1b3b92297e3f0cc4226215d43d7fa99c72f38918e9371e445abf0baa70c"},
-    {file = "airtable-0.4.8.tar.gz", hash = "sha256:fb667e55da3af1341e0f2946014cc29e7d0613e69f3ee20528051c4075aee75c"},
-]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
     {file = "atomicwrites-1.4.0.tar.gz", hash = "sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a"},
