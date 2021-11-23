@@ -227,7 +227,7 @@ def get_npv(yearly_costs,
     :param yearly_revenue:
     :return:
     """
-    net_cashflow = yearly_revenue-yearly_costs.values
+    net_cashflow = -yearly_costs+yearly_revenue.values
 
     Yearoffset = pd.Series(range(0, len(net_cashflow)))
     Yearoffset.index = net_cashflow.index
