@@ -59,11 +59,11 @@ if option_use_monte_carlo:
 
     dcf_opt = cash_flow_by_year_iter[[optimal_scenario]].reset_index()
     dcf_opt['dcf_opt'] = dcf_opt[optimal_scenario] / (1 + discount_rate) ** (dcf_opt['Year']-2024)
-    dcf_opt_iter = pd.pivot_table(dcf, index='Iteration', values='dcf_opt', aggfunc=sum)
+    dcf_opt_iter = pd.pivot_table(dcf_opt, index='Iteration', values='dcf_opt', aggfunc=sum)
 
     dcf_alt = cash_flow_by_year_iter[[alternate_scenario]].reset_index()
     dcf_alt['dcf_alt'] = dcf_alt[alternate_scenario] / (1 + discount_rate) ** (dcf_alt['Year'] - 2024)
-    dcf_alt_iter = pd.pivot_table(dcf, index = 'Iteration', values='dcf_alt', aggfunc=sum)
+    dcf_alt_iter = pd.pivot_table(dcf_alt, index = 'Iteration', values='dcf_alt', aggfunc=sum)
 
 
     print(dcf_opt_iter)
