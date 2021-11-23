@@ -210,6 +210,13 @@ plt.show()
 # Present data from probabalistic analysis
 
 cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), columns='Iteration', index='Year')
+revmax_direct = direct_revenue[racks_per_zone_max]
+revmax_store = store_revenue[racks_per_zone_max]
+revmax_total = total_revenue[racks_per_zone_max]
+revmax_total_df = pd.DataFrame(revmax_total)
+revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
+npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
+    = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
 
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
