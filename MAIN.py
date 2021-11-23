@@ -58,7 +58,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 # %% ======================================
 # Rack_module
-rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
@@ -128,14 +128,14 @@ npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = s
 # find minimum npv and grid search
 
 rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3)    # @Baran - make graph pretty :)
 
 while rack_interval > 1:
     print(npv)
-    ax1.scatter(rack_per_zone_num_range, npv)
-    ax2.scatter(rack_per_zone_num_range, gcr_range)
-    ax3.scatter(rack_per_zone_num_range, npv_cost)
-    ax3.scatter(rack_per_zone_num_range, npv_revenue)
+    ax1.scatter(rack_per_zone_num_range, npv)  # @Baran - make graph pretty :)
+    ax2.scatter(rack_per_zone_num_range, gcr_range)   # @Baran - make graph pretty :)
+    ax3.scatter(rack_per_zone_num_range, npv_cost)    # @Baran - make graph pretty :)
+    ax3.scatter(rack_per_zone_num_range, npv_revenue) # @Baran - make graph pretty :)
     index_max = npv.idxmax()
     DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
     new_interval_ratio = rack_interval / index_max / 5
@@ -167,5 +167,7 @@ component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_y
 
 # %% ==========================================================
 # Present data from probabalistic analysis
+
+
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
