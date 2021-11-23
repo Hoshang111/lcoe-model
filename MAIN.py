@@ -169,42 +169,6 @@ rpzm_series = pd.Series(racks_per_zone_max)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
     = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
 
-# %%
-
-# find minimum npv and grid search (Phil's version// can be deleted after Phil's check)
-
-rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3)    # @Baran - make graph pretty :)
-
-while rack_interval > 1:
-    print(npv)
-    ax1.scatter(rack_per_zone_num_range, npv)  # @Baran - make graph pretty :)
-    ax2.scatter(rack_per_zone_num_range, gcr_range)   # @Baran - make graph pretty :)
-    ax3.scatter(rack_per_zone_num_range, npv_cost)    # @Baran - make graph pretty :)
-    ax3.scatter(rack_per_zone_num_range, npv_revenue) # @Baran - make graph pretty :)
-    index_max = npv.idxmax()
-    DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
-    new_interval_ratio = rack_interval / index_max / 5
-    if index_max == npv.index[0] or index_max == npv.index[10]:
-        new_interval_ratio = 0.04
-
-    num_of_zones_sim = 1
-    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
-                                                                 module_params, rack_params,
-                                                                 zone_area, new_interval_ratio)
-    rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
-    dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
-                                               rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
-                                               num_of_zones)
-    direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, 0.00004, storage_capacity)
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
-    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
-
-plt.show()
-
-
 
 # %% ==========================================================
 # Present data from probabalistic analysis
