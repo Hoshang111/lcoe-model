@@ -303,7 +303,7 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
 
     return component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter
 
-def get_LCOE(yearly_costs, kWh_series)
+def get_LCOE(yearly_costs, kWh_series):
     """
     A function to determine discounted LCOE from yield and cost data
     :param yearly_costs: 
