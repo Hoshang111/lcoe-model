@@ -304,15 +304,17 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
 
     return component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter
 
-def get_LCOE(yearly_costs, kWh_series):
+def get_LCOE(yearly_costs,
+             kWh_series,
+             discount_rate = 0.07):
     """
     A function to determine discounted LCOE from yield and cost data
     :param yearly_costs: 
     :param kWh_series: 
     :return: 
     """
-    Yearoffset = pd.Series(range(0, len(net_cashflow)))
-    Yearoffset.index = net_cashflow.index
+    Yearoffset = pd.Series(range(0, len(yearly_costs)))
+    Yearoffset.index = yearly_costs.index
 
     YearlyFactor = 1 / (1 + discount_rate) ** Yearoffset
     Discounted_kWh = kWh_series.mul(YearlyFactor, axis=0)
