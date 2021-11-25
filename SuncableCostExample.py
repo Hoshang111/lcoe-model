@@ -35,7 +35,7 @@ if option_use_monte_carlo:
     data_tables_iter = SunCost.create_iteration_tables(data_tables, 500, iteration_start=0)
     print('Iterations generated')
     parameters = SunCost.generate_parameters(data_tables_iter)
-    parameters.to_csv('parameters.csv')
+    # parameters.to_csv('parameters.csv')
 
     parameters_flat = parameters.copy()
     parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in parameters_flat.columns.values]
@@ -95,7 +95,7 @@ if option_use_monte_carlo:
         plt.show()
         print(scenario_costs_total_nodiscount.loc[0, :])
 
-        scenario_costs_total_nodiscount.to_csv('scenario_costs_total_no_discount.csv')
+        # scenario_costs_total_nodiscount.to_csv('scenario_costs_total_no_discount.csv')
         factor = scenario_costs_total_nodiscount['4']
         factor.name = 'Scenario4 Total Cost'
         parameters_flat = parameters_flat.join(factor)
@@ -131,7 +131,7 @@ else:  # non monte-carlo analysis
                                                 columns=['CostCategory_ShortName'])
         scenario_costs_by_year.plot.bar(stacked=True, title='Total Costs by Year - ' + title)
         plt.show()
-        scenario_costs.to_csv('temp_scenario_costs.csv')
+        # scenario_costs.to_csv('temp_scenario_costs.csv')
 
         scenario_costs_maintenance = scenario_costs[scenario_costs['CostCategoryID'].astype('int64') == 7]
         # print(scenario_costs_maintenance.head())
