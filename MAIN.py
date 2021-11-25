@@ -56,13 +56,11 @@ import matplotlib as mpl
 simulation_years = [2019]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
-
 # %% ======================================
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
-
 # %%
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
@@ -161,7 +159,8 @@ while rack_interval > 1:
         break
 # %% ==========================================
 # Plotting NPV, GCR_range, NPV_cost, NPV_revenue
-plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array)
+plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
+                   rack_params['Modules_per_rack'], module_params['STC'])
 # %% ==========================================================
 # Perform probabalistic analysis: Part 1 - Costs
 racks_per_zone_max = npv.idxmax()
