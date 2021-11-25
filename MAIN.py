@@ -58,7 +58,7 @@ weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
 # %% ======================================
 # Rack_module
-rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 # %%
@@ -102,7 +102,7 @@ export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
 scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
 direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-#%% ==========================================
+    #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
 cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
@@ -180,6 +180,9 @@ revmax_total_df = pd.DataFrame(revmax_total)
 revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
 npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
     = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
+
+filename = rack_type + ' ' + module_type
+npv_iter.to_csv('.\\Data\\OutputData\\' + filename + '.csv')
 
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
