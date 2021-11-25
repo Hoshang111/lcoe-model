@@ -102,8 +102,8 @@ else:
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
-scheduled_price = 0.001  # 4c/kWh (conversion from Wh to kWh)
-direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
+kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
     #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()

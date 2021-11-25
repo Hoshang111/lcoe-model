@@ -106,8 +106,9 @@ def get_revenue(Yieldseries,
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
+    KWh_export = Direct_Export.groupby(Direct_Export.index.year)+Daily_store.groupby(Daily_store.index.year)
 
-    return Yearly_direct, Yearly_storage, Yearly_total
+    return KWh_export, Yearly_direct, Yearly_storage, Yearly_total
 
 def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
 
