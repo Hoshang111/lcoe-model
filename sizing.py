@@ -322,6 +322,6 @@ def get_LCOE(yearly_costs,
 
     kWh_dis_sum = Discounted_kWh.sum(axis=0)
     NPV_costs = Yearly_NPV_costs.sum(axis=0)
-    LCOE = NPV_costs/kWh_dis_sum.values
+    LCOE = NPV_costs/kWh_dis_sum.values*1000
 
     return LCOE, kWh_dis_sum
