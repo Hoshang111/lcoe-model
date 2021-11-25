@@ -112,11 +112,12 @@ component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outp
 #%% ==========================================
 # Net present value (NPV)
 # resize yield output to match cost time series
+kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
 # ==========================================
 npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
-
+LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
 # %% =======================================
 # Simulations to find optimum NPV according to number of racks per zone
 
@@ -151,11 +152,13 @@ while rack_interval > 1:
     dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
                                                rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                num_of_zones)
-    direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
     cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
+    kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
+    LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
     iteration += 1
     if iteration >= 11:
         break
@@ -177,10 +180,12 @@ cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), col
 revmax_direct = direct_revenue[racks_per_zone_max]
 revmax_store = store_revenue[racks_per_zone_max]
 revmax_total = total_revenue[racks_per_zone_max]
+kWh_iter = kWh_discounted[racks_per_zone_max]
 revmax_total_df = pd.DataFrame(revmax_total)
 revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
 npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
     = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
+LCOE_iter = npv_cost_iter/kWh_iter.values
 
 filename = rack_type + ' ' + module_type
 npv_iter.to_csv('.\\Data\\OutputData\\' + filename + '.csv')
