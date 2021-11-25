@@ -100,13 +100,14 @@ def get_revenue(Yieldseries,
     Store_Avail = Yieldseries-Direct_Export
     Daily_store_pot = Store_Avail.groupby(Store_Avail.index.date).sum()
     Daily_store = Daily_store_pot.clip(lower=None, upper=storage_capacity)
+    Daily_store.index = pd.to_datetime(Daily_store.index)
     Direct_Revenue = Direct_Export*price_schedule
     Store_Revenue = Daily_store*price_schedule*0.85
     Store_Revenue.index = pd.to_datetime(Store_Revenue.index)
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
-    kWh_export = Direct_Export.groupby(Direct_Export.index.year)+Daily_store.groupby(Daily_store.index.year)
+    kWh_export = Direct_Export.groupby(Direct_Export.index.year).sum()+Daily_store.groupby(Daily_store.index.year).sum()
 
     return kWh_export, Yearly_direct, Yearly_storage, Yearly_total
 
