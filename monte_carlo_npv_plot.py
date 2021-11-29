@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import os
 
-module_name = 'LPERC_2023_M10'
+module_name = 'TOPCON_2028_M10'
 
 npv_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' NPV.csv'), index_col=1)
 Scenario_name = str(npv_mav_iter['ScenarioID'].values[0]) + ' MAVs'
@@ -18,6 +18,7 @@ graph_data_npv = npv_mav_iter.join(npv_sat_iter, rsuffix='p')
 print(graph_data_npv)
 graph_data_npv2 = graph_data_npv[[Scenario_name, Scenario_name_2]]
 graph_data_npv2.plot.hist(bins = 50, histtype='step')
+plt.show()
 
 LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' LCOE.csv'), index_col=1)
 Scenario_name_LCOE = str(LCOE_mav_iter['ScenarioID'].values[0]) + ' MAVs'
