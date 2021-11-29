@@ -18,6 +18,7 @@ graph_data_npv = npv_mav_iter.join(npv_sat_iter, rsuffix='p')
 print(graph_data_npv)
 graph_data_npv2 = graph_data_npv[[Scenario_name, Scenario_name_2]]
 graph_data_npv2.plot.hist(bins = 50, histtype='step')
+plt.savefig('.\\Data\\OutputData\\' + module_name + ' NPV', pad_inches=0.1)
 plt.show()
 
 LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' LCOE.csv'), index_col=1)
@@ -32,6 +33,7 @@ graph_data_LCOE = LCOE_mav_iter.join(LCOE_sat_iter, rsuffix='p')
 print(graph_data_LCOE)
 graph_data_LCOE2 = graph_data_LCOE[[Scenario_name_LCOE, Scenario_name_LCOE2]]
 graph_data_LCOE2.plot.hist(bins = 50, histtype='step')
+plt.savefig('.\\Data\\OutputData\\' + module_name + ' LCOE', pad_inches=0.1)
 plt.show()
 
 
