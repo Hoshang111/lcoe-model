@@ -59,7 +59,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 # %% ======================================
 # Rack_module
-rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
@@ -107,7 +107,7 @@ kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc
     #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
-cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
+cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=2025)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 #%% ==========================================
 # Net present value (NPV)
@@ -153,7 +153,7 @@ while rack_interval > 1:
                                                rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                num_of_zones)
     kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=2025)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
