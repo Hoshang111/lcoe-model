@@ -185,7 +185,7 @@ revmax_total_df = pd.DataFrame(revmax_total)
 revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
 npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
     = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
-LCOE_iter = npv_cost_iter/kWh_iter*1000
+LCOE_iter = npv_cost_iter/kWh_iter*100
 
 filename = rack_type + ' ' + module_type
 npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
