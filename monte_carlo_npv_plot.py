@@ -37,8 +37,6 @@ graph_data_LCOE = LCOE_mav_iter.join(LCOE_sat_iter, rsuffix='p')
 print(graph_data_LCOE)
 graph_data_LCOE2 = graph_data_LCOE[[Scenario_name_LCOE, Scenario_name_LCOE2]]
 graph_data_LCOE2.plot.hist(bins = 50, histtype='step')
-xticks, x_tick_labels = plt.xticks()
-plt.xticks(ticks=xticks, labels = xticks*100)
 plt.xlabel('LCOE (c/kWh)', loc='center')
 plt.savefig('.\\Data\\OutputData\\' + module_name + ' LCOE',bbox_inches='tight', pad_inches=0.1)
 plt.show()
