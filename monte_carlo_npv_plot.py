@@ -11,7 +11,7 @@ npv_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module
 Scenario_name = str(npv_mav_iter['ScenarioID'].values[0]) + ' MAVs'
 npv_mav_iter = npv_mav_iter.rename(columns={'0':Scenario_name})
 
-npv_sat_iter = pd.read_csv(os.path.join('Data', 'OutputData', 'SAT_1 ' + module_name + ' NPV.csv'), index_col=1)
+npv_sat_iter = pd.read_csv(os.path.join('Data', 'OutputData', 'SAT_1 ' + module_name + ' install_' + str(install_year) + ' NPV.csv'), index_col=1)
 Scenario_name_2 = str(npv_sat_iter['ScenarioID'].values[0]) + ' SATs'
 npv_sat_iter = npv_sat_iter.rename(columns={'0':Scenario_name_2})
 
@@ -30,7 +30,7 @@ LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + modul
 Scenario_name_LCOE = str(LCOE_mav_iter['ScenarioID'].values[0]) + ' MAVs'
 LCOE_mav_iter = LCOE_mav_iter.rename(columns={'0':Scenario_name})
 
-LCOE_sat_iter = pd.read_csv(os.path.join('Data', 'OutputData', 'SAT_1 ' + module_name + ' LCOE.csv'), index_col=1)
+LCOE_sat_iter = pd.read_csv(os.path.join('Data', 'OutputData', 'SAT_1 ' + module_name + ' install_' + str(install_year) + ' LCOE.csv'), index_col=1)
 Scenario_name_LCOE2 = str(LCOE_sat_iter['ScenarioID'].values[0]) + ' SATs'
 LCOE_sat_iter = LCOE_sat_iter.rename(columns={'0':Scenario_name_2})
 
