@@ -23,7 +23,7 @@ graph_data_npv2.plot.hist(bins = 50, histtype='step')
 xticks, x_tick_labels = plt.xticks()
 plt.xticks(ticks=xticks, labels = xticks/1e6)
 plt.xlabel('Net Present Value ($m)', loc='center')
-plt.savefig('.\\Data\\OutputData\\' + module_name + ' NPV', bbox_inches='tight', pad_inches=0.1)
+plt.savefig('.\\Data\\OutputData\\' + module_name + ' install_' + str(install_year) + ' NPV', bbox_inches='tight', pad_inches=0.1)
 plt.show()
 
 LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' install_' + str(install_year) + ' LCOE.csv'), index_col=1)
@@ -39,7 +39,7 @@ print(graph_data_LCOE)
 graph_data_LCOE2 = graph_data_LCOE[[Scenario_name_LCOE, Scenario_name_LCOE2]]
 graph_data_LCOE2.plot.hist(bins = 50, histtype='step')
 plt.xlabel('LCOE (c/kWh)', loc='center')
-plt.savefig('.\\Data\\OutputData\\' + module_name + ' LCOE',bbox_inches='tight', pad_inches=0.1)
+plt.savefig('.\\Data\\OutputData\\' + module_name + ' install_' + str(install_year) + ' LCOE',bbox_inches='tight', pad_inches=0.1)
 plt.show()
 
 
