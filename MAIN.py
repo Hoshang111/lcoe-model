@@ -59,7 +59,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 # %% ======================================
 # Rack_module
-rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
 install_year = 2025
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
@@ -188,7 +188,7 @@ npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_i
     = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
 LCOE_iter = npv_cost_iter/kWh_iter*100
 
-filename = rack_type + ' ' + module_type
+filename = rack_type + ' ' + module_type + ' install_' + str(install_year)
 npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
 LCOE_iter.to_csv('.\\Data\\OutputData\\' + filename + ' LCOE.csv')
 

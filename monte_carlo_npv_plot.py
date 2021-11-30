@@ -4,9 +4,10 @@ import pandas as pd
 import numpy as np
 import os
 
-module_name = 'TOPCON_2028_M10'
+module_name = 'LPERC_2023_M10'
+install_year = 2025
 
-npv_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' NPV.csv'), index_col=1)
+npv_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' install_' + str(install_year) + ' NPV.csv'), index_col=1)
 Scenario_name = str(npv_mav_iter['ScenarioID'].values[0]) + ' MAVs'
 npv_mav_iter = npv_mav_iter.rename(columns={'0':Scenario_name})
 
@@ -25,7 +26,7 @@ plt.xlabel('Net Present Value ($m)', loc='center')
 plt.savefig('.\\Data\\OutputData\\' + module_name + ' NPV', bbox_inches='tight', pad_inches=0.1)
 plt.show()
 
-LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' LCOE.csv'), index_col=1)
+LCOE_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' install_' + str(install_year) + ' LCOE.csv'), index_col=1)
 Scenario_name_LCOE = str(LCOE_mav_iter['ScenarioID'].values[0]) + ' MAVs'
 LCOE_mav_iter = LCOE_mav_iter.rename(columns={'0':Scenario_name})
 
