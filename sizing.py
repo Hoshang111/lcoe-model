@@ -107,8 +107,8 @@ def get_revenue(Yieldseries,
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
-    kWh_export = Direct_Export.groupby(Direct_Export.index.year).sum()*1000\
-                 +Daily_store.groupby(Daily_store.index.year).sum()*1000
+    kWh_export = Direct_Export.groupby(Direct_Export.index.year).sum()/1000\
+                 +Daily_store.groupby(Daily_store.index.year).sum()/1000
 
     return kWh_export, Yearly_direct, Yearly_storage, Yearly_total
 
