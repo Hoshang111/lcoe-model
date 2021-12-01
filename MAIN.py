@@ -61,7 +61,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 # Rack_module
 rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
-install_year = 2028
+install_year = 2027
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
 # %%
@@ -171,7 +171,7 @@ plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, np
 racks_per_zone_max = npv.idxmax()
 rpzm_series = pd.Series(racks_per_zone_max)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
-    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
+    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
 
 
 # %% ==========================================================
