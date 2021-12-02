@@ -8,7 +8,7 @@ import numpy as np
 
 
 # ================== Global parameters for fonts & sizes =================
-font_size = 30
+font_size = 40
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
       'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
 plt.rcParams.update(**rc)
@@ -49,8 +49,8 @@ def plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size):
     fig, ax = plt.subplots(figsize=(25, 20))
     labels = round(gcr_range, 2)
     x = np.arange(11)
-    ax.bar(x, annual_yield_sat, label='SAT')
-    ax.bar(x[-1] + 1, annual_yield_mav, label='MAV')
+    ax.bar(x, annual_yield_sat, width=0.3, label='SAT')
+    ax.bar(x + 0.3, annual_yield_mav, width=0.3, label='MAV')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylabel('Annual yield (GWh)', **fontdict)
