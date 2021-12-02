@@ -88,7 +88,8 @@ else:
 
 # Un hash the lines below for desired plots...
 
-# plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
+
+plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
 # plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
 # plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
 # and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
@@ -102,7 +103,7 @@ export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
 scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
 direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-    #%% ==========================================
+#%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
 cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
