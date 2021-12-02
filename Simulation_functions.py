@@ -366,7 +366,7 @@ def dc_yield(DCTotal,
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
     # Change the time-stamp from UTC to Australia/Darwin
-    dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
+    # dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
     return dc_results, dc_df, dc_size
 
     # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...

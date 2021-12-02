@@ -100,14 +100,17 @@ def get_revenue(Yieldseries,
     Store_Avail = Yieldseries-Direct_Export
     Daily_store_pot = Store_Avail.groupby(Store_Avail.index.date).sum()
     Daily_store = Daily_store_pot.clip(lower=None, upper=storage_capacity)
+    Daily_store.index = pd.to_datetime(Daily_store.index)
     Direct_Revenue = Direct_Export*price_schedule
     Store_Revenue = Daily_store*price_schedule*0.85
     Store_Revenue.index = pd.to_datetime(Store_Revenue.index)
     Yearly_direct = Direct_Revenue.groupby(Direct_Revenue.index.year).sum()
     Yearly_storage = Store_Revenue.groupby(Store_Revenue.index.year).sum()
     Yearly_total = Yearly_direct+Yearly_storage
+    kWh_export = Direct_Export.groupby(Direct_Export.index.year).sum()/1000\
+                 +Daily_store.groupby(Daily_store.index.year).sum()/1000
 
-    return Yearly_direct, Yearly_storage, Yearly_total
+    return kWh_export, Yearly_direct, Yearly_storage, Yearly_total
 
 def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
 
@@ -302,4 +305,24 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
 
     return component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter
 
+def get_LCOE(yearly_costs,
+             kWh_series,
+             discount_rate = 0.07):
+    """
+    A function to determine discounted LCOE from yield and cost data
+    :param yearly_costs: 
+    :param kWh_series: 
+    :return: 
+    """
+    Yearoffset = pd.Series(range(0, len(yearly_costs)))
+    Yearoffset.index = yearly_costs.index
 
+    YearlyFactor = 1 / (1 + discount_rate) ** Yearoffset
+    Discounted_kWh = kWh_series.mul(YearlyFactor, axis=0)
+    Yearly_NPV_costs = yearly_costs.mul(YearlyFactor, axis=0)
+
+    kWh_dis_sum = Discounted_kWh.sum(axis=0)
+    NPV_costs = Yearly_NPV_costs.sum(axis=0)
+    LCOE = NPV_costs/kWh_dis_sum.values*1000
+
+    return LCOE, kWh_dis_sum
