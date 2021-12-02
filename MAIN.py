@@ -56,11 +56,14 @@ import matplotlib as mpl
 simulation_years = [2019]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
+
 # %% ======================================
 # Rack_module
 rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
-module_type = 'LPERC_2023_M10'  # Enter one of the modules from the SunCable module database
+module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
+install_year = 2027
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
+
 # %%
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
@@ -88,8 +91,7 @@ else:
 
 # Un hash the lines below for desired plots...
 
-
-plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
+# plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
 # plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
 # plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
 # and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
@@ -102,20 +104,21 @@ plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_
 export_lim = 3.2e9/num_of_zones
 storage_capacity = 4e7
 scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
-direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-#%% ==========================================
+kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+    #%% ==========================================
 # Cost
 data_tables = sizing.get_airtable()
-cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
+cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
 component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 #%% ==========================================
 # Net present value (NPV)
 # resize yield output to match cost time series
+kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
 revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
 
 # ==========================================
 npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
-
+LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
 # %% =======================================
 # Simulations to find optimum NPV according to number of racks per zone
 
@@ -150,11 +153,13 @@ while rack_interval > 1:
     dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
                                                rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                num_of_zones)
-    direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
+    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
+    kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
+    LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
     iteration += 1
     if iteration >= 11:
         break
@@ -167,7 +172,7 @@ plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, np
 racks_per_zone_max = npv.idxmax()
 rpzm_series = pd.Series(racks_per_zone_max)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
-    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables)
+    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
 
 
 # %% ==========================================================
@@ -177,13 +182,16 @@ cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), col
 revmax_direct = direct_revenue[racks_per_zone_max]
 revmax_store = store_revenue[racks_per_zone_max]
 revmax_total = total_revenue[racks_per_zone_max]
+kWh_iter = kWh_discounted[racks_per_zone_max]
 revmax_total_df = pd.DataFrame(revmax_total)
 revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
 npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
     = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
+LCOE_iter = npv_cost_iter/kWh_iter*100
 
-filename = rack_type + ' ' + module_type
-npv_iter.to_csv('.\\Data\\OutputData\\' + filename + '.csv')
+filename = rack_type + ' ' + module_type + ' install_' + str(install_year)
+npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
+LCOE_iter.to_csv('.\\Data\\OutputData\\' + filename + ' LCOE.csv')
 
 # Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
 # Todo : New algorithm will have more optimal tilt angle as well as better tracking
