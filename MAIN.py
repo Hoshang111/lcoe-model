@@ -59,7 +59,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 # %% ======================================
 # Rack_module
-rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
 install_year = 2027
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
@@ -91,7 +91,7 @@ else:
 
 # Un hash the lines below for desired plots...
 
-# plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
+plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
 # plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
 # plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
 # and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
