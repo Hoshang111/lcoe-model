@@ -153,6 +153,37 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
     return table_outputs, revenue_output, kWh_output
 
 
+def form_new_data_tables(data_tables, scenarios):
+    # Transform two sets of scenario tables into a new set which includes both SAT and MAV (or more)
+    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
+
+    combined_SCNcostdata = pd.DataFrame()
+    combined_SYScostdata = pd.DataFrame()
+    for (data, scenario_label) in scenarios:
+        SCNcostdata, SYScostdata = data
+        # Find the old ScenarioID
+        if SCNcostdata.shape[0] == 1:
+            old_scenario_ID = SCNcostdata['ScenarioID'].values[0]
+            SCNcostdata['ScenarioID'] = scenario_label
+
+            # Check if SYScostdata has any other scenarios
+            if SYScostdata[SYScostdata['ScenarioID']==old_scenario_ID].shape[0] == SYScostdata.shape[0]:
+                SYScostdata['ScenarioID'] = scenario_label
+            else:
+                print('Error! SYScostdata has multiple scenarios')
+        else:
+            print('Error! Zero or Multiple Scenarios')
+        combined_SCNcostdata = combined_SCNcostdata.append(SCNcostdata)
+        combined_SYScostdata = combined_SYScostdata.append(SYScostdata)
+
+    combined_SYScostdata['ScenarioSystemID'] = range(0, combined_SYScostdata.shape[0])
+
+    # Replacing some tables from specified inputs
+    new_data_tables = combined_SCNcostdata, combined_SYScostdata, system_list, system_component_link, component_list, currency_list, costcategory_list
+
+    return new_data_tables
+
+
 
 
 

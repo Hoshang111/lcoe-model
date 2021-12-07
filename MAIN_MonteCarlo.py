@@ -73,6 +73,7 @@ zone_area = 4e5   # Zone Area in m2
 rack_interval_ratio = 0.04
 module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
 install_year = 2027
+analysis_year_start = 2024
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
@@ -110,43 +111,89 @@ scenario_tables_optimum_MAV, revenue_MAV, kWh_export_MAV = optimise.optimise_lay
                      data_tables, discount_rate)
 
 
-# Do Monte Carlo Analysis simultaneously
-
-#%% ==========================================
-
-# Transform two sets of scenario tables into a new set which includes both SAT and MAV (or more)
-scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
-SCNcostdata_SAT, SYScostdata_SAT = scenario_tables_optimum_SAT
-SCNcostdata_MAV, SYScostdata_MAV = scenario_tables_optimum_MAV
-
-SCNcostdata = SCNcostdata_SAT.append(SCNcostdata_MAV)
-SYScostdata = SYScostdata_SAT.append(SYScostdata_MAV)
-
-SYScostdata['ScenarioSystemID'] = range(0, SYScostdata.shape[0])
-
-# Replacing some tables from specified inputs
-new_data_tables = SCNcostdata, SYScostdata, system_list, system_component_link, component_list, currency_list, costcategory_list
-
-
+#%%
 # Call Monte Carlo Cost analysis
-# Run iterative monte-carlo analysis for specified system
+
+# First generate data tables with the ScenarioID changed to something more intuitive
+new_data_tables = optimise.form_new_data_tables(data_tables,
+                                                [(scenario_tables_optimum_SAT, 'SAT'),
+                                                 (scenario_tables_optimum_MAV, 'MAV')])
+
+# Create iteration data
 data_tables_iter = Suncost.create_iteration_tables(new_data_tables, 500, iteration_start=0)
 
-outputs_iter = Suncost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
-
+# Calculate cost result
+outputs_iter = Suncost.CalculateScenariosIterations(data_tables_iter, year_start=analysis_year_start, analyse_years=30)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
-
-# Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
-
-# Calculate delta_LCOE and delta NPV for each iteration and plot this.
-# Sensitivity analysis / regression analysis to determine key uncertainties affecting these.
-
 
 
 # %% ==========================================================
+# Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
+# First generate a big table with index consisting of Iteration, Year, ScenarioID.
+combined_scenario_data = pd.DataFrame()
+for (scenario_id, revenue_data, kWh_export_data) in [('MAV', revenue_MAV, kWh_export_MAV),
+                                                    ('SAT', revenue_SAT, kWh_export_SAT)]:
+
+    kWh_export_data.name = 'kWh'
+    revenue_data.name = 'revenue'
+
+    scenario_data = cash_flow_by_year_iter[scenario_id]
+    scenario_data.name = 'cost'
+
+    scenario_data = scenario_data.reset_index().merge(
+        kWh_export_data.reset_index(), how='left', on='Year').merge(
+        revenue_data.reset_index(), how='left', on='Year')
+    scenario_data['ScenarioID'] = scenario_id
+
+    combined_scenario_data = combined_scenario_data.append(scenario_data)
+
+# Now discount the costs, etc
+for col_name in ['cost', 'kWh', 'revenue']:
+    combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** (combined_scenario_data['Year'] - analysis_year_start)
+
+
+# Create a new table that removes the year, adding all the discounted flows
+discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc', 'cost_disc', 'revenue_disc'])
+
+# Now calculate LCOE and NPV
+
+discounted_sum['LCOE'] = discounted_sum['cost_disc'] / discounted_sum['kWh_disc']
+discounted_sum['NPV'] = discounted_sum['revenue_disc'] - discounted_sum['cost_disc']
+
+print(discounted_sum)
+
+# Plot the LCOE and NPV distributions. For each figure, show each scenario as its own distribution.
+
+for parameter in ['LCOE', 'NPV']:
+    data = discounted_sum[parameter].reset_index()
+    print(data)
+    data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
+    data.plot.hist(bins=50, histtype='step')
+    plt.title(parameter)
+    plt.show()
+
+
+#%%
+
+# Calculate delta_LCOE and delta NPV for each iteration and plot this.
+
+
+scenario1 = 'MAV'
+scenario2 = 'SAT'
+
+for parameter in ['LCOE', 'NPV']:
+    data = discounted_sum[parameter].reset_index()
+    data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
+
+    data['Difference'] = data[scenario2] - data[scenario1]
+    data['Difference'].plot.hist(bins=50, histtype='step')
+    plt.title('Difference in '+ parameter)
+    plt.show()
 
 # %%
 
+
+# Sensitivity analysis / regression analysis to determine key uncertainties affecting these.
 
 
 # %%
@@ -169,5 +216,4 @@ filename = rack_type + ' ' + module_type + ' install_' + str(install_year)
 npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
 LCOE_iter.to_csv('.\\Data\\OutputData\\' + filename + ' LCOE.csv')
 
-# Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
-# Todo : New algorithm will have more optimal tilt angle as well as better tracking
+
