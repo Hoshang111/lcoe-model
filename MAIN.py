@@ -167,6 +167,10 @@ while rack_interval > 1:
 # Plotting NPV, GCR_range, NPV_cost, NPV_revenue
 plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
                    rack_params['Modules_per_rack'], module_params['STC'])
+
+
+
+
 # %% ==========================================================
 # Perform probabalistic analysis: Part 1 - Costs
 racks_per_zone_max = npv.idxmax()
