@@ -192,9 +192,31 @@ for parameter in ['LCOE', 'NPV']:
 
 # %%
 
+font_size = 15
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+      'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
+
+# For label titles
+fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
+
+def generate_difference_factor(df, parameter, scenario_1, scenario_2, parameter_name):
+    data = df[parameter].reset_index()
+    data = pd.pivot_table(data, index = 'Iteration', values= parameter, columns = 'ScenarioID')
+    data[parameter_name] = data[scenario_2] - data[scenario_1]
+    return data[parameter_name]
+
 
 # Sensitivity analysis / regression analysis to determine key uncertainties affecting these.
+parameters = Suncost.generate_parameters(data_tables_iter)
+parameters_flat = parameters.copy()
+parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in parameters_flat.columns.values]
 
+factor = generate_difference_factor(discounted_sum, 'LCOE', 'MAV', 'SAT', 'LCOE_Difference')
+parameters_flat = parameters_flat.join(factor)
+
+Suncost.calculate_variance_contributions(parameters_flat, 'LCOE_Difference')
 
 # %%
 
