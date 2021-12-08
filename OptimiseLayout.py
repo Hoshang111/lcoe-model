@@ -1,47 +1,3 @@
-
-
-
-""" This is the main script for the yield assessment. The script calls the functions below to calculate the Net Present Value
-(NPV) of the solar farm
-
-1) Weather:
-Input: Weather file, year of simulation
-Output: Weather dataframe in the required format for PVlib simulatins
-
-2) Racks & modules:
-Input: Type of module and rack
-Output: Module and rack parameters required for PVlib PVsystem extracted from the module & rack database
-
-3) Sizing
-Input: DC size of the solar farm
-Output: Configuration in terms of number of single-axis tracking (SAT) racks or 5B Maverick units (MAV)
-
-4) DC/AC Yield:
-Input: number of racks, number of MAVs, weather data, module name, mounting type (optional & future improvement:
-temperature rack type, aoi model, back-tracking/optimal tilt angle)
-Output: DC/AC yield
-
-5) Revenue and storage behaviour
-Input: DC yield, export limit
-Output: Revenue
-
-6) Cost (get deterministic or monte-carlo cost distribution of the solar farm)
-Input: DC size pf the solar farm
-Output: Cost
-
-7) Net present value (NPV)
-Input: Revenue, Cost
-Output: NPV
-
-Initially, we will write the Main script to call out all these functions to give a NPV
-Later, we will convert this to an optimization process which will give the optimum NPV based on:
-- Configuration
-- Mounting
-- Other parameters (more advanced params like back tracking algo, temp/racking type etc.)
-During the optimisation process/simulations, cost function will give deterministic values. Once the optimum NPV is found
-cost function also give the Monte-Carlo distribution.
-"""
-
 # %% Import
 import pandas as pd
 import numpy as np
@@ -49,14 +5,17 @@ import Simulation_functions as func
 import airtable
 import sizing
 import Plotting as plot_func
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-# mpl.use('Qt5Agg')
+
 
 def optimise_layout (weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
                      data_tables, discount_rate):
+
+    """
+    Optimise layout function converts the 'MAIN' script into a function form to run Monte Carlo simulations
+    within 'MAIN_MonteCarlo' script. The use of variables are similar with the MAIN script.
+    """
 
     # %% ======================================
     # Rack_module
@@ -154,7 +113,12 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
 
 
 def form_new_data_tables(data_tables, scenarios):
-    # Transform two sets of scenario tables into a new set which includes both SAT and MAV (or more)
+    """
+    Transform two sets of scenario tables into a new set which includes both SAT and MAV (or more)
+    :param data_tables:
+    :param scenarios:
+    :return:
+    """
     scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = data_tables
 
     combined_SCNcostdata = pd.DataFrame()
