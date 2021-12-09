@@ -168,7 +168,7 @@ for parameter in ['LCOE', 'NPV']:
     data = discounted_sum[parameter].reset_index()
     print(data)
     data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
-    data.plot.hist(bins=50, histtype='step')
+    data.plot.hist(bins=50, histtype='step', fontsize=15)
     plt.title(parameter)
     plt.show()
 

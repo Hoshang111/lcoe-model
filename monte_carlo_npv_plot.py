@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 module_name = 'HJT_2028_M10'
-install_year = 2027
+install_year = 2028
 
 npv_mav_iter = pd.read_csv(os.path.join('Data', 'OutputData', '5B_MAV ' + module_name + ' install_' + str(install_year) + ' NPV.csv'), index_col=1)
 Scenario_name = str(npv_mav_iter['ScenarioID'].values[0]) + ' MAVs'

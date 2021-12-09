@@ -61,7 +61,7 @@ weather_simulation = func.weather(simulation_years, weather_file)
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
-install_year = 2027
+install_year = 2028
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
 # %%
