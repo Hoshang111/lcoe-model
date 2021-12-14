@@ -1,18 +1,16 @@
-from airtable import Airtable
-import datetime
-import time as time
 import os
-import numpy as np
-import pandas as pd
+import datetime
 import math
 import random as rd
 import numbers
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
+from airtable import Airtable
 from scipy import stats
 
 data_file_location = '.\\outputs\\'
 log_file_location = '.\\AirtableLogs\\'
-
 
 def get_airtable(base_id, api_key, table_name, sort_by=None, required_list=[]):
     print('  Getting data from ', table_name)
@@ -20,7 +18,8 @@ def get_airtable(base_id, api_key, table_name, sort_by=None, required_list=[]):
     # First connect to the specified table name in the airtable database
     at = Airtable(base_id, table_name, api_key=api_key).get_all()
 
-    # Get a full list of all columns - not all records have every column, so we need to search through every record!
+    # Get a full list of all columns - not all records have every column, 
+    # so we need to search through every record!
     all_column_names = set()
     for record in at:
         all_column_names.update(list(record['fields'].keys()))
@@ -525,10 +524,17 @@ def CalculateScenariosIterations(iteration_input_tables, year_start, analyse_yea
     return component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter
 
 
-def calculate_variance_contributions(input_factors, cost_result_name, num_table=20, num_graphs=5,
-                                     title=None, short_titles=False, xlabel=None, ylabel=None,
-                                     show_regression=True, show_r=True, show_r2=False
-                                     ):
+def calculate_variance_contributions(input_factors, cost_result_name):
+    num_table=20
+    num_graphs=5
+    title=None
+    short_titles=False
+    xlabel=None
+    ylabel=None
+    show_regression=True 
+    show_r=True
+    show_r2=False
+                                     
     # This removes first any input factors with no variation
     filtered_factors = input_factors.loc[:, (input_factors.std() > 0)]
 
