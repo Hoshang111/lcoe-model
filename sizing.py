@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import airtable
-import SuncableCost as Suncost
+import suncable_cost as Suncost
 
 
 def get_racks(DCTotal,
