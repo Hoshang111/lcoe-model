@@ -3,17 +3,17 @@ import pandas as pd
 import pvlib
 
 def system_build(rack_type, gcr):
-    if rack_type = 'SAT':
+    if rack_type == 'SAT':
         system = SAT_build(rack_type, gcr)
-    else if rack_type = 'east_west':
+    elif rack_type == 'east_west':
         system = EW_build(rack_type)
 
 
 
 
 
-def SAT_build():
-    for i in range(gcr.size)
+def SAT_build(rack_type, gcr):
+    for i in range(gcr.size):
         mount = pvlib.pvsystem. \
             SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0,
                                    max_angle=90, backtrack=True, gcr=gcr[i], cross_axis_tilt=0,
@@ -23,5 +23,4 @@ def SAT_build():
 
 
 
-def EW_build():
-
+#def EW_build():
