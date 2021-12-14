@@ -42,10 +42,10 @@ cost function also give the Monte-Carlo distribution.
 # %% Import
 import pandas as pd
 import numpy as np
-import Simulation_functions as func
-import airtable
+import simulation_functions as func
+from airtable import airtable
 import sizing
-import Plotting as plot_func
+import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 # mpl.use('Qt5Agg')
@@ -84,6 +84,7 @@ if rack_type == '5B_MAV':
     annual_yield_mav = annual_yield.copy()
 else:
     annual_yield = np.array([y.sum()/1e9 for y in dc_results])  # annual yield in GWh
+    annual_yield_mav = annual_yield.copy()
     annual_yield_per_module = annual_yield * 1e6 / module_per_zone_num_range / num_of_zones  # annual yield per module in kWh
     annual_yield_sat = annual_yield.copy()
 
