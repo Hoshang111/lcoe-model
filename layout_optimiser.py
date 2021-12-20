@@ -92,7 +92,7 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
 
     # ==========================================
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-    LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
+    LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
 
@@ -132,7 +132,7 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
         kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
         revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
         npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-        LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
+        LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
         iteration += 1
         if iteration >= 11:
             break
