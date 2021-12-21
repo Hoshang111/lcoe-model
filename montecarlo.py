@@ -52,7 +52,7 @@ from layout_optimiser import form_new_data_tables, optimise_layout
 import layout_optimiser as optimiser
 from simulation_functions import weather
 from sizing import get_airtable
-from suncable_cost import CalculateScenariosIterations, create_iteration_tables, \
+from suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions
 
 # %%
@@ -126,11 +126,10 @@ new_data_tables = form_new_data_tables(DATA_TABLES,
                                                  (scenario_tables_optimum_MAV, 'MAV')])
 
 # Create iteration data
-data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
+data_tables_iter = create_iteration_tables(new_data_tables, 500, 0)
 
 # Calculate cost result
-outputs_iter = CalculateScenariosIterations(data_tables_iter, \
-    year_start=YEAR_ANALYSIS, analyse_years=30)
+outputs_iter = calculate_scenarios_iterations(data_tables_iter, YEAR_ANALYSIS, 30)
 component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, \
      cash_flow_by_year_iter = outputs_iter
 
@@ -177,8 +176,8 @@ print(discounted_sum)
 for parameter in ['LCOE', 'NPV']:
     data = discounted_sum[parameter].reset_index()
     print(data)
-    data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
-    data.plot.hist(bins=50, histtype='step', fontsize=15)
+    data = pd.pivot_table(data, 'Iteration', parameter, 'ScenarioID')
+    data.plot.hist(50, 'step', 15)
     plt.title(parameter)
     plt.show()
 
@@ -191,10 +190,10 @@ SCENARIO_2 = 'SAT'
 
 for parameter in ['LCOE', 'NPV']:
     data = discounted_sum[parameter].reset_index()
-    data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
+    data = pd.pivot_table(data, 'Iteration', parameter, 'ScenarioID')
 
     data['Difference'] = data[SCENARIO_2] - data[SCENARIO_1]
-    data['Difference'].plot.hist(bins=50, histtype='step')
+    data['Difference'].plot.hist(50, 'step')
     plt.title('Difference in '+ parameter)
     plt.show()
 
@@ -204,7 +203,7 @@ FONT_SIZE = 15
 rc = {'font.size': FONT_SIZE, 'axes.labelsize': FONT_SIZE, 'legend.fontsize': FONT_SIZE,
       'axes.titlesize': FONT_SIZE, 'xtick.labelsize': FONT_SIZE, 'ytick.labelsize': FONT_SIZE}
 plt.rcParams.update(**rc)
-plt.rc('font', weight='bold')
+plt.rc('font', 'bold')
 
 # For label titles
 fontdict = {'fontsize': FONT_SIZE, 'fontweight': 'bold'}
@@ -215,8 +214,7 @@ Function that generates a difference factor
 '''
 def generate_difference_factor(diff_factor, param_factor, scenario_1, scenario_2, parameter_name):
     data_factor = diff_factor[param_factor].reset_index()
-    data_factor = pd.pivot_table(data_factor, index = 'Iteration', values= param_factor, \
-        columns = 'ScenarioID')
+    data_factor = pd.pivot_table(data_factor, 'Iteration', param_factor, 'ScenarioID')
     data_factor[parameter_name] = data_factor[scenario_2] - data_factor[scenario_1]
     return data[parameter_name]
 

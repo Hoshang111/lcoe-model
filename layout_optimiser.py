@@ -82,7 +82,7 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
     #%% ==========================================
     # Cost
 
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     #%% ==========================================
     # Net present value (NPV)
@@ -127,7 +127,7 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
                                                    rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                    num_of_zones)
         kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-        cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
+        cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables)
         component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
         kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
         revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
@@ -145,7 +145,7 @@ def optimise_layout (weather_simulation, rack_type, module_type, install_year,
     # Find optimum number of racks and create tables for Monte Carlo Analysis
     racks_per_zone_max = npv.idxmax()
     rpzm_series = pd.Series(racks_per_zone_max)
-    cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
+    cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables)
 
     revenue_output = revenue_series[racks_per_zone_max]
     kWh_output = kWh_series[racks_per_zone_max]

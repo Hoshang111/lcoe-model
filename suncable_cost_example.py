@@ -42,7 +42,7 @@ if option_use_monte_carlo:
 
     # parameters_flat.to_csv('parameters_flat.csv')
 
-    outputs_iter = SunCost.CalculateScenariosIterations(data_tables_iter, year_start=2024, analyse_years=30)
+    outputs_iter = SunCost.calculate_scenarios_iterations(data_tables_iter, year_start=2024, analyse_years=30)
     print('outputs calculated')
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
@@ -116,7 +116,7 @@ if option_use_monte_carlo:
 
 else:  # non monte-carlo analysis
     # Running the cost calculations
-    outputs = SunCost.CalculateScenarios(data_tables, year_start=2024, analyse_years=30)
+    outputs = SunCost.calculate_scenarios(data_tables, year_start=2024, analyse_years=30)
 
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = outputs
 
