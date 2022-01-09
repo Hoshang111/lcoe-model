@@ -1,9 +1,10 @@
-# Sizing and Costing Model
+# Use
+Run montecarlo.py (can be done through a terminal using python3 montecarlo.py)
 
+# Sizing and Costing Model
 SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 ### Yield
-
 * Simple modelling of Mavs (1 east, 1 west-facing array, separate) **done**
 * *Benchmarking* **(Baran)**
 * Tracking Algorithms
