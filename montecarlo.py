@@ -81,7 +81,7 @@ data_tables = get_airtable()
 ################
 # Optimise SATs
 # %% ======================================
-# Rack_module
+# Optimise rack number for SAT
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 
 scenario_tables_optimum_SAT, revenue_SAT, kWh_export_SAT = optimise_layout(weather_simulation,\
@@ -134,11 +134,14 @@ for (scenario_id, revenue_data, kWh_export_data) in [('MAV', revenue_MAV, kWh_ex
 
 # Now discount the costs, etc
 for col_name in ['cost', 'kWh', 'revenue']:
-    combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** (combined_scenario_data['Year'] - analysis_year_start)
+    combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** \
+                                                 (combined_scenario_data['Year'] - analysis_year_start)
 
 
 # Create a new table that removes the year, adding all the discounted flows
-discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc', 'cost_disc', 'revenue_disc'])
+discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc',
+                                                                                                   'cost_disc',
+                                                                                                   'revenue_disc'])
 
 # Now calculate LCOE and NPV
 
