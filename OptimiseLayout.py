@@ -7,7 +7,7 @@ import sizing
 import Plotting as plot_func
 
 
-def optimise_layout (weather_simulation, rack_type, module_type, install_year,
+def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
                      data_tables, discount_rate):
