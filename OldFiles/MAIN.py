@@ -57,42 +57,6 @@ simulation_years = [2018]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
 
-# %%
-# Weather adjustment between DNV weather files and Solcast Weather files
-
-# DNV weather data don't have dni data but it has bhi (beam horizontal radiation: horizontal component of dni)
-# We need the cos theta (zenith angle) to derive dni from bhi (dni is needed by pvlib simulations). We are going to
-# extract the cost theta from Solcast weather files and use it in DNV weather data for the corresponding timestamps.
-
-simulation_years = np.arange(2007, 2022, 1)
-weather_file = 'Solcast_PT60M.csv'
-weather_simulation = func.weather(simulation_years, weather_file)
-weather_simulation.set_index(weather_simulation.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
-
-# To match the dates, i am using floor function on date time so to convert 11:30 am to 11:00 for example
-# the reason for using floor is the end timestamp of each measurement is used as the index so far
-# according to the first column of the original weather data
-new_index = [str(i)[0:19] for i in weather_simulation.index.floor('H')]
-weather_simulation.set_index(pd.to_datetime(new_index, utc=False), inplace=True)
-
-
-weather_dnv_dummy = pd.read_csv(r"C:\Users\baran\cloudstor\PycharmProjects\sizing-costing-model\Data\WeatherData\Combined_Longi_545_Maverick_FullTS.csv",
-                          delimiter=';',
-                          index_col=0)
-weather_dnv_dummy = weather_dnv_dummy.rename(columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
-                                      'WindVel': 'wind_speed'})
-
-weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed']].copy()
-weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
-
-# Join the precipitable water and cos_theta to weather_dnv
-weather_dnv = weather_dnv.join(weather_simulation[['precipitable_water','cos_theta']])
-weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much aligned this way
-weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
-
-# You can ignore the dates where the new columns are empty due to date date mismatch
-
-
 # %% ======================================
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
