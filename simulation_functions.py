@@ -50,13 +50,15 @@ def weather(simulation_years,
     # weather.set_index(pd.DatetimeIndex(dummy, tz='UTC'), inplace=True)
 
     weather_data = weather_data.rename(columns={'Ghi': 'ghi', 'Dni': 'dni', 'Dhi': 'dhi', 'AirTemp': 'temp_air',
-                                      'WindSpeed10m': 'wind_speed', 'PrecipitableWater': 'precipitable_water'})
+                                      'WindSpeed10m': 'wind_speed', 'PrecipitableWater': 'precipitable_water',
+                                                'Ebh': 'bhi'})
 
-    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water']].copy()[str(sy)] for sy
+    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'bhi']].copy()[str(sy)] for sy
              in simulation_years]  # get required PVlib weather variables for desired simulation years
     weather_simulation = pd.concat(dummy)
-    weather_simulation['precipitable_water'] = weather_simulation[
-                                                   'precipitable_water'] / 10  # formatting for PV-lib
+    weather_simulation['precipitable_water'] = weather_simulation['precipitable_water'] / 10  # formatting for PV-lib
+    weather_simulation['cos_theta'] = weather_simulation['bhi']/weather_simulation['dni']
+    weather_simulation['cos_theta'] = weather_simulation['cos_theta'].fillna(0)
     return weather_simulation
 
 
