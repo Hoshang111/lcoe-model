@@ -62,6 +62,42 @@ def weather(simulation_years,
     return weather_simulation
 
 
+def weather_benchmark_adjustment(weather_solcast,
+                                 weather_dnv_file,
+                                 weather_dnv_path=None):
+
+    # To match the dates, i am using floor function on date time so to convert 11:30 am to 11:00 for example
+    # the reason for using floor is the end timestamp of each measurement is used as the index so far
+    # according to the first column of the original weather data
+    new_index = [str(i)[0:19] for i in weather_solcast.index.floor('H')]
+    weather_solcast.set_index(pd.to_datetime(new_index, utc=False), inplace=True)
+
+    if weather_dnv_path is None:
+        # If no path is specified for the dnv weather file, then download from the default weather data folder.
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
+                                        delimiter=';',
+                                        index_col=0)
+    else:
+        weather_dnv_dummy = pd.read_csv(weather_dnv_path, index_col=0)
+
+    weather_dnv_dummy = weather_dnv_dummy.rename(
+        columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
+                 'WindVel': 'wind_speed'})
+
+    weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed']].copy()
+    weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
+
+    # Join the precipitable water and cos_theta to weather_dnv
+    weather_dnv = weather_dnv.join(weather_solcast[['precipitable_water', 'cos_theta']])
+    weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much better aligned this way
+    weather_dnv['dni'] = weather_dnv['bhi'] / weather_dnv['cos_theta']  # conversion from bhi to dni with cos theta
+    weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
+
+    weather_dnv_simulations = weather_dnv[['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air', 'precipitable_water']]
+    return weather_dnv_simulations
+
+
 def rack_module_params(rack_type,
                        module_type):
     """
@@ -251,7 +287,7 @@ def dc_yield(DCTotal,
     elif temp_model == 'pvsyst':
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
-        raise ValueError ('Please choose temperature model as Sandia: or PVSyst')
+        raise ValueError('Please choose temperature model as Sandia: or PVSyst')
 
     if rack_params['rack_type'] == 'east_west':
         ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
@@ -371,7 +407,86 @@ def dc_yield(DCTotal,
     # dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
     return dc_results, dc_df, dc_size
 
-    # Todo: The model calculates according to UTC so we will need to modify the time-stamp to Darwin...
+
+def dc_yield_benchmarking (DCTotal,
+                           rack_params,
+                           module_params,
+                           temp_model,
+                           weather_simulation,
+                           num_of_zones=167,
+                           num_of_inv_per_zone=2,
+                           num_of_module_per_string=26,
+                           num_of_strings_per_inverter=212,
+                           num_of_strings_per_mav=4,
+                           num_of_strings_per_sat=4):
+
+    coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
+    latitude, longitude, name, altitude, timezone = coordinates[0]
+    location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
+
+    if temp_model == 'sapm':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+    elif temp_model == 'pvsyst':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
+    else:
+        raise ValueError('Please choose temperature model as Sandia: or PVSyst')
+
+    if rack_params['rack_type'] == 'east_west':
+        ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
+
+        # Choose inverter as SMA SC 3000
+        inverter_list = pvsystem.retrieve_sam('cecinverter')
+        filter_col = [col for col in inverter_list if col.startswith('SMA')]
+        inverter_list_sma = inverter_list[filter_col]
+
+        # It doesn't have the exact inverter so enter the chosen SMA inverter parameters manually
+        inverter_params = pd.Series({'Vac':655, 'Pso':12000, 'Paco':2850000, 'Pdco':2900000, 'Vdco':1077,
+                                    'C0': -0.0,'C1':0.0001, 'C2':0.000911, 'C3':0.000215,
+                                    'Pnt':2000, 'Vdcmax':1500, 'Idcmax':3200, 'Mppt_low':856, 'Mppt_high':1425,
+                                    'CEC_Date':'2/15/2019', 'CEC_Type': 'Grid Support'}, name='SMA SC 3000-EV')
+        # 'https://www.enfsolar.com/pv/inverter-datasheet/11765' and other SMA data sheets
+
+        num_of_mav_per_inverter = num_of_strings_per_inverter/num_of_strings_per_mav
+        num_of_module_per_inverter = num_of_strings_per_inverter * num_of_module_per_string
+
+        module_tilt = rack_params['tilt']
+        mount1 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
+        mount2 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
+
+        # Define two arrays resembling Maverick design: one east facing & one west facing
+        # For now we are designing at the inverter level with 4 MAVs per inverter. Half of the array is assigned with
+        # mount 1 (east facing) and the other half is assigned with mount 2 (west facing)
+        array_one = pvsystem.Array(mount=mount1,
+                                   module_parameters=module_params,
+                                   temperature_model_parameters=temperature_model_parameters,
+                                   modules_per_string=num_of_module_per_string,
+                                   strings=num_of_strings_per_inverter / 2)
+
+        array_two = pvsystem.Array(mount=mount2,
+                                   module_parameters=module_params,
+                                   temperature_model_parameters=temperature_model_parameters,
+                                   modules_per_string=num_of_module_per_string,
+                                   strings=num_of_strings_per_inverter / 2)
+
+        inverter_array = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
+
+        # Model-Chain
+        # Todo: We can try different angle of irradiance (aoi) models down the track
+        mc = ModelChain(inverter_array, location, aoi_model='ashrae')
+        # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
+        mc.run_model(weather_simulation)
+
+        # in kW rated DC power output per inverter
+        dc_rated_power = module_params['STC'] / 1000 * num_of_module_per_inverter
+
+        # Find the total DC output for the given DC size/total module number
+        # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
+        multiplication_coeff = num_of_zones * num_of_inv_per_zone
+        dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
+        # dc_results is the DC yield of the total solar farm
+
+
+
 
 
 

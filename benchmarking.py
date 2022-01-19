@@ -1,44 +1,6 @@
-""" This is the main script for the yield assessment. The script calls the functions below to calculate the Net Present Value
+""" This is the benchmarking script for the yield assessment. The script calls the functions below to calculate the Net Present Value
 (NPV) of the solar farm
-
-1) Weather:
-Input: Weather file, year of simulation
-Output: Weather dataframe in the required format for PVlib simulatins
-
-2) Racks & modules:
-Input: Type of module and rack
-Output: Module and rack parameters required for PVlib PVsystem extracted from the module & rack database
-
-3) Sizing
-Input: DC size of the solar farm
-Output: Configuration in terms of number of single-axis tracking (SAT) racks or 5B Maverick units (MAV)
-
-4) DC/AC Yield:
-Input: number of racks, number of MAVs, weather data, module name, mounting type (optional & future improvement:
-temperature rack type, aoi model, back-tracking/optimal tilt angle)
-Output: DC/AC yield
-
-5) Revenue and storage behaviour
-Input: DC yield, export limit
-Output: Revenue
-
-6) Cost (get deterministic or monte-carlo cost distribution of the solar farm)
-Input: DC size pf the solar farm
-Output: Cost
-
-7) Net present value (NPV)
-Input: Revenue, Cost
-Output: NPV
-
-Initially, we will write the Main script to call out all these functions to give a NPV
-Later, we will convert this to an optimization process which will give the optimum NPV based on:
-- Configuration
-- Mounting
-- Other parameters (more advanced params like back tracking algo, temp/racking type etc.)
-During the optimisation process/simulations, cost function will give deterministic values. Once the optimum NPV is found
-cost function also give the Monte-Carlo distribution.
 """
-
 # %% Import
 import pandas as pd
 import numpy as np
@@ -49,71 +11,51 @@ import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 # mpl.use('Qt5Agg')
-
 # TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
 # %%
 # Weather Solcast
 simulation_years = [2018]
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
-
 # %%
 # Weather adjustment between DNV weather files and Solcast Weather files
 
 # DNV weather data don't have dni data but it has bhi (beam horizontal radiation: horizontal component of dni)
 # We need the cos theta (zenith angle) to derive dni from bhi (dni is needed by pvlib simulations). We are going to
 # extract the cost theta from Solcast weather files and use it in DNV weather data for the corresponding timestamps.
-
 simulation_years = np.arange(2007, 2022, 1)
 weather_file = 'Solcast_PT60M.csv'
 weather_simulation = func.weather(simulation_years, weather_file)
 weather_simulation.set_index(weather_simulation.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
+weather_dnv_file = 'Combined_Longi_545_Maverick_FullTS.csv'
 
-# To match the dates, i am using floor function on date time so to convert 11:30 am to 11:00 for example
-# the reason for using floor is the end timestamp of each measurement is used as the index so far
-# according to the first column of the original weather data
-new_index = [str(i)[0:19] for i in weather_simulation.index.floor('H')]
-weather_simulation.set_index(pd.to_datetime(new_index, utc=False), inplace=True)
-
-
-weather_dnv_dummy = pd.read_csv(r"C:\Users\baran\cloudstor\PycharmProjects\sizing-costing-model\Data\WeatherData\Combined_Longi_545_Maverick_FullTS.csv",
-                          delimiter=';',
-                          index_col=0)
-weather_dnv_dummy = weather_dnv_dummy.rename(columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
-                                      'WindVel': 'wind_speed'})
-
-weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed']].copy()
-weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
-
-# Join the precipitable water and cos_theta to weather_dnv
-weather_dnv = weather_dnv.join(weather_simulation[['precipitable_water','cos_theta']])
-weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much aligned this way
-weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
-
-# You can ignore the dates where the new columns are empty due to date date mismatch
-
-
+# Complete set of dnv weather data you can extract specific years for simulations later on
+weather_dnv = func.weather_benchmark_adjustment(weather_simulation, weather_dnv_file)
+simulation_years = 2018
+weather_dnv_simulation = weather_dnv[str(simulation_years)]
 # %% ======================================
 # Rack_module
-rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
+rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
+# module_type = 'Longi_LR5-72HBD-545M'
 install_year = 2028
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
 # %%
-# Sizing/rack and module numbers
-# Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 11000  # DC size in MW
-num_of_zones = 267  # Number of smaller zones that will make up the solar farm
-zone_area = 4e5   # Zone Area in m2
+# Benchmarking parameters according to DNV
+
+DCTotal = 1000  # DC size in MW
+num_of_zones = 167  # Number of smaller zones that will make up the solar farm
+                    # (this is equal number of SMA MV 6000 stations)
+zone_area = 4e4   # Zone Area in m2
 rack_interval_ratio = 0.04
 rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
                                                                              rack_params, zone_area, rack_interval_ratio)
 # %% ========================================
 # DC yield
-temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
+temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
-                                           rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
+                                            rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
 
 if rack_type == '5B_MAV':
     annual_yield = np.array([y.sum()/1e9 for y in dc_results]) # annual yield in GWh
