@@ -1,4 +1,5 @@
 import pvlib
 
-results = pvlib.pvsystem.singlediode(photocurrent=13.469, saturation_current=6e-11, resistance_series=0.23,
-                                     resistance_shunt=250, nNsVth=1.9)
+results = pvlib.pvsystem.singlediode(photocurrent=13.8135, saturation_current=1.25e-10, resistance_series=0.13,
+
+                                     resistance_shunt=350, nNsVth=2.03)
