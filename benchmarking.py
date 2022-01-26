@@ -11,12 +11,7 @@ import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 # mpl.use('Qt5Agg')
-# TODO: OPTIMISATION FOR MAVS (FIXED EXPORT LIMIT 3.3 GW) CHANGE SIZE TO SEE THE NPV & LCOE.
-# %%
-# Weather Solcast
-simulation_years = [2018]
-weather_file = 'Solcast_PT60M.csv'
-weather_simulation = func.weather(simulation_years, weather_file)
+
 # %%
 # Weather adjustment between DNV weather files and Solcast Weather files
 
@@ -25,25 +20,21 @@ weather_simulation = func.weather(simulation_years, weather_file)
 # extract the cost theta from Solcast weather files and use it in DNV weather data for the corresponding timestamps.
 simulation_years = np.arange(2007, 2022, 1)
 weather_file = 'Solcast_PT60M.csv'
-weather_simulation = func.weather(simulation_years, weather_file)
-weather_simulation.set_index(weather_simulation.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
-weather_dnv_file = 'Combined_Longi_545_Maverick_FullTS.csv'
+weather_solcast = func.weather(simulation_years, weather_file)
+weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
+# Choose which module to benchmark
+module_rating = 570
+weather_dnv_file = 'Combined_Longi_%d_Maverick_FullTS.csv'%module_rating
 # Complete set of dnv weather data you can extract specific years for simulations later on
-weather_dnv = func.weather_benchmark_adjustment(weather_simulation, weather_dnv_file)
-simulation_years = 2018
-weather_dnv_simulation = weather_dnv[str(simulation_years)]
+weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
 # %% ======================================
 # Rack_module
 rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
-module_type = 'HJT_2028_M10'  # Enter one of the modules from the SunCable module database
-# module_type = 'Longi_LR5-72HBD-545M'
-install_year = 2028
+module_type = 'Longi LR5-72HBD-%dM'%module_rating  # Enter one of the modules from the SunCable module database
 rack_params, module_params = func.rack_module_params(rack_type, module_type)
-
 # %%
 # Benchmarking parameters according to DNV
-
 DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
@@ -54,127 +45,88 @@ rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(D
 # %% ========================================
 # DC yield
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
-dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
-                                            rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
+simulation_years = 2018
+weather_simulation = weather_dnv[str(simulation_years)]
+weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
+# In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
+# takes it as UTC and gives incorrect results.
+# So options for this:
+weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
+# Or you can manually shift by weather_simulation = weather_simulation.shift(9)
 
-if rack_type == '5B_MAV':
-    annual_yield = np.array([y.sum()/1e9 for y in dc_results]) # annual yield in GWh
-    annual_yield_mav = annual_yield.copy()
-else:
-    annual_yield = np.array([y.sum()/1e9 for y in dc_results])  # annual yield in GWh
-    annual_yield_mav = annual_yield.copy()
-    annual_yield_per_module = annual_yield * 1e6 / module_per_zone_num_range / num_of_zones  # annual yield per module in kWh
-    annual_yield_sat = annual_yield.copy()
+dc_results = func.dc_yield_benchmarking(DCTotal, rack_params, module_params, temp_model, weather_simulation)
+dc_results_dnv = weather_simulation['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
+#%% Plot features
 
-#%% Plotting
+font_size = 30
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+      'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
+# For label titles
+fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
-# Un hash the lines below for desired plots...
+#%% Line plot
+# Choose different dates for plotting
+date1 = '2018-10-01'
+date2 = '2018-10-07'
 
-plot_func.plot_yield(annual_yield_sat, annual_yield_mav, gcr_range, DCTotal, dc_size)
-# plot_func.plot_yield_per_module(annual_yield_sat, module_per_zone_num_range, num_of_zones, gcr_range)
-# plot_func.plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size)  # run simulations with sapm, and pvsyst
-# and assign to annual_yield_sapm and annual_yield_pvsyst respectively for this line to work
+fig, ax = plt.subplots(figsize=(25, 20))
+ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW')
+ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV')
+ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
+ax.legend()
+# plt.show()
+fig_name = 'DC yield benchmark_MAV_Oct2018'
+ #save_path = "C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
+save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking" + fig_name
+plt.savefig(save_path, dpi=300, bbox_inches='tight')
+#%% Scatter Plot
 
-# fig_name =  #  enter the figure name
-# save_path = "C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
-# plot_func.plot_save(fig_name, save_path)
-#%% ==========================================
-# Revenue and storage behaviour
-export_lim = 3.2e9/num_of_zones
-storage_capacity = 4e7
-scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
-kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-    #%% ==========================================
-# Cost
-data_tables = sizing.get_airtable()
-cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
-component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-#%% ==========================================
-# Net present value (NPV)
-# resize yield output to match cost time series
-kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
-revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
+x = dc_results/1e9
+y = dc_results_dnv/1e9
+fig, ax = plt.subplots(figsize=(25, 20))
+ax.scatter(x, y)
+ax.set_xlabel('UNSW MAV DC yield (GW)', **fontdict)
+ax.set_ylabel('DNV MAV DC yield (GW)', **fontdict)
+ax.set_title('DC yield benchmarking-%d'%simulation_years, **fontdict)
 
-# ==========================================
-npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
-LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
-# %% =======================================
-# Simulations to find optimum NPV according to number of racks per zone
+# Best fit line
+m, b = np.polyfit(x, y, 1)
+correlation_matrix = np.corrcoef(x.values, y.values)
+correlation_xy = correlation_matrix[0,1]
+r_squared = correlation_xy**2
 
-rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
-num_of_zones_sim = 1  # find the results per zone for now
-scheduled_price = 0.00004
-npv_array = []
-npv_cost_array = []
-npv_revenue_array = []
-gcr_range_array = []
-rack_per_zone_num_range_array = []
-iteration = 1
+ax.plot(dc_results/1e9, dc_results/1e9 * m + b, linewidth=3, color='C1')
+plot_text = 'R-squared = %.2f' %r_squared
+plt.text(0.3, 0.3, plot_text, fontsize=25)
 
-while rack_interval > 1:
-    print('Max NPV is %d' % npv.max())
-    print('Iteration = %d' % iteration)
-    npv_array.append(npv)
-    npv_cost_array.append(npv_cost)
-    npv_revenue_array.append(npv_revenue)
-    gcr_range_array.append(gcr_range)
-    rack_per_zone_num_range_array.append(rack_per_zone_num_range)
-    index_max = npv.idxmax()
-    DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
-    new_interval_ratio = rack_interval / index_max / 5
-    if index_max == npv.index[0] or index_max == npv.index[10]:
-        new_interval_ratio = 0.04
+# plt.show()
+fig_name = 'Scatter_%d'%simulation_years
+save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
-                                                                                   module_params, rack_params, zone_area,
-                                                                                   new_interval_ratio)
-    rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
-    dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
-                                               rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
-                                               num_of_zones)
-    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
-    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-    kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
-    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series)
-    LCOE, kWh_discounted = sizing.get_LCOE(cash_flow_by_year, kWh_series)
-    iteration += 1
-    if iteration >= 11:
-        break
-# %% ==========================================
-# Plotting NPV, GCR_range, NPV_cost, NPV_revenue
-plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
-                   rack_params['Modules_per_rack'], module_params['STC'])
+#%% Bar plot
+annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
+annual_yield_dnv = [dc_results_dnv[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
+fig, ax = plt.subplots(figsize=(25, 20))
+labels = np.arange(2010, 2021)
+x = np.arange(11)
 
+ax.bar(x, annual_yield_unsw, width=0.3, label='UNSW')
+ax.bar(x + 0.3, annual_yield_dnv, width=0.3, label='DNV')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.set_ylabel('Annual DC yield (GWh) of 1GW DC rated solar farm', **fontdict)
+ax.legend()
 
+ax2 = ax.twinx()
+dc_yield_diff = (np.array(annual_yield_unsw) - np.array(annual_yield_dnv))/annual_yield_unsw * 100
+ax2.plot(dc_yield_diff, linestyle='--', linewidth=2, color='black')
+ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
+ax2.set_ylim(1,10)
 
-
-# %% ==========================================================
-# Perform probabalistic analysis: Part 1 - Costs
-racks_per_zone_max = npv.idxmax()
-rpzm_series = pd.Series(racks_per_zone_max)
-component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter, data_tables_iter \
-    = sizing.get_mcanalysis(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
-
-
-# %% ==========================================================
-# Present data from probabalistic analysis
-
-cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), columns='Iteration', index='Year')
-revmax_direct = direct_revenue[racks_per_zone_max]
-revmax_store = store_revenue[racks_per_zone_max]
-revmax_total = total_revenue[racks_per_zone_max]
-kWh_iter = kWh_discounted[racks_per_zone_max]
-revmax_total_df = pd.DataFrame(revmax_total)
-revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
-npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
-    = sizing.get_npv(cash_flow_transformed, revenue_series_iter)
-LCOE_iter = npv_cost_iter/kWh_iter*100
-
-filename = rack_type + ' ' + module_type + ' install_' + str(install_year)
-npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
-LCOE_iter.to_csv('.\\Data\\OutputData\\' + filename + ' LCOE.csv')
-
-# Todo : In the future temperature (rack type) and aoi and single axis tracking (tracking algorithm)
-# Todo : New algorithm will have more optimal tilt angle as well as better tracking
+#plt.show()
+fig_name = 'Bar plot annual yield comparison'
+save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+plt.savefig(save_path, dpi=300, bbox_inches='tight')

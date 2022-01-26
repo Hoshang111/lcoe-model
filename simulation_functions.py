@@ -44,17 +44,13 @@ def weather(simulation_years,
     weather_data.set_index(pd.to_datetime(weather_data.index), inplace=True)  # set index to datetime format (each index now
     # represents end of the hourly period: i.e. 2007-01-01 02:00:00 represents the measurements between 1-2 am
 
-    # Change the timezone of the datetime to Australia/Darwin
-    # (this may not be necessary/change timezone at the very end)
-    # dummy = [str(i)[0:19] for i in weather.index]
-    # weather.set_index(pd.DatetimeIndex(dummy, tz='UTC'), inplace=True)
 
     weather_data = weather_data.rename(columns={'Ghi': 'ghi', 'Dni': 'dni', 'Dhi': 'dhi', 'AirTemp': 'temp_air',
                                       'WindSpeed10m': 'wind_speed', 'PrecipitableWater': 'precipitable_water',
                                                 'Ebh': 'bhi'})
 
-    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'bhi']].copy()[str(sy)] for sy
-             in simulation_years]  # get required PVlib weather variables for desired simulation years
+    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'bhi']].copy()[str(sy)]
+             for sy in simulation_years]  # get required PVlib weather variables for desired simulation years
     weather_simulation = pd.concat(dummy)
     weather_simulation['precipitable_water'] = weather_simulation['precipitable_water'] / 10  # formatting for PV-lib
     weather_simulation['cos_theta'] = weather_simulation['bhi']/weather_simulation['dni']
@@ -65,12 +61,6 @@ def weather(simulation_years,
 def weather_benchmark_adjustment(weather_solcast,
                                  weather_dnv_file,
                                  weather_dnv_path=None):
-
-    # To match the dates, i am using floor function on date time so to convert 11:30 am to 11:00 for example
-    # the reason for using floor is the end timestamp of each measurement is used as the index so far
-    # according to the first column of the original weather data
-    new_index = [str(i)[0:19] for i in weather_solcast.index.floor('H')]
-    weather_solcast.set_index(pd.to_datetime(new_index, utc=False), inplace=True)
 
     if weather_dnv_path is None:
         # If no path is specified for the dnv weather file, then download from the default weather data folder.
@@ -83,18 +73,26 @@ def weather_benchmark_adjustment(weather_solcast,
 
     weather_dnv_dummy = weather_dnv_dummy.rename(
         columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
-                 'WindVel': 'wind_speed'})
+                 'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
 
-    weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed']].copy()
+    weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed', 'dc_yield']].copy()
     weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
 
-    # Join the precipitable water and cos_theta to weather_dnv
+
+    # The weather dnv data doesn't have the precipitable water and cos_theta which is needed for the simulations
+    # This data can be extracted from the SolCast weather data.
+    # To match the dates, i am using floor function on Solcast date time so to convert  11:30 am to 11:00 for example
+    # the reason for using floor is the end timestamp of each measurement is used as the index so far
+    # according to the first column of the original weather data
+    new_index = [str(i)[0:19] for i in weather_solcast.index.floor('H')]
+    weather_solcast.set_index(pd.to_datetime(new_index, utc=False), inplace=True)
+
     weather_dnv = weather_dnv.join(weather_solcast[['precipitable_water', 'cos_theta']])
     weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much better aligned this way
     weather_dnv['dni'] = weather_dnv['bhi'] / weather_dnv['cos_theta']  # conversion from bhi to dni with cos theta
     weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
-
-    weather_dnv_simulations = weather_dnv[['ghi', 'dhi', 'dni', 'wind_speed', 'temp_air', 'precipitable_water']]
+    weather_dnv['dni'].replace(np.inf, 0, inplace=True)
+    weather_dnv_simulations = weather_dnv[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'dc_yield']]
     return weather_dnv_simulations
 
 
@@ -485,6 +483,7 @@ def dc_yield_benchmarking (DCTotal,
         dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         # dc_results is the DC yield of the total solar farm
 
+        return dc_results_total
 
 
 
