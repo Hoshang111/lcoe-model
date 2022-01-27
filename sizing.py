@@ -102,7 +102,7 @@ def get_revenue(yield_series, export_limit, price_schedule, storage_capacity):
 
     return kwh_export, yearly_direct, yearly_storage, yearly_total
 
-def get_costs(num_of_racks, rack_params, module_params, data_tables):
+def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
     '''
     Function to return a yearly timeseries of costs
     for installing different numbers of racks
@@ -113,7 +113,7 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables):
     return:
     '''
 
-    install_year=2025
+    #install_year=2025
     # Option 3 Call code directly and overwrite values as required
     scenario_list = {'Scenario_Name': num_of_racks, 'ScenarioID': num_of_racks,\
          'Scenario_Tag': num_of_racks}
