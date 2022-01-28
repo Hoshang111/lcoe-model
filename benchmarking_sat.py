@@ -1,6 +1,6 @@
-""" This is the benchmarking script for the yield assessment. The script calls the functions below to calculate the Net Present Value
-(NPV) of the solar farm
+""" This is the benchmarking script for DC yield assessment for SATs.
 """
+
 # %% Import
 import pandas as pd
 import numpy as np
@@ -24,7 +24,7 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Choose which module to benchmark
-module_rating = 570
+module_rating = 545
 weather_dnv_file = 'Combined_Longi_%d_Maverick_FullTS.csv'%module_rating
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
@@ -45,8 +45,9 @@ rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(D
 # %% ========================================
 # DC yield
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
-simulation_years = 2018
-weather_simulation = weather_dnv[str(simulation_years)]
+
+# Either choose a single year of simulation of 11 years between 2010-2020
+# simulation_years = 2020 ; weather_simulation = weather_dnv[str(simulation_years)]
 weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
 # In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
 # takes it as UTC and gives incorrect results.
@@ -68,8 +69,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-01'
-date2 = '2018-10-07'
+date1 = '2018-04-01'
+date2 = '2018-04-07'
 
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW')
@@ -77,12 +78,11 @@ ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
 # plt.show()
-fig_name = 'DC yield benchmark_MAV_Oct2018'
+fig_name = 'DC yield benchmark_MAV_Apr2018'
  #save_path = "C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking" + fig_name
+save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Scatter Plot
-
 x = dc_results/1e9
 y = dc_results_dnv/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -105,7 +105,6 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 fig_name = 'Scatter_%d'%simulation_years
 save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
-
 #%% Bar plot
 annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 annual_yield_dnv = [dc_results_dnv[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
