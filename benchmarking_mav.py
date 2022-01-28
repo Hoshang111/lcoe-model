@@ -54,7 +54,7 @@ weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
 weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
 # Or you can manually shift by weather_simulation = weather_simulation.shift(9)
 
-dc_results = func.dc_yield_benchmarking(DCTotal, rack_params, module_params, temp_model, weather_simulation)
+dc_results = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation)
 dc_results_dnv = weather_simulation['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
 
