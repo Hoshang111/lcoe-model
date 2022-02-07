@@ -417,7 +417,7 @@ def dc_yield_benchmarking_mav(DCTotal,
                            module_rating,
                            num_of_zones=167,
                            num_of_inv_per_zone=2,
-                           num_of_module_per_string=26,):
+                           num_of_module_per_string=26):
 
     coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
