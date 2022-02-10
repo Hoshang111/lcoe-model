@@ -43,10 +43,12 @@ import layout_optimiser as optimiser
 from simulation_functions import weather
 from sizing import get_airtable
 from suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
-     generate_parameters, calculate_variance_contributions
+     generate_parameters, calculate_variance_contributions, import_excel_data
 
 # %%
 # Set overall conditions for this analysis
+
+use_previous_airtable_data = False
 
 # Weather
 simulation_years = [2019]
@@ -74,8 +76,11 @@ scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
 # Financial Parameters
 discount_rate = 0.07
 
-# cost data tables from airtable
-data_tables = get_airtable()
+if use_previous_airtable_data:
+    data_tables = import_excel_data('CostDatabaseFeb2022.xlsx')
+else:
+    # cost data tables from airtable
+    data_tables = get_airtable(save_tables=True)
 
 
 ################
@@ -95,6 +100,16 @@ rack_type = '5B_MAV'
 scenario_tables_optimum_MAV, revenue_MAV, kWh_export_MAV = optimise_layout(weather_simulation,\
      rack_type, module_type, install_year, DCTotal, num_of_zones, zone_area, rack_interval_ratio,\
           temp_model, export_lim, storage_capacity, scheduled_price, data_tables, discount_rate)
+
+
+# %% =====================================
+# Optimise MAVs with power, area, zone and module
+importlib.reload(optimiser)
+rack_type = '5B_MAV_separated'
+scenario_tables_optimum_MAV_separated, revenue_MAV_separated, kWh_export_MAV_separated = optimise_layout(weather_simulation,\
+     rack_type, module_type, install_year, DCTotal, num_of_zones, zone_area, rack_interval_ratio,\
+          temp_model, export_lim, storage_capacity, scheduled_price, data_tables, discount_rate)
+
 
 
 #%%
