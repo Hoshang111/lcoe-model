@@ -1,0 +1,5 @@
+Rack_ID,Modules_per_rack,rack_type,elevation,rear_shading,tilt,length,width,Area,cost_components
+,#,#,m,%,,m,m,m2,list
+5B_MAV,120,east_west,0.1,1,10,20,10,200,"[(17,'rack'),(19,'fixed')]"
+SAT_1,120,SAT,2,0.05,NA,40,5,200,"[(13,'rack'),(14,'fixed')]"
+5B_MAV_separated,120,east_west,0.1,1,10,20,10,200,"[(21,'rack'),(19,'fixed'),(22,'MW')]"
