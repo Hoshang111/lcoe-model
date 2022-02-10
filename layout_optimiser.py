@@ -56,7 +56,7 @@ import matplotlib as mpl
 def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate):
+                     data_tables, discount_rate, fig_title=None):
 
     # %% ======================================
     # Rack_module
@@ -139,7 +139,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     # %% ==========================================
     # Plotting NPV, GCR_range, NPV_cost, NPV_revenue
     plot_func.plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
-                       rack_params['Modules_per_rack'], module_params['STC'])
+                       rack_params['Modules_per_rack'], module_params['STC'], fig_title=fig_title)
 
     # %% ================================================
     # Find optimum number of racks and create tables for Monte Carlo Analysis
@@ -182,6 +182,35 @@ def form_new_data_tables(data_tables, scenarios):
     new_data_tables = combined_SCNcostdata, combined_SYScostdata, system_list, system_component_link, component_list, currency_list, costcategory_list
 
     return new_data_tables
+
+def extract_cost_tables(scenarios):
+    # Transform two sets of scenario tables into a new set which includes both SAT and MAV (or more)
+
+
+    extracted_scenario_list = pd.DataFrame()
+    extracted_scenario_system_link = pd.DataFrame()
+    for (data, scenario_label) in scenarios:
+        SCNcostdata, SYScostdata = data
+        # Find the old ScenarioID
+        if SCNcostdata.shape[0] == 1:
+            old_scenario_ID = SCNcostdata['ScenarioID'].values[0]
+            SCNcostdata['ScenarioID'] = scenario_label
+
+            # Check if SYScostdata has any other scenarios
+            if SYScostdata[SYScostdata['ScenarioID']==old_scenario_ID].shape[0] == SYScostdata.shape[0]:
+                SYScostdata['ScenarioID'] = scenario_label
+            else:
+                print('Error! SYScostdata has multiple scenarios')
+        else:
+            print('Error! Zero or Multiple Scenarios')
+        extracted_scenario_list = extracted_scenario_list.append(SCNcostdata)
+        extracted_scenario_system_link = extracted_scenario_system_link.append(SYScostdata)
+
+    extracted_scenario_system_link['ScenarioSystemID'] = range(0, extracted_scenario_system_link.shape[0])
+
+
+    return extracted_scenario_list, extracted_scenario_system_link
+
 
 
 
