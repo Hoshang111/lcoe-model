@@ -1,4 +1,0 @@
-Rack_ID,Modules_per_rack,rack_type,elevation,rear_shading,tilt,length,width,Area
-,#,#,m,%,,m,m,m2
-5B_MAV,120,east_west,0.1,1,10,20,10,200
-SAT_1,120,SAT,2,0.05,NA,40,5,200
