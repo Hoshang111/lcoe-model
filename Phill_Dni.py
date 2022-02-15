@@ -22,5 +22,8 @@ weather_simulation = func.weather(simulation_years, weather_file)
 
 solpos = location.get_solarposition(weather_simulation.index)
 clearsky = location.get_clearsky(weather_simulation.index)
+suntimes = location.get_sun_rise_set_transit(weather_simulation.index, method='spa')
+transit_zenith = location.get_solarposition(suntimes['transit'])
+
 
 

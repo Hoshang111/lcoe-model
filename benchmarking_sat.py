@@ -50,7 +50,7 @@ gcr = [0.56 if spacing == '4m' else 0.45 if spacing == '5m' else 0.38 if spacing
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 
 # Choose 10 year benchmarking/simulation period
-weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
+weather_simulation = weather_solcast['2010-01-01':'2010-12-31']
 # In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
 # takes it as UTC and gives incorrect results.
 # So options for this:
