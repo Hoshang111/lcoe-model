@@ -56,8 +56,6 @@ weather_simulation_solcast = weather_solcast['2010-01-01':'2020-12-31']
 # In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
 # takes it as UTC and gives incorrect results.
 # So options for this:
-weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
-# Or you can manually shift by weather_simulation = weather_simulation.shift(9)
 
 weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Australia/Darwin')
 # Todo : Below command ends up shifting the tstamp by half hour
