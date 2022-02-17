@@ -9,7 +9,6 @@ import pvlib.bifacial as bifacial
 from pvlib.tools import cosd, sind, tand
 from pvlib.tracking import singleaxis
 import simulation_functions as func
-
 # %% Download Solcast Weather file
 weather_file = 'Solcast_PT60M.csv'
 simulation_years = np.arange(2007, 2022, 1)
@@ -30,8 +29,7 @@ solar_zenith = solar_position['apparent_zenith']
 
 # single axis tracking information
 tracking_output = singleaxis(solar_zenith, solar_azimuth, axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True, gcr=0.3, cross_axis_tilt=0)
-
-
+# %%
 surface_azimuth = tracking_output['surface_azimuth']
 surface_tilt = tracking_output['tracker_theta']
 axis_azimuth = 0
@@ -49,5 +47,5 @@ rho_back_pvrow = 0.05
 horizon_band_angle = 15
 
 # WHERE I AM AT!
-bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
+bifacial_output = bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
                               axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo)
