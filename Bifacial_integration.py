@@ -51,8 +51,3 @@ horizon_band_angle = 15
 # WHERE I AM AT!
 bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
                               axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo)
-
-
-
-
-
