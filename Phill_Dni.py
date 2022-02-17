@@ -62,6 +62,7 @@ dni_lookup[dni_lookup>30] = 30
 weather_dnv_aware = weather_dnv.tz_localize('Australia/Darwin')
 dni_simulated = (weather_dnv_aware['ghi']-weather_dnv_aware['dhi'])*dni_lookup
 
-
+dni_simulated.to_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'),
+                     header='Dni')
 
 
