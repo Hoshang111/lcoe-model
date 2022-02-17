@@ -2,6 +2,7 @@ import PyQt5
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 # mpl.use('Qt5Agg')
 # mpl.use('TkAgg')
@@ -128,7 +129,7 @@ def plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size):
 
 
 def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
-             module_per_rack, module_rated_power):
+             module_per_rack, module_rated_power, fig_title=None):
     rack_range_plot = np.array(rack_per_zone_num_range_array).flatten()
     npv_plot = np.array(npv_array).flatten()
     npv_cost_plot = np.array(npv_cost_array).flatten()
@@ -151,8 +152,11 @@ def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost
     ax[1, 1].scatter(rack_range_plot, rated_power_per_zone_plot, s=size, color='C5')
     ax[1, 1].set_ylabel('Rated power per zone (MW)', **fontdict)
     ax[1, 1].set_xlabel('Number of racks per zone', **fontdict)
-
     fig.legend(['NPV', 'GCR', 'Cost', 'Revenue', 'Size'], loc='upper right', prop={'size': 24})
+    if fig_title is not None:
+        fig.suptitle(fig_title, **fontdict)
+        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
+        plt.savefig(file_name)
     plt.show()
 
 
