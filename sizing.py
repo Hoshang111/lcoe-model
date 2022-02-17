@@ -112,42 +112,98 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
     param install_year:
     return:
     '''
+    old_code = False
 
-    #install_year=2025
-    # Option 3 Call code directly and overwrite values as required
-    scenario_list = {'Scenario_Name': num_of_racks, 'ScenarioID': num_of_racks,\
-         'Scenario_Tag': num_of_racks}
+    if old_code:
+        #install_year=2025
+        # Option 3 Call code directly and overwrite values as required
+        scenario_list = {'Scenario_Name': num_of_racks, 'ScenarioID': num_of_racks,\
+             'Scenario_Tag': num_of_racks}
 
-    scn_cost_data = pd.DataFrame(scenario_list, columns=[
-        'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+        scn_cost_data = pd.DataFrame(scenario_list, columns=[
+            'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
 
-    system_link_racks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks,\
-        'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+        system_link_racks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks,\
+            'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
 
-    sys_cost_racks = pd.DataFrame(system_link_racks, columns=[
-        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+        sys_cost_racks = pd.DataFrame(system_link_racks, columns=[
+            'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
-    system_link_fixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks,\
-        'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+        system_link_fixed = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks,\
+            'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
 
-    sys_cost_fixed = pd.DataFrame(system_link_fixed, columns=[
-        'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+        sys_cost_fixed = pd.DataFrame(system_link_fixed, columns=[
+            'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
-    if rack_params['rack_type'] == 'SAT':
-        sys_cost_racks['SystemID'] = 13
-        sys_cost_fixed['SystemID'] = 14
-    elif rack_params['rack_type'] == 'east_west':
-        sys_cost_racks['SystemID'] = 17
-        sys_cost_fixed['SystemID'] = 19
+        if rack_params['rack_type'] == 'SAT':
+            sys_cost_racks['SystemID'] = 13
+            sys_cost_fixed['SystemID'] = 14
+            sys_cost_racks['InstallDate'] = install_year
 
-    sys_cost_racks['InstallDate'] = install_year
+            sys_cost_fixed['InstallDate'] = install_year
+            sys_cost_fixed['InstallNumber'] = 1
+            sys_cost_data = sys_cost_racks.append(sys_cost_fixed)
+            sys_cost_data['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
 
-    sys_cost_fixed['InstallDate'] = install_year
-    sys_cost_fixed['InstallNumber'] = 1
 
-    sys_cost_data = sys_cost_racks.append(sys_cost_fixed)
+        elif rack_params['rack_type'] == 'east_west':
+            sys_cost_racks['SystemID'] = 17
+            sys_cost_fixed['SystemID'] = 19
+            sys_cost_racks['InstallDate'] = install_year
+            sys_cost_fixed['InstallDate'] = install_year
+            sys_cost_fixed['InstallNumber'] = 1
+            sys_cost_data = sys_cost_racks.append(sys_cost_fixed)
+            sys_cost_data['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
 
-    sys_cost_data['ScenarioSystemID'] = range(1, 2 * len(num_of_racks) + 1)
+
+
+
+    else:
+        # First setup the scenario_list
+        scenario_list = {'Scenario_Name': num_of_racks, 'ScenarioID': num_of_racks, \
+                         'Scenario_Tag': num_of_racks}
+
+        scn_cost_data = pd.DataFrame(scenario_list, columns=[
+            'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+
+        # Now setup the sys_cost_data table that will replace the scenario_system_link table
+        # First obtain a list of cost components that should be used
+        component_list = rack_params['cost_components'] + module_params['cost_components']
+        print(component_list)
+
+        component_iteration_count = 0
+        for (component_id, install_number_type) in component_list:
+
+            system_link_racks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, \
+                             'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+
+            sys_cost_component = pd.DataFrame(system_link_racks, columns=[
+                'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+            sys_cost_component['InstallDate'] = install_year
+            sys_cost_component['SystemID'] = component_id
+            if install_number_type == 'fixed':
+                sys_cost_component['InstallNumber'] = 1
+            elif install_number_type == 'rack':
+                # No change in install number
+                sys_cost_component['InstallNumber'] *= 1
+            elif install_number_type == 'watt':
+                # find number of watts
+                sys_cost_component['InstallNumber'] *= rack_params['Modules_per_rack'] * module_params['STC']
+            elif install_number_type == 'MW':
+                # find number of MW
+                sys_cost_component['InstallNumber'] *= rack_params['Modules_per_rack'] * module_params['STC'] / 1000/1000
+            elif install_number_type == 'module':
+                # find number of modules
+                sys_cost_component['InstallNumber'] *= rack_params['Modules_per_rack']
+
+            if component_iteration_count == 0:
+                sys_cost_data = sys_cost_component
+            else:
+                sys_cost_data = sys_cost_data.append(sys_cost_component)
+            component_iteration_count += 1
+
+    sys_cost_data['ScenarioSystemID'] = range(0, sys_cost_data.shape[0])
+
     scenario_list, scenario_system_link, system_list, system_component_link, component_list,\
         currency_list, costcategory_list = data_tables
 
@@ -156,7 +212,7 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
          component_list, currency_list, costcategory_list
 
     # Running the cost calculations
-    cost_outputs = calculate_scenarios(new_data_tables, year_start=2024, analyse_years=30)
+    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, analyse_years=30)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
     return cost_outputs
@@ -214,7 +270,7 @@ def get_costs_and_tables (num_of_racks, rack_params, module_params, data_tables,
          component_list, currency_list, costcategory_list
 
     # Running the cost calculations
-    cost_outputs = calculate_scenarios(new_data_tables, year_start=2024, analyse_years=30)
+    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, analyse_years=30)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
     tableoutputs = scn_cost_data, sys_cost_data
@@ -222,7 +278,7 @@ def get_costs_and_tables (num_of_racks, rack_params, module_params, data_tables,
     return cost_outputs, tableoutputs
 
 
-def get_airtable():
+def get_airtable(save_tables=False):
     """
     :return:
     """
@@ -231,7 +287,7 @@ def get_airtable():
     api_key = 'keyJSMV11pbBTdswc'
     base_id = 'appjQftPtMrQK04Aw'
 
-    data_tables = import_airtable_data(base_id=base_id, api_key=api_key)
+    data_tables = import_airtable_data(base_id=base_id, api_key=api_key, save_tables=save_tables)
 
     return data_tables
 
@@ -346,7 +402,7 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
     data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
 
     outputs_iter = calculate_scenarios_iterations(data_tables_iter,\
-         year_start=2024, analyse_years=30)
+         year_start=install_year, analyse_years=30)
 
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter,\
          cash_flow_by_year_iter = outputs_iter
