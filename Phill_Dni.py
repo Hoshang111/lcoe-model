@@ -42,13 +42,15 @@ clearsky = location.get_clearsky(weather_dnv.index)
 
 ## Create Dni lookup table based on 5 minute data
 dt_lookup = pd.date_range(start= weather_dnv.index[0],
-                          end= weather_dnv.index[-1], freq='5T', tz=pytz.UTC)
+                          end= weather_dnv.index[-1], freq='T', tz=pytz.UTC)
 clearsky_lookup = location.get_clearsky(dt_lookup)
 solpos_lookup = location.get_solarposition(dt_lookup)
 zenith_to_rad = np.radians(solpos_lookup)
 cos_lookup = np.cos(zenith_to_rad)
+cos_lookup[cos_lookup > 30] = 30
+cos_lookup[cos_lookup < 0] = 0
 horizontal_dni_lookup = cos_lookup['apparent_zenith']*clearsky_lookup['dni']
-horizontal_dni_lookup[horizontal_dni_lookup<0] = 0
+horizontal_dni_lookup[horizontal_dni_lookup < 0] = 0
 hz_dni_lookup = horizontal_dni_lookup
 hz_dni_lookup.index = horizontal_dni_lookup.index.tz_convert('Australia/Darwin')
 hourly_lookup = hz_dni_lookup.resample('H').mean()
@@ -62,7 +64,7 @@ dni_lookup[dni_lookup>30] = 30
 weather_dnv_aware = weather_dnv.tz_localize('Australia/Darwin')
 dni_simulated = (weather_dnv_aware['ghi']-weather_dnv_aware['dhi'])*dni_lookup
 
-dni_simulated.to_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'),
+dni_simulated.to_csv(os.path.join('Data', 'WeatherData', 'dni_simulated_1minute.csv'),
                      header='Dni')
 
 
