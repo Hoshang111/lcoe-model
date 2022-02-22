@@ -8,6 +8,7 @@ import sizing
 import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import os
 # mpl.use('Qt5Agg')
 # %%
 # Weather adjustment between DNV weather files and Solcast Weather files
@@ -24,12 +25,12 @@ weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), 
 module_rating = 570
 # Choose the benchmark csv
 spacing = '8m'
-cell_type = 'mono'  # choose between mono or bifacial
+cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
+
 
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
-
 # %% ======================================
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
@@ -63,9 +64,20 @@ weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Austral
 #  local. Can make further improvements for this part.
 weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
 
+#%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
+dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
+weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
+weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
+
+#%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
-dc_results = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_solcast,
+dc_results, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_solcast,
                                             module_rating, gcr)
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features

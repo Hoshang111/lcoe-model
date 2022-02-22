@@ -37,7 +37,7 @@ timestamps = solar_position.index
 dni = weather_data['dni']
 dhi = weather_data['dhi']
 gcr = 0.33
-pvrow_height = 1
+pvrow_height = 1.5
 pvrow_width = 1.2
 albedo = 0.25
 n_pvrows = 3
@@ -46,6 +46,15 @@ rho_front_pvrow = 0.03
 rho_back_pvrow = 0.05
 horizon_band_angle = 15
 
-# WHERE I AM AT!
 bifacial_output = bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
                               axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width, albedo)
+bifacial_output = pd.DataFrame(bifacial_output).T
+
+bifacial_output['effective_irradiance'] = bifacial_output['total_abs_front'] + bifacial_output['total_abs_back'] * module_params['Bifacial']
+bifacial_output.fillna(0, inplace=True)
+
+# Extract cell temperature from mc.run_model simulations and input into bifacial_output
+# (Run the normal mc script first)
+
+cell_temp_normal = mc.results.cell_temperature['2018']
+bifacial_output['cell_temperature'] = cell_temp_normal.values
