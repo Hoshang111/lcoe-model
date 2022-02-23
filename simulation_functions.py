@@ -9,6 +9,9 @@ from pvlib.pvsystem import PVSystem, FixedMount
 from pvlib.location import Location
 from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
+import pvlib.bifacial as bifacial
+from pvlib.tracking import singleaxis
+
 import ast
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
@@ -498,6 +501,7 @@ def dc_yield_benchmarking_sat(DCTotal,
                            weather_simulation,
                            module_rating,
                            gcr,
+                           cell_type,
                            num_of_zones=167,
                            num_of_inv_per_zone=2,
                            num_of_module_per_string=26):
@@ -511,6 +515,39 @@ def dc_yield_benchmarking_sat(DCTotal,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
+
+    if cell_type == 'bifacial':
+        # Choose an example year
+        solar_position = Location.get_solarposition(location, weather_simulation.index,
+                                                    weather_simulation['temp_air'])
+        solar_azimuth = solar_position['azimuth']
+        solar_zenith = solar_position['apparent_zenith']
+        # single axis tracking information
+        tracking_output = singleaxis(solar_zenith, solar_azimuth, axis_tilt=0, axis_azimuth=0, max_angle=60,
+                                     backtrack=True,
+                                     gcr=0.3, cross_axis_tilt=0)
+        surface_azimuth = tracking_output['surface_azimuth']
+        surface_tilt = tracking_output['tracker_theta']
+        axis_azimuth = 0
+        timestamps = solar_position.index
+        dni = weather_simulation['dni']
+        dhi = weather_simulation['dhi']
+        pvrow_height = 1.5
+        pvrow_width = 1.2
+        albedo = 0.18
+        n_pvrows = 3
+        index_observed_pvrow = 1
+        rho_front_pvrow = 0.03
+        rho_back_pvrow = 0.05
+        horizon_band_angle = 15
+        bifacial_output = bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
+                                                    axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
+                                                    albedo)
+        bifacial_output = pd.DataFrame(bifacial_output).T
+
+        bifacial_output['effective_irradiance'] = bifacial_output['total_abs_front'] + bifacial_output['total_abs_back'] * \
+                                              module_params['Bifacial']
+        bifacial_output.fillna(0, inplace=True)
 
     ''' DC modelling for single axis tracking (SAT) system '''
     # Choose inverter as SMA SC 3000
@@ -551,6 +588,13 @@ def dc_yield_benchmarking_sat(DCTotal,
     mc.run_model(weather_simulation)
     multiplication_coeff = num_of_zones * num_of_inv_per_zone
     dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
+
+    if cell_type == 'bifacial':
+        cell_temp_normal = mc.results.cell_temperature['2018']
+        bifacial_output['cell_temperature'] = cell_temp_normal.values
+        mc = ModelChain(inverter_sat_system, location)
+        mc.run_model_from_effective_irradiance(bifacial_output)
+        dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
     return dc_results_total, mc, mount
 
 
