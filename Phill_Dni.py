@@ -22,7 +22,7 @@ weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
-weather_dnv_file = 'Combined_Longi_570_Tracker-mono_FullTS_8m.csv'
+weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
                                         delimiter=';',
@@ -40,15 +40,17 @@ clearsky = location.get_clearsky(weather_dnv.index)
 # suntimes = location.get_sun_rise_set_transit(weather_dnv.index, method='spa')
 # transit_zenith = location.get_solarposition(suntimes['transit'])
 
-## Create Dni lookup table based on 5 minute data
+## Create Dni lookup table based on 1 minute data
 dt_lookup = pd.date_range(start= weather_dnv.index[0],
                           end= weather_dnv.index[-1], freq='T', tz=pytz.UTC)
 clearsky_lookup = location.get_clearsky(dt_lookup)
 solpos_lookup = location.get_solarposition(dt_lookup)
 zenith_to_rad = np.radians(solpos_lookup)
 cos_lookup = np.cos(zenith_to_rad)
+cos_lookup[cos_lookup > 30] = 30
+cos_lookup[cos_lookup < 0] = 0
 horizontal_dni_lookup = cos_lookup['apparent_zenith']*clearsky_lookup['dni']
-horizontal_dni_lookup[horizontal_dni_lookup<0] = 0
+horizontal_dni_lookup[horizontal_dni_lookup < 0] = 0
 hz_dni_lookup = horizontal_dni_lookup
 hz_dni_lookup.index = horizontal_dni_lookup.index.tz_convert('Australia/Darwin')
 hourly_lookup = hz_dni_lookup.resample('H').mean()
@@ -62,7 +64,5 @@ dni_lookup[dni_lookup>30] = 30
 weather_dnv_aware = weather_dnv.tz_localize('Australia/Darwin')
 dni_simulated = (weather_dnv_aware['ghi']-weather_dnv_aware['dhi'])*dni_lookup
 
-dni_simulated.to_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'),
+dni_simulated.to_csv(os.path.join('Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'),
                      header='Dni')
-
-
