@@ -24,7 +24,7 @@ weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), 
 # Chwoose which module to benchmark
 module_rating = 570
 # Choose the benchmark csv
-spacing = '8m'
+spacing = '4m'
 cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
@@ -35,7 +35,7 @@ weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_fil
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 
-if cell_type == 'bifacial':
+if cell_type == 'mono':
       module_type = 'Longi LR5-72HBD-%dM' % module_rating  # Enter one of the modules from the SunCable module database
 else:
       module_type = 'Longi LR5-72HBD-%dM_mono' % module_rating
@@ -73,7 +73,6 @@ weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
 weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
 weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
-
 #%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
