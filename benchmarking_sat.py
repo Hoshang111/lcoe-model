@@ -63,7 +63,6 @@ weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Austral
 #  (working in conjunction with the function in simulation_functions). This is due to one tstamp in UTC and other in
 #  local. Can make further improvements for this part.
 weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
-
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
 dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
