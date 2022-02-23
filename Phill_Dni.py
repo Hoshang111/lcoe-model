@@ -42,7 +42,7 @@ clearsky = location.get_clearsky(weather_dnv.index)
 
 ## Create Dni lookup table based on 5 minute data
 dt_lookup = pd.date_range(start= weather_dnv.index[0],
-                          end= weather_dnv.index[-1], freq='5T', tz=pytz.UTC)
+                          end= weather_dnv.index[-1], freq='T', tz=pytz.UTC)
 clearsky_lookup = location.get_clearsky(dt_lookup)
 solpos_lookup = location.get_solarposition(dt_lookup)
 zenith_to_rad = np.radians(solpos_lookup)
