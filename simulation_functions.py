@@ -590,7 +590,7 @@ def dc_yield_benchmarking_sat(DCTotal,
     dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
 
     if cell_type == 'bifacial':
-        cell_temp_normal = mc.results.cell_temperature['2018']
+        cell_temp_normal = mc.results.cell_temperature
         bifacial_output['cell_temperature'] = cell_temp_normal.values
         mc = ModelChain(inverter_sat_system, location)
         mc.run_model_from_effective_irradiance(bifacial_output)
