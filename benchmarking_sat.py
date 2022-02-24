@@ -8,6 +8,7 @@ import sizing
 import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import os
 # mpl.use('Qt5Agg')
 # %%
 # Weather adjustment between DNV weather files and Solcast Weather files
@@ -20,12 +21,13 @@ weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
-# Choose which module to benchmark
+# Chwoose which module to benchmark
 module_rating = 570
 # Choose the benchmark csv
-spacing = '8m'
-cell_type = 'mono'  # choose between mono or bifacial
+spacing = '4m'
+cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
+
 
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
@@ -33,7 +35,7 @@ weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_fil
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 
-if cell_type == 'bifacial':
+if cell_type == 'mono':
       module_type = 'Longi LR5-72HBD-%dM' % module_rating  # Enter one of the modules from the SunCable module database
 else:
       module_type = 'Longi LR5-72HBD-%dM_mono' % module_rating
@@ -50,15 +52,32 @@ gcr = [0.56 if spacing == '4m' else 0.45 if spacing == '5m' else 0.38 if spacing
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 
 # Choose 10 year benchmarking/simulation period
-weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
+weather_simulation_dnv = weather_dnv['2010-01-01':'2020-12-31']
+weather_simulation_solcast = weather_solcast['2010-01-01':'2020-12-31']
 # In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
 # takes it as UTC and gives incorrect results.
 # So options for this:
-weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
-# Or you can manually shift by weather_simulation = weather_simulation.shift(9)
 
-dc_results = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation, module_rating, gcr)
-dc_results_dnv = weather_simulation['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
+weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Australia/Darwin')
+# Todo : Below command ends up shifting the tstamp by half hour
+#  (working in conjunction with the function in simulation_functions). This is due to one tstamp in UTC and other in
+#  local. Can make further improvements for this part.
+weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
+#%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
+dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
+weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
+weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
+#%%
+# Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
+# DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
+dc_results, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_solcast,
+                                            module_rating, gcr)
+dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
 font_size = 25
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
@@ -69,20 +88,21 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-01'
-date2 = '2018-10-07'
+date1 = '2018-07-15'
+date2 = '2018-07-22'
 
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW (PVlib/Python)')
 ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV (PVsyst)')
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
-# plt.show()
-fig_name = 'DC yield benchmark_MAV_Oct2018'
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
-plt.savefig(save_path, dpi=300, bbox_inches='tight')
+plt.show()
+#fig_name = 'DC yield benchmark_SAT_Jul_2018'
+#save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+#plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
 #%% Scatter Plot
-scatter_year = 2020
+scatter_year = 2018
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -107,6 +127,7 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 fig_name = 'Scatter_%d'%scatter_year
 save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
 #%% Bar plot
 annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 annual_yield_dnv = [dc_results_dnv[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
@@ -127,7 +148,7 @@ ax2.plot(dc_yield_diff, linestyle='--', linewidth=3, color='black')
 ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
 ax2.set_ylim(0,10)
 
-# plt.show()
+#plt.show()
 fig_name = 'Bar plot annual yield comparison'
 save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
