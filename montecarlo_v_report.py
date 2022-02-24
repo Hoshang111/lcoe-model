@@ -57,12 +57,10 @@ simulation_years = np.arange(2007, 2022, 1)
 weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'
 weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
-weather_solcast_sy = weather_solcast['2010-01-01':'2010-12-31']
-weather_solcast_simulation = weather_solcast_sy.reindex_like(weather_dnv_file)
-
+weather_solcast_simulation = weather_solcast['2010-01-01':'2010-12-31']
 
 # Complete set of dnv weather data you can extract specific years for simulations later on
-weather_dnv = func.weather_benchmark_adjustment(weather_solcast_simulation, weather_dnv_file)
+weather_dnv = func.weather_benchmark_adjustment_mk2(weather_solcast_simulation, weather_dnv_file)
 
 weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
