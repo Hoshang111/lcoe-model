@@ -3,7 +3,7 @@
 calculate the Net Present Value (NPV) of the solar farm
 1) Weather:
 Input: Weather file, year of simulation
-Output: Weather dataframe in the required format for PVlib simulatins
+Output: Weather dataframe in the required format for PVlib simulations
 2) Racks & modules:
 Input: Type of module and rack
 Output: Module and rack parameters required for PVlib PVsystem extracted from the
