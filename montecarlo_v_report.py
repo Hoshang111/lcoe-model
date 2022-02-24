@@ -36,6 +36,7 @@ Once the optimum NPV is found cost function also give the Monte-Carlo distributi
 # %% Import
 import importlib
 import pandas as pd
+import numpy as np
 import os
 import matplotlib.pyplot as plt
 from layout_optimiser import form_new_data_tables, optimise_layout
@@ -52,9 +53,11 @@ from suncable_cost import calculate_scenarios_iterations, create_iteration_table
 use_previous_airtable_data = True
 
 # Weather
+simulation_years = np.arange(2007, 2022, 1)
 weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'
 weather_file = 'Solcast_PT60M.csv'
-weather_solcast = func.weather(2010, weather_file)
+weather_solcast = func.weather(simulation_years, weather_file)
+weather_simulation_solcast = weather_solcast['2010-01-01':'2010-12-31']
 
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
