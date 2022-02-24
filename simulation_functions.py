@@ -99,6 +99,43 @@ def weather_benchmark_adjustment(weather_solcast,
     weather_dnv.sort_index(inplace=True)
     return weather_dnv_simulations
 
+def weather_benchmark_adjustment_mk2(weather_solcast,
+                                 weather_dnv_file,
+                                 weather_dnv_path=None):
+
+    if weather_dnv_path is None:
+        # If no path is specified for the dnv weather file, then download from the default weather data folder.
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
+                                        delimiter=';',
+                                        index_col=0)
+    else:
+        weather_dnv_dummy = pd.read_csv(weather_dnv_path, index_col=0)
+
+
+    weather_dnv_dummy = weather_dnv_dummy.rename(
+        columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
+                 'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
+
+    weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed', 'dc_yield']].copy()
+    weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
+    weather_dnv.sort_index(inplace=True)
+
+    # The weather dnv data doesn't have the precipitable water and cos_theta which is needed for the simulations
+    # This data can be extracted from the SolCast weather data.
+    # To match the dates, i am using floor function on Solcast date time so to convert  11:30 am to 11:00 for example
+    # the reason for using floor is the end timestamp of each measurement is used as the index so far
+    # according to the first column of the original weather data
+    weather_solcast_mod = weather_solcast.reindex_like(weather_dnv)
+
+    weather_dnv = weather_dnv.join(weather_solcast_mod[['precipitable_water', 'cos_theta']])
+    #weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much better aligned this way
+    weather_dnv['dni'] = weather_dnv['bhi'] / weather_dnv['cos_theta']  # conversion from bhi to dni with cos theta
+    weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
+    weather_dnv['dni'].replace(np.inf, 0, inplace=True)
+    weather_dnv_simulations = weather_dnv[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'dc_yield']]
+    weather_dnv.sort_index(inplace=True)
+    return weather_dnv_simulations
 
 def rack_module_params(rack_type,
                        module_type):
