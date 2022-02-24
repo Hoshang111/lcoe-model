@@ -126,7 +126,7 @@ def weather_benchmark_adjustment_mk2(weather_solcast,
     # To match the dates, i am using floor function on Solcast date time so to convert  11:30 am to 11:00 for example
     # the reason for using floor is the end timestamp of each measurement is used as the index so far
     # according to the first column of the original weather data
-    weather_solcast_mod = weather_solcast.reindex_like(weather_dnv)
+    weather_solcast_mod = weather_solcast.set_index(weather_dnv.index)
 
     weather_dnv = weather_dnv.join(weather_solcast_mod[['precipitable_water', 'cos_theta']])
     #weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much better aligned this way
