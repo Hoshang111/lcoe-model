@@ -72,6 +72,7 @@ weather_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_dnv = weather_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
 weather_simulation = weather_dnv
 
+#%%
 
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
@@ -107,8 +108,6 @@ for (SAT_RACK_TYPE, MAV_RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL) in
     ('SAT_1_separated', '5B_MAV_separated', 'HJT_2023_M10', 2023, 'HJT 2023'),
     ('SAT_1_separated', '5B_MAV_separated', 'HJT_2025_M10', 2025, 'HJT 2025'),
     ('SAT_1_separated', '5B_MAV_separated', 'HJT_2028_M10', 2028, 'HJT 2028'),
-    ('SAT_1_separated', '5B_MAV_separated', 'TOPCON_2023_M10', 2028, 'TOP 2023'),
-    ('SAT_1_separated', '5B_MAV_separated', 'PERC_2028_M10', 2028, 'PERC 2028'),
 ]:
     module_type = MODULE_TYPE
     install_year = INSTALL_YEAR
