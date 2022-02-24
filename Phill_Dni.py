@@ -22,7 +22,7 @@ weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
-weather_dnv_file = 'Combined_Longi_570_Tracker-bifacial_FullTS_4m.csv'
+weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
                                         delimiter=';',
