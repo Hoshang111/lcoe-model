@@ -66,7 +66,8 @@ def weather(simulation_years,
 def weather_benchmark_adjustment(weather_solcast,
                                  weather_dnv_file,
                                  weather_dnv_path=None):
-
+    ''' This is the weather adjustment function which uses Solcast's DNI data
+        Refer to the other benchmark function which uses simulated DNI'''
     if weather_dnv_path is None:
         # If no path is specified for the dnv weather file, then download from the default weather data folder.
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -534,7 +535,7 @@ def dc_yield_benchmarking_sat(DCTotal,
         dhi = weather_simulation['dhi']
         pvrow_height = 1.5
         pvrow_width = 1.2
-        albedo = 0.18
+        albedo = 0.25
         n_pvrows = 3
         index_observed_pvrow = 1
         rho_front_pvrow = 0.03
@@ -590,8 +591,8 @@ def dc_yield_benchmarking_sat(DCTotal,
     dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
 
     if cell_type == 'bifacial':
-        cell_temp_normal = mc.results.cell_temperature
-        bifacial_output['cell_temperature'] = cell_temp_normal.values
+        # cell_temp_normal = mc.results.cell_temperature
+        # bifacial_output['cell_temperature'] = cell_temp_normal.values
         mc = ModelChain(inverter_sat_system, location)
         mc.run_model_from_effective_irradiance(bifacial_output)
         dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
