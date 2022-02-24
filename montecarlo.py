@@ -34,7 +34,7 @@ During the optimisation process/simulations, cost function will give determinist
 Once the optimum NPV is found cost function also give the Monte-Carlo distribution.
 """
 
-# %% Import
+## %% Import
 import importlib
 import pandas as pd
 import os
@@ -46,8 +46,9 @@ from sizing import get_airtable
 from suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 
-# %%
+## %%
 # Set overall conditions for this analysis
+
 
 use_previous_airtable_data = True
 
@@ -78,20 +79,251 @@ scheduled_price = 0.00004  # 4c/kWh (conversion from Wh to kWh)
 discount_rate = 0.07
 
 if use_previous_airtable_data:
-    data_tables = import_excel_data('CostDatabaseFeb2022.xlsx')
+    data_tables = import_excel_data('CostDatabaseFeb2022a.xlsx')
 else:
     # cost data tables from airtable
     data_tables = get_airtable(save_tables=True)
 
-# %%
+
+
+## %%
 # Cycle through alternative analysis scenarios
 
+def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined):
+    module_type = MODULE_TYPE
+    install_year = INSTALL_YEAR
+    rack_type = RACK_TYPE
+
+    scenario_tables_optimum, revenue, kWh_export = optimise_layout(weather_simulation, \
+                                                                   rack_type, module_type, install_year, DCTotal,
+                                                                   num_of_zones, zone_area, rack_interval_ratio, \
+                                                                   temp_model, export_lim, storage_capacity,
+                                                                   scheduled_price, data_tables, discount_rate,
+                                                                   fig_title=SCENARIO_LABEL)
+
+    scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
+
+    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export
+
+# Create variables to hold the results of each analysis
+SAT = 'SAT_1_separated'
+MAV = '5B_MAV_separated'
+SAT = 'SAT_1_update'
+MAV = '5B_MAV_update'
+PERC2023 = 'PERC_2023_M10'
+TOP2023 = 'TOPCON_2023_M10'
+HJT2023 = 'HJT_2023_M10'
+PERC2028 = 'PERC_2028_M10'
+TOP2028 = 'TOPCON_2028_M10'
+HJT2028 = 'HJT_2028_M10'
+
+
+scenario_tables_2023 = []
+results_SAT_PERC_2023 = optimize (SAT, PERC2023, 2024, 'SAT PERC 2023',scenario_tables_2023)
+results_MAV_PERC_2023 = optimize (MAV, PERC2023, 2024, 'MAV PERC 2023',scenario_tables_2023)
+results_SAT_HJT_2023 = optimize (SAT, HJT2023, 2024, 'SAT HJT 2023',scenario_tables_2023)
+results_MAV_HJT_2023 = optimize (MAV, HJT2023, 2024, 'MAV HJT 2023',scenario_tables_2023)
+results_SAT_TOP_2023 = optimize (SAT, TOP2023, 2024, 'SAT TOP 2023',scenario_tables_2023)
+results_MAV_TOP_2023 = optimize (MAV, TOP2023, 2024, 'MAV TOP 2023',scenario_tables_2023)
+
+scenario_tables_2028 = []
+results_SAT_PERC_2028 = optimize (SAT, PERC2028, 2028, 'SAT PERC 2028',scenario_tables_2028)
+results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV PERC 2028',scenario_tables_2028)
+results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT HJT 2028',scenario_tables_2028)
+results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV HJT 2028',scenario_tables_2028)
+results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT TOP 2028',scenario_tables_2028)
+results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV TOP 2028',scenario_tables_2028)
+
+## %%
+# Call Monte Carlo Cost analysis
+analysis_year = 2028
+
+if analysis_year == 2024:
+    scenario_tables = scenario_tables_2023
+elif analysis_year == 2028:
+    scenario_tables = scenario_tables_2028
+# First generate data tables with the ScenarioID changed to something more intuitive
+new_data_tables = form_new_data_tables(data_tables,scenario_tables)
+
+# Create iteration data
+data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
+
+# Calculate cost result
+outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, analyse_years=30)
+component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
+
+## %% ==========================================================
+# Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
+# First generate a big table with index consisting of Iteration, Year, ScenarioID.
+combined_scenario_data = pd.DataFrame()
+
+
+
+if analysis_year == 2024:
+    install_year = 2024
+    results = [results_SAT_PERC_2023,
+               results_MAV_PERC_2023,
+               results_SAT_HJT_2023,
+               results_MAV_HJT_2023,
+               results_SAT_TOP_2023,
+               results_MAV_TOP_2023]
+
+elif analysis_year == 2028:
+    install_year = 2028
+    results = [results_SAT_PERC_2028,
+              results_MAV_PERC_2028,
+              results_SAT_HJT_2028,
+              results_MAV_HJT_2028,
+              results_SAT_TOP_2028,
+              results_MAV_TOP_2028]
+
+else:
+    print('Error!')
+
+
+
+for (scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data) in results:
+
+    kWh_export_data.name = 'kWh'
+    revenue_data.name = 'revenue'
+
+    if len(cash_flow_by_year_iter[scenario_id])>0:
+        scenario_data = cash_flow_by_year_iter[scenario_id]
+        scenario_data.name = 'cost'
+
+        scenario_data = scenario_data.reset_index().merge(
+            kWh_export_data.reset_index(), how='left', on='Year').merge(
+            revenue_data.reset_index(), how='left', on='Year')
+        scenario_data['ScenarioID'] = scenario_id
+
+        combined_scenario_data = combined_scenario_data.append(scenario_data)
+
+        # Now discount the costs, etc
+        for col_name in ['cost', 'kWh', 'revenue']:
+            combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** \
+                                                         (combined_scenario_data['Year'] - install_year)
+
+        # Create a new table that removes the year, adding all the discounted flows
+        discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc',
+                                                                                                           'cost_disc',
+                                                                                                           'revenue_disc'])
+
+        # Now calculate LCOE and NPV
+
+        discounted_sum['LCOE'] = discounted_sum['cost_disc'] / discounted_sum['kWh_disc']
+        discounted_sum['NPV'] = discounted_sum['revenue_disc'] - discounted_sum['cost_disc']
+
+        print(discounted_sum)
+
+        # Plot the LCOE and NPV distributions. For each figure, show each scenario as its own distribution.
+
+for parameter in ['LCOE', 'NPV']:
+    data = discounted_sum[parameter].reset_index()
+    print(data)
+    data = pd.pivot_table(data, index='Iteration', values=parameter, columns='ScenarioID')
+    data.plot.hist(bins=50, histtype='step', fontsize=8)
+    fig_title = parameter + ' - ' + str(install_year)
+    plt.title(fig_title)
+    # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
+    # plt.savefig(file_name)
+    plt.show()
+
+## %%
+import numpy as np
+for (scenarios, title) in [
+    #(['SAT PERC 2023','MAV PERC 2023'], 'SAT vs MAV 2023')
+(['SAT PERC 2028','MAV PERC 2028'], 'SAT vs MAV 2028')
+]:
+
+    scenario_costs_iter = total_cost_y_iter[total_cost_y_iter['ScenarioID'].isin(scenarios)]
+    scenario_costs_nominal = scenario_costs_iter[scenario_costs_iter['Iteration']==0]
+
+    # scenario_costs_by_year = pd.pivot_table(scenario_costs_nominal, values='TotalCostAUDY',
+    #                                              index=['Year','ScenarioID'], aggfunc=np.sum,
+    #                                              columns=['CostCategory_ShortName']).reset_index()
+    # print(scenario_costs_by_year)
+    # scenario_costs_by_year.plot.bar(stacked=True,title='Total Costs by Year - ' + title)
+    # plt.show()
+
+    scenario_costs_total_category = pd.pivot_table(scenario_costs_nominal, values='TotalCostAUDY',
+                                                 index=['ScenarioID'], aggfunc=np.sum,
+                                                 columns=['CostCategory_ShortName'])
+    scenario_costs_total_category.to_csv('temp_category_costs.csv')
+    scenario_costs_total_category.plot.bar(stacked=True,title='Total Costs by Category - ' + title)
+    plt.show()
+
+
+    scenario_costs_total_nodiscount = pd.pivot_table(scenario_costs_iter, values='TotalCostAUDY',
+                                                     index=['Iteration'], aggfunc=np.sum,
+                                                     columns=['ScenarioID'])
+    scenario_costs_total_nodiscount.plot.hist(bins=50, histtype='step')
+    plt.show()
+
+
+
+# %%
+
+if analysis_year==2024:
+    comparison_list = [('MAV HJT 2023','SAT HJT 2023', 'MAV vs SAT HJT 2023'),
+                        ('MAV HJT 2023','MAV PERC 2023', 'HJT vs PERC MAV 2023'),
+                                           ]
+elif analysis_year == 2028:
+    comparison_list = [('MAV PERC 2028', 'SAT PERC 2028', 'MAV vs SAT PERC 2028'),
+                       ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
+
+for (scenario_1, scenario_2, savename) in comparison_list:
+
+    for parameter in ['LCOE', 'NPV']:
+        data = discounted_sum[parameter].reset_index()
+        data = pd.pivot_table(data, index='Iteration', values = parameter, columns='ScenarioID')
+
+        data['Difference'] = data[scenario_2] - data[scenario_1]
+        data['Difference'].plot.hist(bins=50, histtype='step')
+        fig_title = 'Difference in '+ parameter + ': ' + scenario_2 + ' - ' + scenario_1
+        plt.title(fig_title)
+        # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),'OutputFigures/', fig_title)
+        # plt.savefig(file_name)
+        plt.show()
+
+    font_size = 8
+    rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+          'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+    plt.rcParams.update(**rc)
+    plt.rc('font', weight='bold')
+
+    # For label titles
+    fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
+
+    def generate_difference_factor(df, parameter, scenario_1, scenario_2, parameter_name):
+        data = df[parameter].reset_index()
+        data = pd.pivot_table(data, index = 'Iteration', values= parameter, columns = 'ScenarioID')
+        data[parameter_name] = data[scenario_2] - data[scenario_1]
+        return data[parameter_name]
+
+
+    # Sensitivity analysis / regression analysis to determine key uncertainties affecting these.
+    parameters = generate_parameters(data_tables_iter)
+    parameters_flat = parameters.copy()
+    parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in parameters_flat.columns.values]
+
+    factor = generate_difference_factor(discounted_sum, 'LCOE', scenario_2, scenario_1, 'LCOE_Difference')
+    parameters_flat = parameters_flat.join(factor)
+
+    calculate_variance_contributions(parameters_flat, 'LCOE_Difference', savename=savename)
+
+
+
+
+
+
+# %%
+# Old analysis -
 for (SAT_RACK_TYPE, MAV_RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL) in [
-    ('SAT_1_separated', '5B_MAV_separated', 'HJT_2023_M10', 2023, 'HJT 2023'),
-    ('SAT_1_separated', '5B_MAV_separated', 'HJT_2025_M10', 2025, 'HJT 2025'),
-    ('SAT_1_separated', '5B_MAV_separated', 'HJT_2028_M10', 2028, 'HJT 2028'),
-    ('SAT_1_separated', '5B_MAV_separated', 'TOPCON_2023_M10', 2028, 'TOP 2023'),
-    ('SAT_1_separated', '5B_MAV_separated', 'PERC_2028_M10', 2028, 'PERC 2028'),
+    #('SAT_1_separated', '5B_MAV_separated', 'HJT_2023_M10', 2023, 'HJT 2023'),
+    #('SAT_1_separated', '5B_MAV_separated', 'HJT_2025_M10', 2025, 'HJT 2025'),
+    #('SAT_1_separated', '5B_MAV_separated', 'HJT_2028_M10', 2028, 'HJT 2028'),
+    #('SAT_1_separated', '5B_MAV_separated', 'TOPCON_2023_M10', 2028, 'TOP 2023'),
+    #('SAT_1_separated', '5B_MAV_separated', 'PERC_2028_M10', 2028, 'PERC 2028'),
 ]:
     module_type = MODULE_TYPE
     install_year = INSTALL_YEAR
@@ -228,24 +460,5 @@ for (SAT_RACK_TYPE, MAV_RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL) in
     factor = generate_difference_factor(discounted_sum, 'LCOE', MAV_scenario, SAT_scenario, 'LCOE_Difference')
     parameters_flat = parameters_flat.join(factor)
 
-    calculate_variance_contributions(parameters_flat, 'LCOE_Difference')
+    calculate_variance_contributions(parameters_flat, 'LCOE_Difference', savename=SCENARIO_LABEL)
 
-# %%
-
-# %% ==========================================================
-# Present data from probabalistic analysis
-
-# cash_flow_transformed = pd.pivot_table(cash_flow_by_year_iter.reset_index(), columns='Iteration', index='Year')
-# revmax_direct = direct_revenue[racks_per_zone_max]
-# revmax_store = store_revenue[racks_per_zone_max]
-# revmax_total = total_revenue[racks_per_zone_max]
-# kWh_iter = kWh_discounted[racks_per_zone_max]
-# revmax_total_df = pd.DataFrame(revmax_total)
-# revenue_series_iter = sizing.align_cashflows(cash_flow_transformed, revmax_total_df)
-# npv_iter, yearly_npv_iter, npv_cost_iter, npv_revenue_iter, Yearly_NPV_revenue_iter, Yearly_NPV_costs_iter \
-#     = sizing.get_npv(cash_flow_transformed, revenue_series_iter, discount_rate)
-# LCOE_iter = npv_cost_iter/kWh_iter*100
-
-# filename = rack_type + ' ' + module_type + ' install_' + str(install_year)
-# npv_iter.to_csv('.\\Data\\OutputData\\' + filename + ' NPV.csv')
-# LCOE_iter.to_csv('.\\Data\\OutputData\\' + filename + ' LCOE.csv')
