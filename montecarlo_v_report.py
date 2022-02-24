@@ -65,14 +65,14 @@ weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_fil
 weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
 weather_dnv.drop(['dni'],axis=1,inplace=True)
 weather_dnv = weather_dnv.join(dni_dummy, how='left')
 weather_dnv.rename(columns={"0": "dni"}, inplace=True)
-weather_dnv = weather_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
+weather_dnv = weather_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
 weather_simulation = weather_dnv
 
 #%%
