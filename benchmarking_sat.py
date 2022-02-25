@@ -71,7 +71,7 @@ dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
 weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
 weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
-weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','temp_air','wind_speed','precipitable_water','dc_yield']]
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','ghi','temp_air','wind_speed','precipitable_water','dc_yield']]
 #%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
