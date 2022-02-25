@@ -101,7 +101,7 @@ if use_previous_airtable_data:
     data_tables = import_excel_data('CostDatabaseFeb2022a.xlsx')
 else:
     # cost data tables from airtable
-    data_tables = get_airtable(save_tables=True)
+    data_tables = get_airtable(save_tables=False)
 
 
 
