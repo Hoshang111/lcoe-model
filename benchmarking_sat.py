@@ -25,7 +25,7 @@ weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), 
 module_rating = 570
 # Choose the benchmark csv
 spacing = '4m'
-cell_type = 'bifacial'  # choose between mono or bifacial
+cell_type = 'mono'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
 
@@ -72,10 +72,11 @@ weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
 weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
 weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
+weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 #%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
-dc_results, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_dnv,
+dc_results, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
                                             module_rating, gcr)
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
@@ -125,7 +126,7 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
 fig_name = 'Scatter_%d'%scatter_year
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Bar plot
@@ -150,5 +151,5 @@ ax2.set_ylim(0,10)
 
 #plt.show()
 fig_name = 'Bar plot annual yield comparison'
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
