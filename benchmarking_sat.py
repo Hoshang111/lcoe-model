@@ -22,9 +22,9 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Chwoose which module to benchmark
-module_rating = 570
+module_rating = 545
 # Choose the benchmark csv
-spacing = '4m'
+spacing = '8m'
 cell_type = 'mono'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
@@ -98,9 +98,9 @@ ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
 plt.show()
-#fig_name = 'DC yield benchmark_SAT_Jul_2018'
-#save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
-#plt.savefig(save_path, dpi=300, bbox_inches='tight')
+fig_name = 'DC yield benchmark_SAT_Jul_2018'
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill" + fig_name
+plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
 scatter_year = 2018

@@ -27,6 +27,12 @@ module_rating = 570
 weather_dnv_file = 'Combined_Longi_%d_Maverick_FullTS.csv'%module_rating
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
+
+weather_simulation_dnv = weather_dnv['2010-01-01':'2020-12-31']
+weather_simulation_solcast = weather_solcast['2010-01-01':'2020-12-31']
+
+weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
+weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Australia/Darwin')
 # %% ======================================
 # Rack_module
 rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
@@ -37,6 +43,19 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
+#%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
+dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
+weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
+weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
+weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
+#%%
+# Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
+# DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
 # %% ========================================
 # DC yield
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
@@ -71,7 +90,7 @@ ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power', **fontdict)
 ax.legend()
 # plt.show()
 fig_name = 'DC yield benchmark_MAV_Jan2018'
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Scatter Plot
 scatter_year = 2020
@@ -95,7 +114,7 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 # plt.show()
 fig_name = 'Scatter_%d'%scatter_year
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Bar plot
 annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
@@ -119,5 +138,5 @@ ax2.set_ylim(1,10)
 
 #plt.show()
 fig_name = 'Bar plot annual yield comparison'
-save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
