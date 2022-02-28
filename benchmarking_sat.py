@@ -76,8 +76,9 @@ weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 #%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
-dc_results, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
+dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
                                             module_rating, gcr)
+dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
 font_size = 25
@@ -89,27 +90,29 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-07-15'
-date2 = '2018-07-22'
+date1 = '2018-10-15'
+date2 = '2018-10-22'
+month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW (PVlib/Python)')
 ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV (PVsyst)')
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
-plt.show()
-fig_name = 'DC yield benchmark_SAT_Jul_2018'
+# plt.show()
+fig_name = 'LinePlot-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,month)
+
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
-scatter_year = 2018
+scatter_year = 2017
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.scatter(x, y)
-ax.set_xlabel('UNSW (PVlib/Python) MAV DC yield (GW)', **fontdict)
-ax.set_ylabel('DNV (PVsyst) MAV DC yield (GW)', **fontdict)
+ax.set_xlabel('UNSW (PVlib/Python) SAT DC yield (GW)', **fontdict)
+ax.set_ylabel('DNV (PVsyst) SAT DC yield (GW)', **fontdict)
 ax.set_title('DC yield benchmarking-%d'%scatter_year, **fontdict)
 
 # Best fit line
@@ -125,11 +128,11 @@ plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
-fig_name = 'SAT_Scatter_%d'%scatter_year
+fig_name = 'Scatter-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,scatter_year)
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-#%% Bar plot
+#%% bar plot
 annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 annual_yield_dnv = [dc_results_dnv[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -150,6 +153,6 @@ ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
 ax2.set_ylim(0,10)
 
 #plt.show()
-fig_name = 'SAT Bar plot annual yield comparison'
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
+save_path = "Cl Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')

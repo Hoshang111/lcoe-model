@@ -81,26 +81,29 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-01-01'
-date2 = '2018-01-07'
+date1 = '2018-10-15'
+date2 = '2018-10-22'
+month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW (PVlib/Python)')
 ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV (PVsyst)')
-ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power', **fontdict)
+ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
 # plt.show()
-fig_name = 'DC yield benchmark_MAV_Jan2018'
+fig_name = 'LinePlot-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,month)
+
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
 #%% Scatter Plot
-scatter_year = 2020
+scatter_year = 2017
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.scatter(x, y)
-ax.set_xlabel('UNSW (PVlib/Python) MAV DC yield (GW)', **fontdict)
-ax.set_ylabel('DNV (PVsyst) MAV DC yield (GW)', **fontdict)
+ax.set_xlabel('UNSW (PVlib/Python) SAT DC yield (GW)', **fontdict)
+ax.set_ylabel('DNV (PVsyst) SAT DC yield (GW)', **fontdict)
 ax.set_title('DC yield benchmarking-%d'%scatter_year, **fontdict)
 
 # Best fit line
@@ -110,14 +113,17 @@ correlation_xy = correlation_matrix[0,1]
 r_squared = correlation_xy**2
 
 ax.plot(dc_results/1e9, dc_results/1e9 * m + b, linewidth=3, color='C1')
+ax.set_ylim(0,1.25)
+ax.set_xlim(0,1.25)
 plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
-# plt.show()
-fig_name = 'Scatter_%d'%scatter_year
+#plt.show()
+fig_name = 'Scatter-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,scatter_year)
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
-#%% Bar plot
+
+#%% bar plot
 annual_yield_unsw = [dc_results[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 annual_yield_dnv = [dc_results_dnv[str(year)].sum()/1e9 for year in np.arange(2010, 2021)]
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -132,12 +138,12 @@ ax.set_ylabel('Annual DC yield (GWh) of 1GW DC rated solar farm', **fontdict)
 ax.legend()
 
 ax2 = ax.twinx()
-dc_yield_diff = (np.array(annual_yield_unsw) - np.array(annual_yield_dnv))/annual_yield_unsw * 100
-ax2.plot(dc_yield_diff, linestyle='--', linewidth=2, color='black')
+dc_yield_diff = np.abs((np.array(annual_yield_unsw) - np.array(annual_yield_dnv))/annual_yield_unsw * 100)
+ax2.plot(dc_yield_diff, linestyle='--', linewidth=3, color='black')
 ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
-ax2.set_ylim(1,10)
+ax2.set_ylim(0,10)
 
 #plt.show()
-fig_name = 'Bar plot annual yield comparison'
+fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
