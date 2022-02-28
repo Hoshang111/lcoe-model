@@ -91,7 +91,7 @@ ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
 # plt.show()
-fig_name = 'LinePlot-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,month)
+fig_name = 'LinePlot-%s-%d-%d' %(rack_type,module_rating,month)
 
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -119,7 +119,7 @@ plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
-fig_name = 'Scatter-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,scatter_year)
+fig_name = 'Scatter-%s-%d-%d' %(rack_type,module_rating,scatter_year)
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
@@ -144,6 +144,6 @@ ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
 ax2.set_ylim(0,10)
 
 #plt.show()
-fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
+fig_name = 'Bar-%s-%d' %(rack_type,module_rating)
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
