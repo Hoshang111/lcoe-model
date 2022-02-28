@@ -154,5 +154,5 @@ ax2.set_ylim(0,10)
 
 #plt.show()
 fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
-save_path = "Cl Project - Documents/General/Figures/Benchmarking/" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
