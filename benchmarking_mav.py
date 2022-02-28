@@ -9,6 +9,7 @@ import sizing
 import plotting as plot_func
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import os
 # mpl.use('Qt5Agg')
 
 # %%

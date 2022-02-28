@@ -99,7 +99,7 @@ ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power)', **fontdict)
 ax.legend()
 plt.show()
 fig_name = 'DC yield benchmark_SAT_Jul_2018'
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill" + fig_name
+save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
@@ -125,7 +125,7 @@ plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
-fig_name = 'Scatter_%d'%scatter_year
+fig_name = 'SAT_Scatter_%d'%scatter_year
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
@@ -150,6 +150,6 @@ ax2.set_ylabel('DC yield difference in percentage (%)', **fontdict)
 ax2.set_ylim(0,10)
 
 #plt.show()
-fig_name = 'Bar plot annual yield comparison'
+fig_name = 'SAT Bar plot annual yield comparison'
 save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
