@@ -8,9 +8,9 @@ from airtable import airtable
 import sizing
 import plotting as plot_func
 import matplotlib.pyplot as plt
+import os
 import matplotlib as mpl
 # mpl.use('Qt5Agg')
-
 # %%
 # Weather adjustment between DNV weather files and Solcast Weather files
 
@@ -23,7 +23,7 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Choose which module to benchmark
-module_rating = 570
+module_rating = 545
 weather_dnv_file = 'Combined_Longi_%d_Maverick_FullTS.csv'%module_rating
 # Complete set of dnv weather data you can extract specific years for simulations later on
 weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_file)
@@ -38,18 +38,27 @@ DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
 # %% ========================================
-# DC yield
+# Weather
 temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 # Choose a ten year period for benchmarking
-weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
+weather_simulation_dnv = weather_dnv['2010-01-01':'2020-12-31']
 # In order for PV-lib to work properly the weather data's index/time format needs to be time zone aware. Otherwise, it
 # takes it as UTC and gives incorrect results.
 # So options for this:
-weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
-# Or you can manually shift by weather_simulation = weather_simulation.shift(9)
+weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Australia/Darwin')
 
-dc_results = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation, module_rating)
-dc_results_dnv = weather_simulation['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
+dni_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
+weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
+weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
+weather_simulation_dnv['dni'].fillna(0, inplace=True)
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
+#%% DC Yield
+dc_results = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation_dnv, module_rating)
+dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
 font_size = 25
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
@@ -58,11 +67,11 @@ plt.rcParams.update(**rc)
 plt.rc('font', weight='bold')
 # For label titles
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
-
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-01-01'
-date2 = '2018-01-07'
+date1 = '2018-10-15'
+date2 = '2018-10-22'
+month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
 ax.plot(dc_results[date1:date2]/1e9, linewidth=3, label='UNSW (PVlib/Python)')
@@ -70,11 +79,11 @@ ax.plot(dc_results_dnv[date1:date2]/1e9, linewidth=3, linestyle='--', label='DNV
 ax.set_ylabel('Instantaneous DC power (GW) \n 1GW DC rated power', **fontdict)
 ax.legend()
 # plt.show()
-fig_name = 'DC yield benchmark_MAV_Jan2018'
+fig_name = 'LinePlot-%s-%d-%d' %(rack_type, module_rating, month)
 save_path = "C:/Users/baran/UNSW/LCOE( ) tool Project - Documents/General/Figures/Benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Scatter Plot
-scatter_year = 2020
+scatter_year = 2018
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))

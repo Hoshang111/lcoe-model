@@ -6,7 +6,7 @@ ymd = [str(a) + '-' + str(b) + '-' + str(c) for a, b, c in zip(dc_yield.index.ye
                                                             dc_yield.index.day)]  # find year-month-day
 ymd_unique = np.unique(ymd)  # unique year-month-day
 
-Finding daily battery storage and export operations
+#Finding daily battery storage and export operations
 
 export_daily_operations = []
 battery_daily_operations = []
