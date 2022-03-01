@@ -144,13 +144,16 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     # %% ================================================
     # Find optimum number of racks and create tables for Monte Carlo Analysis
     racks_per_zone_max = npv.idxmax()
+
     rpzm_series = pd.Series(racks_per_zone_max)
-    cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
+    #cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
+    cost_outputs, table_outputs = sizing.get_costs(rpzm_series, rack_params, module_params, data_tables,
+                                                              install_year=install_year, return_table_outputs = True)
 
     revenue_output = revenue_series[racks_per_zone_max]
     kWh_output = kWh_series[racks_per_zone_max]
-
-    return table_outputs, revenue_output, kWh_output
+    npv_output = npv[racks_per_zone_max]
+    return table_outputs, revenue_output, kWh_output, npv_output
 
 
 def form_new_data_tables(data_tables, scenarios):
