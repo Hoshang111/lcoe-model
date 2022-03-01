@@ -297,7 +297,8 @@ def form_heirarchical_parameter_list(input_iteration_list, index_name, index_des
     # If we want to remove any parameters that do not change, we can do so, but this is not a good idea.
     # print(index_name)
     # print(output_df.head())
-    remove_fixed(output_df)
+    # I've commented out the remove_fixed, because sometimes we want these variables in graphs.
+    # remove_fixed(output_df)
     # We want to remove any str based parameters, as they cannot be used for the contribution to variance analysis.
     remove_string_variables(output_df)
     # print(output_df.head())
