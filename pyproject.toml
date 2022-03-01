@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "sizing-costing-model"
+version = "0.1.0"
+description = ""
+authors = ["Hoshang <z5255679@cse.unsw.edu.au>"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+pandas = "^1.4.1"
+matplotlib = "^3.5.1"
+scipy = "^1.8.0"
+pvlib = {git = "https://github.com/yildizba/pvlib-python.git"}
+airtable-python-wrapper = "^0.15.3"
+PyQt5 = "^5.15.6"
+openpyxl = "^3.0.9"
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
