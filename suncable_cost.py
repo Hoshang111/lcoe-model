@@ -159,7 +159,10 @@ def generate_parameters(data_tables_iter):
 
 
 def generate_iterations(input_parameter_list, index_name, index_description, num_iterations, iteration_start=0,
-                        default_dist_type=None, skip_list=[], verbose=False):
+                        default_dist_type=None, skip_list=[], verbose=False, suppress_errors=False):
+
+    if (num_iterations == 1) and (iteration_start == 0):
+        suppress_errors=True
     # First identify what parameters need data to be generated
     columns_to_process = set(input_parameter_list.columns.values)
     parameter_set = set()
@@ -199,37 +202,44 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
         if col in columns_unprocessed:
             columns_unprocessed.discard(col)
         else:
-            print('* Warning, fixed parameter ', col, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, fixed parameter ', col, ' has an error. It does not exist, or has been repeated')
     for col in parameter_list:
         if col in columns_unprocessed:
             columns_unprocessed.discard(col)
         else:
-            print('* Warning, variable parameter ', col, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, variable parameter ', col, ' has an error. It does not exist, or has been repeated')
         parameter = col + '_L'
         if parameter in columns_unprocessed:
             columns_unprocessed.discard(parameter)
         else:
-            print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
         parameter = col + '_H'
         if parameter in columns_unprocessed:
             columns_unprocessed.discard(parameter)
         else:
-            print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
 
     for col in distribution_list:
         parameter = col + '_D'
         if parameter in columns_unprocessed:
             columns_unprocessed.discard(parameter)
         else:
-            print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, variable parameter ', parameter, ' has an error. It does not exist, or has been repeated')
 
     for col in skip_list:
         if col in columns_unprocessed:
             columns_unprocessed.discard(col)
         else:
-            print('* Warning, skip parameter ', col, ' has an error. It does not exist, or has been repeated')
+            if not suppress_errors:
+                print('* Warning, skip parameter ', col, ' has an error. It does not exist, or has been repeated')
     for col in columns_unprocessed:
-        print('* Warning, parameter ', col,
+        if not suppress_errors:
+            print('* Warning, parameter ', col,
               ' has an error. It is in the table, but is not specified as fixed, variable or skipped')
 
     # Now create the output dataframe
@@ -250,10 +260,10 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
             elif col in parameter_list:
                 if col in distribution_list:
                     this_dist_name = input_parameter_list[input_parameter_list[index_name] == ID][col + '_D'].values[0]
-                    fill_random_data(input_parameter_list, index_name, ID, col, this_dist_name, parameter_generator)
+                    fill_random_data(input_parameter_list, index_name, ID, col, this_dist_name, parameter_generator, suppress_errors=suppress_errors)
 
                 else:
-                    fill_random_data(input_parameter_list, index_name, ID, col, dist_type, parameter_generator)
+                    fill_random_data(input_parameter_list, index_name, ID, col, dist_type, parameter_generator,suppress_errors=suppress_errors)
             if index_description is None:
                 parameter_name = index_name + ' ' + str(ID) + ' ' + col
             else:
@@ -287,7 +297,8 @@ def form_heirarchical_parameter_list(input_iteration_list, index_name, index_des
     # If we want to remove any parameters that do not change, we can do so, but this is not a good idea.
     # print(index_name)
     # print(output_df.head())
-    remove_fixed(output_df)
+    # I've commented out the remove_fixed, because sometimes we want these variables in graphs.
+    # remove_fixed(output_df)
     # We want to remove any str based parameters, as they cannot be used for the contribution to variance analysis.
     remove_string_variables(output_df)
     # print(output_df.head())
@@ -313,7 +324,7 @@ def fill_fixed_data(parameters_file, ID_name, ID_value, parameter_name, output_d
     output_data[parameter_name] = value
 
 
-def fill_random_data(parameters_file, ID_name, ID_value, parameter_name, dist_type, output_data):
+def fill_random_data(parameters_file, ID_name, ID_value, parameter_name, dist_type, output_data, suppress_errors=False):
     if ((ID_name == '') and (ID_value == '')):
         nom_in = parameters_file[parameter_name].astype(float).values[0]
         low_in = parameters_file[parameter_name + 'L'].astype(float).values[0]
@@ -324,26 +335,32 @@ def fill_random_data(parameters_file, ID_name, ID_value, parameter_name, dist_ty
         high_in = parameters_file[parameters_file[ID_name] == ID_value][parameter_name + '_H'].astype(float).values[0]
 
     if (nom_in < 0 and (low_in > 0 or high_in > 0)) or (nom_in > 0 and (low_in < 0 or high_in < 0)):
-        print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name, ' has differing signs on data')
+        if not suppress_errors:
+            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name, ' has differing signs on data')
     if ((nom_in != 0) and (abs(high_in) <= abs(nom_in) or abs(low_in) >= abs(nom_in)) and (
             not (high_in == nom_in and low_in == nom_in))):
-        print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name, ' has abnormal data')
+        if not suppress_errors:
+            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name, ' has abnormal data')
 
     if (nom_in != 0) and (low_in == 0) and (high_in == 0):
         low_in = nom_in
         high_in = nom_in
-        print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
+        if not suppress_errors:
+            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
               ' has zero for H and L data. These have been set to match Nom data!')
     if low_in != 0:
         if (nom_in / low_in) > 3:
-            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
+            if not suppress_errors:
+                print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
                   ' has Low data more than 3 times smaller than Nominal!')
     if (nom_in != 0):
         if ((high_in / nom_in) > 3):
-            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
+            if not suppress_errors:
+                print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
                   ' has High data more than 3 times larger than Nominal!')
     if high_in < low_in:
-        print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
+        if not suppress_errors:
+            print('* Warning: ', ID_name, ': ', ID_value, ' parameter ', parameter_name,
               ' has high and low mixed up!')
         temp = high_in
         high_in = low_in
@@ -353,6 +370,7 @@ def fill_random_data(parameters_file, ID_name, ID_value, parameter_name, dist_ty
         output_data[parameter_name] = output_data[parameter_name].apply(generate_log_normal_apply,
                                                                         args=(nom_in, low_in, high_in))
     else:
+
         print('**** ERROR - distribution not available')
     if 0 in output_data.index:
         output_data.loc[0, parameter_name] = nom_in
@@ -376,73 +394,93 @@ def generate_log_normal_apply(self, nom, low, hi):
 
 
 def calculate_scenarios(input_tables, year_start, analyse_years):
-    # Two key tables are generated by this analysis.
-    # The first is a list of components and the year that each is expended.
-    # The second is a list of components and their cost in each year.
-    # The only years calculated are between year_start and year_start + analyse_years.
-    year_list = pd.DataFrame(list(range(year_start, year_start + analyse_years + 1)), columns=['Year'])
-    year_list['Temp'] = 1  # To allow a "cross" merge later
 
-    scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = input_tables
-    ###########################################
-    # Components used per year
-    # Final table will have these columns
-    # ScenarioSystemID (Key) | SystemComponentID (Key) | Year (Key) | ScenarioID | SystemID | ComponentID | CostCategoryID | NumberComponents
-    ###########################################
+    use_old_code=False
 
-    component_usage_by_year = scenario_system_link.merge(system_component_link, how='left', on='SystemID').merge(
-        costcategory_list, how='left', on='CostCategoryID')
-    component_usage_by_year['Temp'] = 1
-    component_usage_by_year = component_usage_by_year.merge(year_list, how='inner', on='Temp').drop(['Temp'], axis=1)
+    if use_old_code == False:
 
-    # Reset usage to zero for all time first
-    component_usage_by_year['TotalUsageY'] = 0
+        data_tables_iter = create_iteration_tables(input_tables, 1, iteration_start=0)
+        # scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter = data_tables_iter
 
-    # Any "Installation" cost components only have a cost in the year of installation
-    component_usage_by_year['TotalUsageY'] = np.where(((component_usage_by_year['Timing'] == 'Installation') & (
-            component_usage_by_year['InstallDate'] == component_usage_by_year['Year'])),
-                                                      component_usage_by_year['InstallNumber'] *
-                                                      component_usage_by_year['Usage'],
-                                                      component_usage_by_year['TotalUsageY'])
 
-    # Any "PerOperationYear" cost  components only occur in the years following installation
-    component_usage_by_year['TotalUsageY'] = np.where(
-        ((component_usage_by_year['Timing'] == 'PerOperationYear') & (
-                component_usage_by_year['InstallDate'] < component_usage_by_year['Year'])),
-        component_usage_by_year['InstallNumber'] * component_usage_by_year['Usage'],
-        component_usage_by_year['TotalUsageY'])
+        component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter = calculate_scenarios_iterations(data_tables_iter, year_start, analyse_years)
 
-    ###########################################
-    # Components costs per year
-    # Final table will have these columns
-    # ComponentID (Key) | Year (Key) | Cost
-    ###########################################
-    component_cost_by_year = component_list.merge(currency_list, how='left', on='CurrencyID')
-    component_cost_by_year['Temp'] = 1
 
-    component_cost_by_year = component_cost_by_year.merge(year_list, how='inner', on='Temp')
-    component_cost_by_year.drop('Temp', axis=1, inplace=True)
+        component_usage_by_year = component_usage_by_year_iter.drop(columns='Iteration')
+        component_cost_by_year = component_cost_by_year_iter.drop(columns='Iteration')
+        combined_cost_usage = combined_cost_usage_iter.drop(columns='Iteration')
+        cash_flow_year = cash_flow_year_iter.reset_index().drop(columns='Iteration').set_index('Year')
+        return component_usage_by_year, component_cost_by_year, combined_cost_usage, cash_flow_year
 
-    component_cost_by_year['AUDBaseline'] = component_cost_by_year['To_AUD'] * component_cost_by_year['BaselineCost']
-    # For now, assume everything uses an annual multiplier for cost
-    component_cost_by_year['AUDCostY'] = component_cost_by_year['AUDBaseline'] * component_cost_by_year[
-        'AnnualMultiplier'] ** (component_cost_by_year['Year'] - component_cost_by_year['BaselineYear'])
+    else:
 
-    ############################################
-    # Combining both data tables to give total costs
-    ############################################
+        # Two key tables are generated by this analysis.
+        # The first is a list of components and the year that each is expended.
+        # The second is a list of components and their cost in each year.
+        # The only years calculated are between year_start and year_start + analyse_years.
+        year_list = pd.DataFrame(list(range(year_start, year_start + analyse_years + 1)), columns=['Year'])
+        year_list['Temp'] = 1  # To allow a "cross" merge later
 
-    combined_cost_usage = component_usage_by_year.merge(component_cost_by_year, how='left', on=['Year', 'ComponentID'])
-    combined_cost_usage['TotalCostAUDY'] = combined_cost_usage['AUDCostY'] * combined_cost_usage['TotalUsageY']
+        scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list = input_tables
+        ###########################################
+        # Components used per year
+        # Final table will have these columns
+        # ScenarioSystemID (Key) | SystemComponentID (Key) | Year (Key) | ScenarioID | SystemID | ComponentID | CostCategoryID | NumberComponents
+        ###########################################
 
-    ############################################
-    # Add up total costs per year for each ScenarioID.
-    ############################################
+        component_usage_by_year = scenario_system_link.merge(system_component_link, how='left', on='SystemID').merge(
+            costcategory_list, how='left', on='CostCategoryID')
+        component_usage_by_year['Temp'] = 1
+        component_usage_by_year = component_usage_by_year.merge(year_list, how='inner', on='Temp').drop(['Temp'], axis=1)
 
-    cash_flow_year = pd.pivot_table(combined_cost_usage, values='TotalCostAUDY', index='Year', aggfunc=np.sum,
-                                    columns='ScenarioID')
+        # Reset usage to zero for all time first
+        component_usage_by_year['TotalUsageY'] = 0
 
-    return component_usage_by_year, component_cost_by_year, combined_cost_usage, cash_flow_year
+        # Any "Installation" cost components only have a cost in the year of installation
+        component_usage_by_year['TotalUsageY'] = np.where(((component_usage_by_year['Timing'] == 'Installation') & (
+                component_usage_by_year['InstallDate'] == component_usage_by_year['Year'])),
+                                                          component_usage_by_year['InstallNumber'] *
+                                                          component_usage_by_year['Usage'],
+                                                          component_usage_by_year['TotalUsageY'])
+
+        # Any "PerOperationYear" cost  components only occur in the years following installation
+        component_usage_by_year['TotalUsageY'] = np.where(
+            ((component_usage_by_year['Timing'] == 'PerOperationYear') & (
+                    component_usage_by_year['InstallDate'] < component_usage_by_year['Year'])),
+            component_usage_by_year['InstallNumber'] * component_usage_by_year['Usage'],
+            component_usage_by_year['TotalUsageY'])
+
+        ###########################################
+        # Components costs per year
+        # Final table will have these columns
+        # ComponentID (Key) | Year (Key) | Cost
+        ###########################################
+        component_cost_by_year = component_list.merge(currency_list, how='left', on='CurrencyID')
+        component_cost_by_year['Temp'] = 1
+
+        component_cost_by_year = component_cost_by_year.merge(year_list, how='inner', on='Temp')
+        component_cost_by_year.drop('Temp', axis=1, inplace=True)
+
+        component_cost_by_year['AUDBaseline'] = component_cost_by_year['To_AUD'] * component_cost_by_year['BaselineCost']
+        # For now, assume everything uses an annual multiplier for cost
+        component_cost_by_year['AUDCostY'] = component_cost_by_year['AUDBaseline'] * component_cost_by_year[
+            'AnnualMultiplier'] ** (component_cost_by_year['Year'] - component_cost_by_year['BaselineYear'])
+
+        ############################################
+        # Combining both data tables to give total costs
+        ############################################
+
+        combined_cost_usage = component_usage_by_year.merge(component_cost_by_year, how='left', on=['Year', 'ComponentID'])
+        combined_cost_usage['TotalCostAUDY'] = combined_cost_usage['AUDCostY'] * combined_cost_usage['TotalUsageY']
+
+        ############################################
+        # Add up total costs per year for each ScenarioID.
+        ############################################
+
+        cash_flow_year = pd.pivot_table(combined_cost_usage, values='TotalCostAUDY', index='Year', aggfunc=np.sum,
+                                        columns='ScenarioID')
+
+        return component_usage_by_year, component_cost_by_year, combined_cost_usage, cash_flow_year
 
 
 def calculate_scenarios_iterations(iteration_input_tables, year_start, analyse_years):
@@ -524,7 +562,8 @@ def calculate_scenarios_iterations(iteration_input_tables, year_start, analyse_y
     return component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter
 
 
-def calculate_variance_contributions(input_factors, cost_result_name):
+
+def calculate_variance_contributions(input_factors, cost_result_name, savename=None):
     num_table=20
     num_graphs=5
     title=None
@@ -610,4 +649,7 @@ def calculate_variance_contributions(input_factors, cost_result_name):
                     text = text + '\nr$^2$ = {0:.2f}'.format(r2_value)
                 plt.annotate(text, xy=(0.5, 0.5), fontsize=20, xycoords='figure fraction')
 
+            if savename is not None:
+                file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', savename+parameter)
+                plt.savefig(file_name)
             plt.show()

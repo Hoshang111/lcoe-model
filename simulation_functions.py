@@ -1,11 +1,11 @@
 """ Functions for finding the DC output of the MAV or SAT system """
 # import pydantic
 # import pytest
+from platform import python_branch
 import pandas as pd
 import numpy as np
 import os
-from pvlib import pvsystem
-from pvlib.pvsystem import PVSystem, FixedMount
+from pvlib import pvsystem as pvsys
 from pvlib.location import Location
 from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
@@ -103,6 +103,43 @@ def weather_benchmark_adjustment(weather_solcast,
     weather_dnv.sort_index(inplace=True)
     return weather_dnv_simulations
 
+def weather_benchmark_adjustment_mk2(weather_solcast,
+                                 weather_dnv_file,
+                                 weather_dnv_path=None):
+
+    if weather_dnv_path is None:
+        # If no path is specified for the dnv weather file, then download from the default weather data folder.
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
+                                        delimiter=';',
+                                        index_col=0)
+    else:
+        weather_dnv_dummy = pd.read_csv(weather_dnv_path, index_col=0)
+
+
+    weather_dnv_dummy = weather_dnv_dummy.rename(
+        columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
+                 'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
+
+    weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed', 'dc_yield']].copy()
+    weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
+    weather_dnv.sort_index(inplace=True)
+
+    # The weather dnv data doesn't have the precipitable water and cos_theta which is needed for the simulations
+    # This data can be extracted from the SolCast weather data.
+    # To match the dates, i am using floor function on Solcast date time so to convert  11:30 am to 11:00 for example
+    # the reason for using floor is the end timestamp of each measurement is used as the index so far
+    # according to the first column of the original weather data
+    weather_solcast_mod = weather_solcast.set_index(weather_dnv.index)
+
+    weather_dnv = weather_dnv.join(weather_solcast_mod[['precipitable_water', 'cos_theta']])
+    #weather_dnv['cos_theta'] = weather_dnv['cos_theta'].shift(-1)  # for some reason it is much better aligned this way
+    weather_dnv['dni'] = weather_dnv['bhi'] / weather_dnv['cos_theta']  # conversion from bhi to dni with cos theta
+    weather_dnv['dni'] = weather_dnv['dni'].fillna(0)
+    weather_dnv['dni'].replace(np.inf, 0, inplace=True)
+    weather_dnv_simulations = weather_dnv[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'dc_yield']]
+    weather_dnv.sort_index(inplace=True)
+    return weather_dnv_simulations
 
 def rack_module_params(rack_type,
                        module_type):
@@ -309,7 +346,7 @@ def dc_yield(DCTotal,
 
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
-        inverter_list = pvsystem.retrieve_sam('cecinverter')
+        inverter_list = pvsys.retrieve_sam('cecinverter')
 
         # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...
         inv_dc_idx = (inverter_list.loc['Pdco'] >= dc_rated_power * 1000 * 0.95) & \
@@ -323,25 +360,25 @@ def dc_yield(DCTotal,
             inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
 
         module_tilt = rack_params['tilt']
-        mount1 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
-        mount2 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
+        mount1 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
+        mount2 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
 
         # Define two arrays resembling Maverick design: one east facing & one west facing
         # For now we are designing at the inverter level with 4 MAVs per inverter. Half of the array is assigned with
         # mount 1 (east facing) and the other half is assigned with mount 2 (west facing)
-        array_one = pvsystem.Array(mount=mount1,
+        array_one = pvsys.Array(mount=mount1,
                                    module_parameters=module_params,
                                    temperature_model_parameters=temperature_model_parameters,
                                    modules_per_string=num_of_module_per_string,
                                    strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
 
-        array_two = pvsystem.Array(mount=mount2,
+        array_two = pvsys.Array(mount=mount2,
                                    module_parameters=module_params,
                                    temperature_model_parameters=temperature_model_parameters,
                                    modules_per_string=num_of_module_per_string,
                                    strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
 
-        inverter_mav_system = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
+        inverter_mav_system = pvsys.PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
 
         # Model-Chain
         # Todo: We can try different angle of irradiance (aoi) models down the track
@@ -374,7 +411,7 @@ def dc_yield(DCTotal,
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
-        inverter_list = pvsystem.retrieve_sam('cecinverter')
+        inverter_list = pvsys.retrieve_sam('cecinverter')
 
         # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...
         inv_dc_idx = (inverter_list.loc['Pdco'] >= dc_rated_power * 1000 * 0.95) & \
@@ -390,17 +427,17 @@ def dc_yield(DCTotal,
         dc_results = []
         dc_size = []
         for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
-            mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
+            mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
                                                     module_height=2)
 
-            sat_array = pvsystem.Array(mount=mount,
+            sat_array = pvsys.Array(mount=mount,
                                        module_parameters=module_params,
                                        temperature_model_parameters=temperature_model_parameters,
                                        modules_per_string=num_of_module_per_string,
                                        strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
-            inverter_sat_system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+            inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
@@ -441,7 +478,7 @@ def dc_yield_benchmarking_mav(DCTotal,
 
     ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
     # Choose inverter as SMA SC 3000
-    inverter_list = pvsystem.retrieve_sam('cecinverter')
+    inverter_list = pvsys.retrieve_sam('cecinverter')
     filter_col = [col for col in inverter_list if col.startswith('SMA')]
     inverter_list_sma = inverter_list[filter_col]
     # It doesn't have the exact inverter so enter the chosen SMA inverter parameters manually
@@ -459,24 +496,24 @@ def dc_yield_benchmarking_mav(DCTotal,
     num_of_module_per_inverter = num_of_strings_per_inverter * num_of_module_per_string
 
     module_tilt = rack_params['tilt']
-    mount1 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
-    mount2 = pvsystem.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
+    mount1 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
+    mount2 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
 
     # Define two arrays resembling Maverick design: one east facing & one west facing
     # DC yield of one inverter
-    array_one = pvsystem.Array(mount=mount1,
+    array_one = pvsys.Array(mount=mount1,
                                module_parameters=module_params,
                                temperature_model_parameters=temperature_model_parameters,
                                modules_per_string=num_of_module_per_string,
                                strings=num_of_strings_per_inverter / 2)
 
-    array_two = pvsystem.Array(mount=mount2,
+    array_two = pvsys.Array(mount=mount2,
                                module_parameters=module_params,
                                temperature_model_parameters=temperature_model_parameters,
                                modules_per_string=num_of_module_per_string,
                                strings=num_of_strings_per_inverter / 2)
 
-    inverter_array = PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
+    inverter_array = pvsys.PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
 
     # Model-Chain
     # Todo: We can try different angle of irradiance (aoi) models down the track
@@ -552,7 +589,7 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     ''' DC modelling for single axis tracking (SAT) system '''
     # Choose inverter as SMA SC 3000
-    inverter_list = pvsystem.retrieve_sam('cecinverter')
+    inverter_list = pvsys.retrieve_sam('cecinverter')
     filter_col = [col for col in inverter_list if col.startswith('SMA')]
     inverter_list_sma = inverter_list[filter_col]
     # It doesn't have the exact inverter so enter the chosen SMA inverter parameters manually
@@ -573,17 +610,17 @@ def dc_yield_benchmarking_sat(DCTotal,
     dc_rated_power_inv = module_params['STC'] / 1000 * num_of_module_per_inverter  # in kW rated DC power output per inverter
 
 
-    mount = pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+    mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
                                             gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
                                             module_height=1.5)
 
-    sat_array = pvsystem.Array(mount=mount,
+    sat_array = pvsys.Array(mount=mount,
                                module_parameters=module_params,
                                temperature_model_parameters=temperature_model_parameters,
                                modules_per_string=num_of_module_per_string,
                                strings=num_of_strings_per_inverter)
 
-    inverter_sat_system = pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+    inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
 
     mc = ModelChain(inverter_sat_system, location)
     mc.run_model(weather_simulation)
