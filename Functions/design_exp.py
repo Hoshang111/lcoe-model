@@ -29,7 +29,7 @@ coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-weather = pd.read_csv(os.path.join('Data', 'WeatherData', 'Solcast_PT60M.csv'), index_col=0)
+weather = pd.read_csv(os.path.join('../Data', 'WeatherData', 'Solcast_PT60M.csv'), index_col=0)
 
 weather.set_index(pd.to_datetime(weather.index), inplace=True)  # set index to datetime format (each index now
 # represents end of the hourly period: i.e. 2007-01-01 02:00:00 represents the measurements between 1-2 am
@@ -45,7 +45,7 @@ simulation_year = str(2020)  # for now try to run a simulation with one year (36
 weather_simulation = weather[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water']].copy()[simulation_year]
 weather_simulation['precipitable_water'] = weather_simulation['precipitable_water']/10  # formatting for PV-lib
 # %% Modules
-suncable_modules = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
                                skiprows=[1, 2]).T
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 

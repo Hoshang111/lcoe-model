@@ -48,7 +48,7 @@ plt.legend()
 plt.show()
 # %% Single axis tracking info for simulations
 temperature_model_parameters = pvlib.temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-suncable_modules = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
                                skiprows=[1, 2]).T
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
