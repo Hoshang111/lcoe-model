@@ -155,7 +155,7 @@ def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost
     fig.legend(['NPV', 'GCR', 'Cost', 'Revenue', 'Size'], loc='upper right', prop={'size': 24})
     if fig_title is not None:
         fig.suptitle(fig_title, **fontdict)
-        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
+        file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../OutputFigures/', fig_title)
         plt.savefig(file_name)
     plt.show()
 

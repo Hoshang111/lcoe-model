@@ -44,13 +44,11 @@ cost function also give the Monte-Carlo distribution.
 
 # %% Import
 import pandas as pd
-import numpy as np
 import simulation_functions as func
-import airtable
 import sizing
 import plotting as plot_func
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+
+
 # mpl.use('Qt5Agg')
 
 def optimise_layout(weather_simulation, rack_type, module_type, install_year,
@@ -148,7 +146,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     rpzm_series = pd.Series(racks_per_zone_max)
     #cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
     cost_outputs, table_outputs = sizing.get_costs(rpzm_series, rack_params, module_params, data_tables,
-                                                              install_year=install_year, return_table_outputs = True)
+                                                   install_year=install_year, return_table_outputs = True)
 
     revenue_output = revenue_series[racks_per_zone_max]
     kWh_output = kWh_series[racks_per_zone_max]

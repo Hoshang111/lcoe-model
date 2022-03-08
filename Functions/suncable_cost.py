@@ -10,7 +10,7 @@ from airtable import Airtable
 from scipy import stats
 
 data_file_location = '.\\outputs\\'
-log_file_location = '.\\AirtableLogs\\'
+log_file_location = '../AirtableLogs\\'
 
 def get_airtable(base_id, api_key, table_name, sort_by=None, required_list=[]):
     print('  Getting data from ', table_name)
@@ -95,18 +95,18 @@ def import_airtable_data(base_id, api_key, save_tables=False):
 
 
 def import_excel_data(excel_file_name):
-    scenario_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name), sheet_name='ScenarioList',
+    scenario_list = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name), sheet_name='ScenarioList',
                                   index_col=0)
-    system_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name), sheet_name='SystemList', index_col=0)
-    scenario_system_link = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),
+    system_list = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name), sheet_name='SystemList', index_col=0)
+    scenario_system_link = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name),
                                          sheet_name='ScenarioSystemLink', index_col=0)
-    component_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name), sheet_name='ComponentList',
+    component_list = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name), sheet_name='ComponentList',
                                    index_col=0)
-    system_component_link = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name),
+    system_component_link = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name),
                                           sheet_name='SystemComponentLink', index_col=0)
-    currency_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name), sheet_name='CurrencyList',
+    currency_list = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name), sheet_name='CurrencyList',
                                   index_col=0)
-    costcategory_list = pd.read_excel(os.path.join('Data', 'CostData', excel_file_name), sheet_name='CostCategoryList',
+    costcategory_list = pd.read_excel(os.path.join('../Data', 'CostData', excel_file_name), sheet_name='CostCategoryList',
                                       index_col=0)
     return scenario_list, scenario_system_link, system_list, system_component_link, component_list, currency_list, costcategory_list
 
@@ -650,6 +650,6 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
                 plt.annotate(text, xy=(0.5, 0.5), fontsize=20, xycoords='figure fraction')
 
             if savename is not None:
-                file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', savename+parameter)
+                file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../OutputFigures/', savename + parameter)
                 plt.savefig(file_name)
             plt.show()

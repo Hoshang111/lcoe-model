@@ -35,18 +35,14 @@ Once the optimum NPV is found cost function also give the Monte-Carlo distributi
 """
 
 # %% Import
-import importlib
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-import simulation_functions as func
-from layout_optimiser import form_new_data_tables, optimise_layout
-import layout_optimiser as optimiser
-from simulation_functions import weather
-from plotting import plot_save
-from sizing import get_airtable
-from suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
+from Functions import simulation_functions as func
+from Functions.layout_optimiser import form_new_data_tables, optimise_layout
+from Functions.sizing import get_airtable
+from Functions.suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 
 # %%

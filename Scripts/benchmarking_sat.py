@@ -3,11 +3,8 @@
 # %% Import
 import pandas as pd
 import numpy as np
-import simulation_functions as func
-import sizing
-import plotting as plot_func
+from Functions import simulation_functions as func
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import os
 # mpl.use('Qt5Agg')
 # %%

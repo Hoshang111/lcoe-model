@@ -41,7 +41,7 @@ def weather(simulation_years,
     if weather_file_path is None:
         # If no path is specified for the weather file, then download from the default weather data folder.
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
-        weather_data = pd.read_csv(os.path.join('Data', 'WeatherData', weather_file), index_col=0)
+        weather_data = pd.read_csv(os.path.join('../Data', 'WeatherData', weather_file), index_col=0)
     else:
         weather_data = pd.read_csv(weather_file_path, index_col=0)
 
@@ -71,7 +71,7 @@ def weather_benchmark_adjustment(weather_solcast,
     if weather_dnv_path is None:
         # If no path is specified for the dnv weather file, then download from the default weather data folder.
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
-        weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
+        weather_dnv_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', weather_dnv_file),
                                         delimiter=';',
                                         index_col=0)
     else:
@@ -110,7 +110,7 @@ def weather_benchmark_adjustment_mk2(weather_solcast,
     if weather_dnv_path is None:
         # If no path is specified for the dnv weather file, then download from the default weather data folder.
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
-        weather_dnv_dummy = pd.read_csv(os.path.join('Data', 'WeatherData', weather_dnv_file),
+        weather_dnv_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', weather_dnv_file),
                                         delimiter=';',
                                         index_col=0)
     else:
@@ -161,11 +161,11 @@ def rack_module_params(rack_type,
     """
     os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
     # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
-    suncable_racks = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0,
-                                 skiprows=[1],converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
+    suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0,
+                                 skiprows=[1], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
-    suncable_modules = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
-                                   skiprows=[1, 2],converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
+    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+                                   skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
 
 
