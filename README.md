@@ -44,6 +44,10 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 ### Housekeeping
 * *Sort out poetry conflicts* **(Hoshang)**
+* Merge sizing and layout_optimizer
+* Make scripts file
+* Important files: phill_dni (create into function)
+* Files to remove: parameter_extraction, system, Demo, Old Files
 
 ### Inputs
 * Design point - accept multi-inputs
