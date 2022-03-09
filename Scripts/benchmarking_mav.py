@@ -46,7 +46,8 @@ DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+parent_path = os.path.dirname('.')
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 

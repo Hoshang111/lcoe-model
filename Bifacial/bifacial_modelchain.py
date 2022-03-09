@@ -19,7 +19,7 @@ import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
-import Bifacial.bifacial_pvsystem as bifacial_pvsystem
+import bifacial_pvsystem
 
 from pvlib._deprecation import deprecated
 
@@ -104,7 +104,7 @@ PerArray = Union[T, Tuple[T, ...]]
 class ModelChainResult:
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
-    _per_array_fields = {'total_irrad', 'bifacial_irrad', 'aoi', 'aoi_modifier',
+    _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
                          'dc_ohmic_losses', 'weather'}
@@ -1252,17 +1252,6 @@ class ModelChain:
         else:
             self.results.times = self.results.weather.index
 
-    def _prep_inputs_tracking(self):
-        """
-        Calculate tracker position and AOI
-        """
-        self.results.tracking = self.system.get_tracking(self.results.solar_position['apparent_zenith'],
-                                                self.results.solar_position['azimuth'])
-        self.results.aoi = self.system.get_aoi(self.results.solar_position['apparent_zenith'],
-                                                self.results.solar_position['azimuth'])
-
-        return self
-
     def prepare_inputs_bifacial(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -1307,25 +1296,19 @@ class ModelChain:
         # have different method signatures. Use partial to handle
         # the differences.
 
-        self._prep_inputs_tracking()
+        self._prep_inputs_bifacial()
         get_irradiance = partial(
-            self.system.get_bifacial_irradiance,
-            self.results.tracking['surface_tilt'],
-            self.results.tracking['surface_azimuth'],
+            self.system.get_irradiance,
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
 
-        self.results.bifacial_irrad = get_irradiance(
+        self.results.total_irrad = get_irradiance(
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
-
-        self.results.total_irrad = self.results.bifacial_irrad[['poa_global', 'poa_diffuse',
-                                                                'poa_direct', 'poa_sky_diffuse',
-                                                                'poa_ground_diffuse']]
 
         return self
 
