@@ -21,8 +21,6 @@ from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs, _build_args
 
-import pvlib.bifacial as bifacial
-
 
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
@@ -348,7 +346,7 @@ class PVSystem:
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
         return tuple(
-            array.get_bifacial_irradiance(solar_zenith, solar_azimuth,
+            array.get_irradiance(solar_zenith, solar_azimuth,
                                  dni, ghi, dhi,
                                  dni_extra, airmass, model,
                                  **kwargs)
@@ -356,51 +354,6 @@ class PVSystem:
                 self.arrays, dni, ghi, dhi
             )
         )
-
-    @_unwrap_single_value
-    def get_bifacial_irradiance(self, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
-        """
-
-        :param solar_zenith:
-        :param solar_azimuth:
-        :param dni:
-        :param ghi:
-        :param dhi:
-        :param dni_extra:
-        :param airmass:
-        :param model:
-        :param kwargs:
-        :return:
-        """
-        dni = self._validate_per_array(dni, system_wide=True)
-        ghi = self._validate_per_array(ghi, system_wide=True)
-        dhi = self._validate_per_array(dhi, system_wide=True)
-        return tuple(
-            array.get_bifacial_irradiance(surface_tilt, surface_azimuth, solar_zenith,
-                                 solar_azimuth,
-                                 dni, ghi, dhi,
-                                 dni_extra, airmass, model,
-                                 **kwargs)
-            for array, dni, ghi, dhi in zip(
-                self.arrays, dni, ghi, dhi
-            )
-        )
-
-    @_unwrap_single_value
-    def get_tracking(self, solar_zenith, solar_azimuth):
-        """
-
-        :param solar_zenith:
-        :param solar_azimuth:
-        :return:
-        """
-        return tuple(
-            array.get_tracking(solar_zenith, solar_azimuth)
-            for array in self.arrays
-            )
-
 
     @_unwrap_single_value
     def get_iam(self, aoi, iam_model='physical'):
@@ -1397,66 +1350,6 @@ class Array:
                                                model=model,
                                                albedo=self.albedo,
                                                **kwargs)
-
-    def get_bifacial_irradiance(self, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi,
-                       dni_extra=None, airmass=None, model='haydavies',
-                       **kwargs):
-        """
-
-        :param solar_zenith:
-        :param solar_azimuth:
-        :param dni:
-        :param ghi:
-        :param dhi:
-        :param dni_extra:
-        :param airmass:
-        :param model:
-        :param kwargs:
-        :return:
-        """
-        # not needed for all models, but this is easier
-        if dni_extra is None:
-            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
-
-        if airmass is None:
-            airmass = atmosphere.get_relative_airmass(solar_zenith)
-
-        albedo = 0.2
-        pitch = 2*self.module_parameters['Length']/self.mount.gcr
-
-        bifacial_irradiance = \
-            bifacial.infinite_sheds.get_irradiance(surface_tilt, surface_azimuth,
-                                                   solar_zenith, solar_azimuth,
-                                                   self.mount.gcr, self.mount.module_height,
-                                                   pitch, ghi, dhi, dni, albedo,
-                                                   bifaciality=self.module_parameters['Bifacial'],
-                                                   )
-
-        bifacial_irradiance['poa_direct'] = \
-            bifacial_irradiance['poa_front_direct'] + bifacial_irradiance['poa_back_direct']*self.module_parameters['Bifacial']
-
-        bifacial_irradiance['poa_diffuse'] = \
-            bifacial_irradiance['poa_front_diffuse'] + bifacial_irradiance['poa_back_diffuse'] * self.module_parameters[
-                'Bifacial']
-
-        bifacial_irradiance['poa_sky_diffuse'] = \
-            bifacial_irradiance['poa_front_sky_diffuse'] + bifacial_irradiance['poa_back_sky_diffuse'] * self.module_parameters[
-                'Bifacial']
-
-        bifacial_irradiance['poa_ground_diffuse'] = \
-            bifacial_irradiance['poa_front_ground_diffuse'] + bifacial_irradiance['poa_back_ground_diffuse'] * \
-            self.module_parameters[
-                'Bifacial']
-
-        return bifacial_irradiance
-
-    def get_tracking(self, solar_zenith, solar_azimuth):
-        """
-        :param solar_zenith:
-        :param solar_azimuth:
-        :return:
-        """
-        return self.mount.get_orientation(solar_zenith, solar_azimuth)
 
     def get_iam(self, aoi, iam_model='physical'):
         """
