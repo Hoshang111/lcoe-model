@@ -5,6 +5,7 @@ Run montecarlo.py (can be done through a terminal using python3 montecarlo.py)
 * time shift to centre of period (for sun angle etc.)
 * Implement Bi-facial
 * Update temperature coeffecients from first principles (Io based)
+* Check effect of increased revenue
 * Battery Storage
 * Probabilistic Yield - incl soiling, mismatch, degradation, failures etc.
 * 
