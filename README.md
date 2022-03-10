@@ -4,6 +4,7 @@ Run montecarlo.py (can be done through a terminal using python3 montecarlo.py)
 # Post-Report priorities
 * time shift to centre of period (for sun angle etc.)
 * Implement Bi-facial
+* Update temperature coeffecients from first principles (Io based)
 * Battery Storage
 * Probabilistic Yield - incl soiling, mismatch, degradation, failures etc.
 * 
