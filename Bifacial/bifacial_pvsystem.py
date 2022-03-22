@@ -1351,6 +1351,70 @@ class Array:
                                                albedo=self.albedo,
                                                **kwargs)
 
+    def get_bifacial_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
+                       dni_extra=None, airmass=None, model='haydavies',
+                       **kwargs):
+        """
+        Get plane of array irradiance components.
+        Uses the :py:func:`pvlib.irradiance.get_total_irradiance` function to
+        calculate the plane of array irradiance components for a surface
+        defined by ``self.surface_tilt`` and ``self.surface_azimuth`` with
+        albedo ``self.albedo``.
+        Parameters
+        ----------
+        solar_zenith : float or Series.
+            Solar zenith angle.
+        solar_azimuth : float or Series.
+            Solar azimuth angle.
+        dni : float or Series
+            Direct Normal Irradiance
+        ghi : float or Series
+            Global horizontal irradiance
+        dhi : float or Series
+            Diffuse horizontal irradiance
+        dni_extra : None, float or Series, default None
+            Extraterrestrial direct normal irradiance
+        airmass : None, float or Series, default None
+            Airmass
+        model : String, default 'haydavies'
+            Irradiance model.
+        kwargs
+            Extra parameters passed to
+            :py:func:`pvlib.irradiance.get_total_irradiance`.
+        Returns
+        -------
+        poa_irradiance : DataFrame
+            Column names are: ``'poa_global', 'poa_direct', 'poa_diffuse',
+            'poa_sky_diffuse', 'poa_ground_diffuse'``.
+        """
+        # not needed for all models, but this is easier
+        if dni_extra is None:
+            dni_extra = irradiance.get_extra_radiation(solar_zenith.index)
+
+        if airmass is None:
+            airmass = atmosphere.get_relative_airmass(solar_zenith)
+
+        return bifacial.infinite_sheds.get_irradiance(self['surface_tilt'],
+                                                      self['surface_azimuth'],
+                                                      solar_zenith, solar_azimuth,
+                                                      self.gcr,
+                                                      self.height,
+                                                      self.pitch,
+                                                      dni, ghi, dhi,
+                                                      albedo=self.albedo,
+                                                      bifaciality=self.system.module['bifaciality']
+                                                      **kwargs)
+
+            #irradiance.get_total_irradiance(orientation['surface_tilt'],
+            #                                   orientation['surface_azimuth'],
+             #                                  solar_zenith, solar_azimuth,
+            #                                   dni, ghi, dhi,
+            #                                   dni_extra=dni_extra,
+            #                                   airmass=airmass,
+           #                                    model=model,
+            #                                   albedo=self.albedo,
+            #                                   **kwargs)
+
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by

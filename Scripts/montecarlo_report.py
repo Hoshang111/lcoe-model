@@ -91,7 +91,7 @@ temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSys
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
 storage_capacity = 4e7 # Wh per zone
-scheduled_price = 0.00004  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+scheduled_price = 0.00015  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
 discount_rate = 0.07
