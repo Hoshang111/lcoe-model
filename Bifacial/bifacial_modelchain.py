@@ -1252,6 +1252,22 @@ class ModelChain:
         else:
             self.results.times = self.results.weather.index
 
+    def _prep_inputs_tracking(self):
+        """
+        Calculate tracker position and AOI
+        """
+        self.results.tracking = self.system.singleaxis(
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
+        self.results.tracking['surface_tilt'] = (
+            self.results.tracking['surface_tilt']
+                .fillna(self.system.axis_tilt))
+        self.results.tracking['surface_azimuth'] = (
+            self.results.tracking['surface_azimuth']
+                .fillna(self.system.axis_azimuth))
+        self.results.aoi = self.results.tracking['aoi']
+        return self
+
     def prepare_inputs_bifacial(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -1296,13 +1312,15 @@ class ModelChain:
         # have different method signatures. Use partial to handle
         # the differences.
 
-        self._prep_inputs_bifacial()
+        self._prep_inputs_tracking()
         get_irradiance = partial(
-            self.system.get_irradiance,
+            self.bifacial_pvsystem.get_bifacial_irradiance,
+            self.results.tracking['surface_tilt'],
+            self.results.tracking['surface_azimuth'],
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
 
-        self.results.total_irrad = get_irradiance(
+        self.results.total_irrad = bifacial_pvsystem.get_bifacial_irradiance(
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
