@@ -13,7 +13,7 @@ import pvlib
 import os.path
 import os
 import sys
-import suncable_cost as SunCost
+import cost_functions as SunCost
 
 
 # Define plot setting

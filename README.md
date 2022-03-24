@@ -52,3 +52,8 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 ### Inputs
 * Design point - accept multi-inputs
 
+### TO RUN POETRY
+* Create a new poetry interpreter (bottom right on PyCharm)
+* This should be an existing interpreter and will allow you to install all poetry packages
+* Once installed, ensure all packages are available in Python Packages, and run scripts to test if it worked.
+

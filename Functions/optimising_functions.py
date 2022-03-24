@@ -44,9 +44,9 @@ cost function also give the Monte-Carlo distribution.
 
 # %% Import
 import pandas as pd
-import simulation_functions as func
-import sizing
-import plotting as plot_func
+import Functions.simulation_functions as func
+import Functions.sizing_functions
+import Functions.plotting_functions as plot_func
 
 
 # mpl.use('Qt5Agg')

@@ -1,11 +1,15 @@
 """ This is the benchmarking script for DC yield assessment for 5B MAVs.
 """
 # %% Import
+import sys
+sys.path.append('../')
 import pandas as pd
 import numpy as np
-from Functions import simulation_functions as func
+import Functions.simulation_functions as func
 import matplotlib.pyplot as plt
 import os
+import warnings
+
 # mpl.use('Qt5Agg')
 
 # %%
@@ -14,6 +18,7 @@ import os
 # DNV weather data don't have dni data but it has bhi (beam horizontal radiation: horizontal component of dni)
 # We need the cos theta (zenith angle) to derive dni from bhi (dni is needed by pvlib simulations). We are going to
 # extract the cost theta from Solcast weather files and use it in DNV weather data for the corresponding timestamps.
+warnings.simplefilter(action='ignore', category=FutureWarning)
 simulation_years = np.arange(2007, 2022, 1)
 weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
