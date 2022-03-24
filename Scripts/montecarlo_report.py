@@ -40,9 +40,9 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from Functions import simulation_functions as func
-from Functions.layout_optimiser import form_new_data_tables, optimise_layout
-from Functions.sizing import get_airtable
-from Functions.suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
+from Functions.optimising_functions import form_new_data_tables, optimise_layout
+from Functions.sizing_functions import get_airtable
+from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 
 # %%

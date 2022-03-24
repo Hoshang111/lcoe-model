@@ -9,12 +9,11 @@ python = ">=3.10,<3.11"
 pandas = "^1.4.1"
 matplotlib = "^3.5.1"
 scipy = "^1.8.0"
-airtable-python-wrapper = "^0.15.3"
 PyQt5 = "^5.15.6"
 openpyxl = "^3.0.9"
-airtable = "^0.4.8"
 pvfactors = "^1.5.2"
 pvlib = "^0.9.0"
+airtable-python-wrapper = "^0.15.3"
 [tool.poetry.dev-dependencies]
 
 [build-system]
