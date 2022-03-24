@@ -45,7 +45,7 @@ cost function also give the Monte-Carlo distribution.
 # %% Import
 import pandas as pd
 import Functions.simulation_functions as func
-import Functions.sizing_functions
+import Functions.sizing_functions as sizing
 import Functions.plotting_functions as plot_func
 
 
