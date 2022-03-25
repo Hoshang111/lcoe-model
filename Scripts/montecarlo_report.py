@@ -228,7 +228,7 @@ for analysis_year in [
 
     if analysis_year == 2024:
         install_year = 2024
-        results = [[results_SAT_PERC_2024,
+        results_list = [[results_SAT_PERC_2024,
                    results_MAV_PERC_2024,
                    results_SAT_HJT_2024,
                    results_MAV_HJT_2024,

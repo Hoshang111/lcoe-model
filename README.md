@@ -57,3 +57,18 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 * This should be an existing interpreter and will allow you to install all poetry packages
 * Once installed, ensure all packages are available in Python Packages, and run scripts to test if it worked.
 
+### Alternate method to run POETRY if using Conda and pycharm on Windows 10
+* Install poetry
+** download install-poetry.py from https://install.python-poetry.org/
+** run "python install-poetry.py" from an anaconda terminal window.
+** If needed, add the path to the new poetry directory to your path (C:\Users\<username>\AppData\Roaming\Python\Scripts) 
+* Create a python 3.10 conda environment, then activate it
+** conda create <name> python=3.10
+** conda activate <name>
+* Change to the project directory and use poetry to install required packages
+** cd <project directory path>
+** poetry install
+* In Pycharm, connect to the new conda environment
+** "Add Interpreter" (bottom right on pycharm)
+** Conda Environment
+** Find location of python.exe in C:\Users\<username>\anaconda3\envs

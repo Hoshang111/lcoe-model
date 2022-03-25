@@ -9,7 +9,7 @@
 # from airtable import Airtable
 # from scipy import stats
 
-import suncable_cost
+from Functions.cost_functions import get_airtable, generate_iterations
 
 
 # First get data from Airtable
@@ -17,10 +17,10 @@ api_key = 'keyJSMV11pbBTdswc'
 base_id = 'appjQftPtMrQK04Aw'
 table_name = 'YieldParameters'
 
-yield_variables = suncable_cost.get_airtable(base_id, api_key, table_name, sort_by='YieldID')
+yield_variables = get_airtable(base_id, api_key, table_name, sort_by='YieldID')
 
 # Now generate iteration data. Note that all variables are assumed flat distribution in this case (unless specified otherwise in the airtable database).
-yield_variables_iter = suncable_cost.generate_iterations(yield_variables, index_name='YieldID',
+yield_variables_iter = generate_iterations(yield_variables, index_name='YieldID',
                                         index_description='YieldName', num_iterations=100,
                                         iteration_start=0, default_dist_type = 'flat')
 
@@ -53,3 +53,6 @@ for (new, adj, id, name) in [
 yield_variables_baseline.to_csv('temp_yield_variables_baseline.csv')
 yield_variables_MAV.to_csv('temp_yield_variables_MAV.csv')
 yield_variables_SAT.to_csv('temp_yield_variables_SAT.csv')
+
+
+# End
