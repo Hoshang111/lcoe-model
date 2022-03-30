@@ -1398,8 +1398,8 @@ class Array:
 
         pitch = self.system.array.module['length']/self.system.array.mount['gcr']
 
-        return bifacial.infinite_sheds.get_irradiance(self.results.solar_position['surface_tilt'],
-                                                      self.results.solar_position['surface_azimuth'],
+        return bifacial.infinite_sheds.get_irradiance(self.results.tracking['surface_tilt'],
+                                                      self.results.tracking['surface_azimuth'],
                                                       solar_zenith, solar_azimuth,
                                                       self.system.array.mount['gcr'],
                                                       self.system.array.mount['module_height'],
