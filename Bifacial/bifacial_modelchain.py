@@ -1256,16 +1256,8 @@ class ModelChain:
         """
         Calculate tracker position and AOI
         """
-        self.results.tracking = tracking.singleaxis(
-            self.results.solar_position['apparent_zenith'],
-            self.results.solar_position['azimuth'])
-        self.results.tracking['surface_tilt'] = (
-            self.results.tracking['surface_tilt']
-                .fillna(self.system.arrays.mount.axis_tilt))
-        self.results.tracking['surface_azimuth'] = (
-            self.results.tracking['surface_azimuth']
-                .fillna(self.system.arrays.mount.axis_azimuth))
-        self.results.aoi = self.results.tracking['aoi']
+        self.results.tracking = self.system.mount.get_orientation(self.results.solar_position['apparent_zenith'],
+                                                                  self.results.solar_position['azimuth'])
         return self
 
     def prepare_inputs_bifacial(self, weather):
