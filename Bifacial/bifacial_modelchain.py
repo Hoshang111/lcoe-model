@@ -1261,10 +1261,10 @@ class ModelChain:
             self.results.solar_position['azimuth'])
         self.results.tracking['surface_tilt'] = (
             self.results.tracking['surface_tilt']
-                .fillna(self.system.array.mount.axis_tilt))
+                .fillna(self.system.mount.axis_tilt))
         self.results.tracking['surface_azimuth'] = (
             self.results.tracking['surface_azimuth']
-                .fillna(self.system.array.mount.axis_azimuth))
+                .fillna(self.system.mount.axis_azimuth))
         self.results.aoi = self.results.tracking['aoi']
         return self
 
