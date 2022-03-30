@@ -632,7 +632,7 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     elif cell_type == 'bifacial':
         mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
-        mc.run_model(weather_simulation)
+        mc.run_model_bifacial(weather_simulation)
         multiplication_coeff = num_of_zones * num_of_inv_per_zone
         dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
 
