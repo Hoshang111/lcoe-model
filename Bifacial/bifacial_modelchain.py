@@ -1258,7 +1258,7 @@ class ModelChain:
         """
         self.results.tracking = tracking.singleaxis(self.results.solar_position['apparent_zenith'],
                                                     self.results.solar_position['azimuth'],
-                                                    axis_tilt=0, axis_azimuth=0, max_angle =60,
+                                                    axis_tilt=0, axis_azimuth=0, max_angle=60,
                                                     backtrack=True, gcr=0.4, cross_axis_tilt=0)
 
         return self
