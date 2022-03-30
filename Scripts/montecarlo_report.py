@@ -197,8 +197,8 @@ results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_t
 # Call Monte Carlo Cost analysis
 
 for analysis_year in [
-    #2024,
-    #2026,
+    2024,
+    2026,
     2028
 
                       ]:
@@ -324,8 +324,9 @@ for analysis_year in [
             fig_title = parameter + ' - ' + str(install_year)
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
-            # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
-            # plt.savefig(file_name)
+            parent_path = os.path.dirname('.')
+            file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+            plt.savefig(file_name)
             plt.show()
 
     # %%
