@@ -1256,8 +1256,8 @@ class ModelChain:
         """
         Calculate tracker position and AOI
         """
-        self.results.tracking = self.system.mount.get_orientation(self.results.solar_position['apparent_zenith'],
-                                                                  self.results.solar_position['azimuth'])
+        self.results.tracking = self.bifacial_pvsystem.get_tracking(self.results.solar_position['apparent_zenith'],
+                                                                    self.results.solar_position['azimuth'])
         return self
 
     def prepare_inputs_bifacial(self, weather):
