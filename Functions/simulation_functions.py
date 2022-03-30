@@ -635,6 +635,7 @@ def dc_yield_benchmarking_sat(DCTotal,
         # mc.run_bifacial_model(weather_simulation)
         # multiplication_coeff = num_of_zones * num_of_inv_per_zone
         # dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
+        dc_results_total =0
 
     return dc_results_total, mc, mount
 
