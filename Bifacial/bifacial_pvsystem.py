@@ -1396,12 +1396,14 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
+        pitch = self.module['length']/self.gcr
+
         return bifacial.infinite_sheds.get_irradiance(self['surface_tilt'],
                                                       self['surface_azimuth'],
                                                       solar_zenith, solar_azimuth,
                                                       self.gcr,
                                                       self.height,
-                                                      self.pitch,
+                                                      pitch,
                                                       dni, ghi, dhi,
                                                       albedo=self.albedo,
                                                       bifaciality=self.system.module['bifaciality']

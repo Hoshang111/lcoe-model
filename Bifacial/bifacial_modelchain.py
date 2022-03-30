@@ -19,7 +19,7 @@ import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
-import bifacial_pvsystem
+import Bifacial.bifacial_pvsystem as bifacial_pvsystem
 
 from pvlib._deprecation import deprecated
 
