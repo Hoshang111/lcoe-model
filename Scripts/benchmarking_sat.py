@@ -32,7 +32,7 @@ weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_fil
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 
-if cell_type == 'mono':
+if cell_type == 'bifacial':
       module_type = 'Longi LR5-72HBD-%dM' % module_rating  # Enter one of the modules from the SunCable module database
 else:
       module_type = 'Longi LR5-72HBD-%dM_mono' % module_rating
@@ -75,7 +75,7 @@ weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
 dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
-                                            module_rating, gcr, cell_type='mono')
+                                            module_rating, gcr, cell_type=cell_type)
 dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
