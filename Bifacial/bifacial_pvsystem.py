@@ -1353,6 +1353,14 @@ class Array:
                                                albedo=self.albedo,
                                                **kwargs)
 
+    def get_tracking(self, solar_zenith, solar_azimuth):
+        """
+        :param solar_zenith:
+        :param solar_azimuth:
+        :return:
+        """
+        return self.mount.get_orientation(solar_zenith, solar_azimuth)
+
     def get_bifacial_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
