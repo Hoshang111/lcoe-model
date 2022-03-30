@@ -21,6 +21,8 @@ from pvlib import (atmosphere, iam, inverter, irradiance,
                    singlediode as _singlediode, temperature)
 from pvlib.tools import _build_kwargs, _build_args
 
+import pvlib.bifacial as bifacial
+
 
 # a dict of required parameter names for each DC power model
 _DC_MODEL_PARAMS = {
