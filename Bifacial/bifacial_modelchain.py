@@ -1256,10 +1256,8 @@ class ModelChain:
         """
         Calculate tracker position and AOI
         """
-        self.results.tracking = tracking.singleaxis(self.results.solar_position['apparent_zenith'],
-                                                    self.results.solar_position['azimuth'],
-                                                    axis_tilt=0, axis_azimuth=0, max_angle=60,
-                                                    backtrack=True, gcr=0.4, cross_axis_tilt=0)
+        self.results.tracking = self.system.get_tracking(self.results.solar_position['apparent_zenith'],
+                                                         self.results.solar_position['azimuth'])
 
         return self
 
