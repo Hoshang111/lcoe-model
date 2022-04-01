@@ -358,6 +358,20 @@ class PVSystem:
         )
 
     @_unwrap_single_value
+    def get_tracking(self, solar_zenith, solar_azimuth):
+        """
+
+        :param solar_zenith:
+        :param solar_azimuth:
+        :return:
+        """
+        return tuple(
+            array.get_tracking(solar_zenith, solar_azimuth)
+            for array in self.arrays
+            )
+
+
+    @_unwrap_single_value
     def get_iam(self, aoi, iam_model='physical'):
         """
         Determine the incidence angle modifier using the method specified by
