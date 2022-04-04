@@ -1429,7 +1429,7 @@ class Array:
                                                    solar_zenith, solar_azimuth,
                                                    self.mount.gcr, self.mount.module_height,
                                                    pitch, ghi, dhi, dni, albedo,
-                                                   bifaciality=self.module_parameters['bifacial'],
+                                                   bifaciality=self.module_parameters['Bifacial'],
                                                    )
 
         bifacial_irradiance['poa_direct'] = \
