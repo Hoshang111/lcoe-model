@@ -104,7 +104,7 @@ PerArray = Union[T, Tuple[T, ...]]
 class ModelChainResult:
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
-    _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
+    _per_array_fields = {'total_irrad', 'bifacial_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
                          'dc_ohmic_losses', 'weather'}
@@ -1307,19 +1307,23 @@ class ModelChain:
 
         self._prep_inputs_tracking()
         get_irradiance = partial(
-            self.bifacial_pvsystem.get_bifacial_irradiance,
+            self.system.get_bifacial_irradiance,
             self.results.tracking['surface_tilt'],
             self.results.tracking['surface_azimuth'],
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
 
-        self.results.total_irrad = bifacial_pvsystem.get_bifacial_irradiance(
+        self.results.bifacial_irrad = get_irradiance(
             _tuple_from_dfs(self.results.weather, 'dni'),
             _tuple_from_dfs(self.results.weather, 'ghi'),
             _tuple_from_dfs(self.results.weather, 'dhi'),
             airmass=self.results.airmass['airmass_relative'],
             model=self.transposition_model
         )
+
+        self.results.total_irrad['poa_global'] = self.results.bifacial_irrad['poa_global']
+        self.results.total_irrad['poa_direct'] = self.results.bifacial_irrad['poa_direct']
+        self.results.total_irrad['poa_diffuse'] = self.results.bifacial_irrad['poa_diffuse']
 
         return self
 
