@@ -1433,11 +1433,11 @@ class Array:
                                                    )
 
         bifacial_irradiance['poa_direct'] = \
-            bifacial_irradiance['poa_front_direct'] + bifacial_irradiance['poa_back_direct']*self.module_parameters['bifacial']
+            bifacial_irradiance['poa_front_direct'] + bifacial_irradiance['poa_back_direct']*self.module_parameters['Bifacial']
 
         bifacial_irradiance['poa_diffuse'] = \
             bifacial_irradiance['poa_front_diffuse'] + bifacial_irradiance['poa_back_diffuse'] * self.module_parameters[
-                'bifacial']
+                'Bifacial']
 
         return bifacial_irradiance
 
