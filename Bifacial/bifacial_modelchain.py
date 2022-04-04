@@ -1321,9 +1321,7 @@ class ModelChain:
             model=self.transposition_model
         )
 
-        self.results.total_irrad['poa_global'] = self.results.bifacial_irrad['poa_global']
-        self.results.total_irrad['poa_direct'] = self.results.bifacial_irrad['poa_direct']
-        self.results.total_irrad['poa_diffuse'] = self.results.bifacial_irrad['poa_diffuse']
+        self.results.total_irrad = self.results.bifacial_irrad['poa_global'], self.results.bifacial_irrad['poa_diffuse']
 
         return self
 
