@@ -1427,7 +1427,7 @@ class Array:
         bifacial_irradiance = \
             bifacial.infinite_sheds.get_irradiance(surface_tilt, surface_azimuth,
                                                    solar_zenith, solar_azimuth,
-                                                   self.mount.gcr, self.module_parameters['Module_height'],
+                                                   self.mount.gcr, self.mount['module_height'],
                                                    pitch, ghi, dhi, dni, albedo,
                                                    bifaciality=self.module_parameters['bifacial'],
                                                    )
