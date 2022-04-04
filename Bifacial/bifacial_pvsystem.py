@@ -1439,6 +1439,15 @@ class Array:
             bifacial_irradiance['poa_front_diffuse'] + bifacial_irradiance['poa_back_diffuse'] * self.module_parameters[
                 'Bifacial']
 
+        bifacial_irradiance['poa_sky_diffuse'] = \
+            bifacial_irradiance['poa_front_sky_diffuse'] + bifacial_irradiance['poa_back_sky_diffuse'] * self.module_parameters[
+                'Bifacial']
+
+        bifacial_irradiance['poa_ground_diffuse'] = \
+            bifacial_irradiance['poa_front_ground_diffuse'] + bifacial_irradiance['poa_back_ground_diffuse'] * \
+            self.module_parameters[
+                'Bifacial']
+
         return bifacial_irradiance
 
     def get_tracking(self, solar_zenith, solar_azimuth):
