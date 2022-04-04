@@ -378,7 +378,7 @@ class PVSystem:
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
         return tuple(
-            array.get_irradiance(surface_tilt, surface_azimuth, solar_zenith,
+            array.get_bifacial_irradiance(surface_tilt, surface_azimuth, solar_zenith,
                                  solar_azimuth,
                                  dni, ghi, dhi,
                                  dni_extra, airmass, model,
@@ -1422,7 +1422,7 @@ class Array:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
         albedo = 0.2
-        pitch = 2*self.module_parameters['length']/self.mount.gcr
+        pitch = 2*self.module_parameters['Length']/self.mount.gcr
 
         bifacial_irradiance = \
             bifacial.infinite_sheds.get_irradiance(surface_tilt, surface_azimuth,
