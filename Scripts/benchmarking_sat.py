@@ -100,7 +100,7 @@ ax.legend()
 # plt.show()
 fig_name = 'LinePlot-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,month)
 
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
@@ -127,7 +127,7 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
 fig_name = 'Scatter-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,scatter_year)
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% bar plot
@@ -152,5 +152,5 @@ ax2.set_ylim(0,10)
 
 #plt.show()
 fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
