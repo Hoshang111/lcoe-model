@@ -113,5 +113,5 @@ def align_years(yield_series, cost_series):
                            freq='H')
     dt_index = dt_index[~((dt_index.month==2)&(dt_index.day==29))]
     aligned_years=pd.concat([yield_series]*cost_series.shape[0], ignore_index=True)
-    # aligned_years.index=dt_index
+    aligned_years.index=dt_index
     return aligned_years, dt_index
