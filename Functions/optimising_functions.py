@@ -245,17 +245,17 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
 
     # %% ==========================================
     # Revenue and storage behaviour
-    kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
+    # kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
 
     # %% ==========================================
     # Net present value (NPV)
 
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-    LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
+    # npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
+    # LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
 
-    return kWh_series, test_index
+    return kWh_series, test_index, dc_df
 
 
 
