@@ -251,7 +251,7 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
     kWh_series, test_index = testing.align_years(dc_df, cash_flow_by_year)
     # kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
     # ==========================================
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
+    # npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
     # LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
