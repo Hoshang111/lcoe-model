@@ -14,12 +14,12 @@ from dataclasses import dataclass, field
 from typing import Union, Tuple, Optional, TypeVar
 
 from pvlib import (atmosphere, clearsky, inverter, pvsystem, solarposition,
-                   temperature, tools)
-from pvlib.tracking import SingleAxisTracker
+                   temperature, tools, tracking)
 import pvlib.irradiance  # avoid name conflict with full import
 from pvlib.pvsystem import _DC_MODEL_PARAMS
 from pvlib._deprecation import pvlibDeprecationWarning
 from pvlib.tools import _build_kwargs
+import Bifacial.bifacial_pvsystem as bifacial_pvsystem
 
 from pvlib._deprecation import deprecated
 
@@ -104,7 +104,7 @@ PerArray = Union[T, Tuple[T, ...]]
 class ModelChainResult:
     # these attributes are used in __setattr__ to determine the correct type.
     _singleton_tuples: bool = field(default=False)
-    _per_array_fields = {'total_irrad', 'aoi', 'aoi_modifier',
+    _per_array_fields = {'total_irrad', 'bifacial_irrad', 'aoi', 'aoi_modifier',
                          'spectral_modifier', 'cell_temperature',
                          'effective_irradiance', 'dc', 'diode_params',
                          'dc_ohmic_losses', 'weather'}
@@ -1142,21 +1142,20 @@ class ModelChain:
             model=self.airmass_model)
         return self
 
-    def _prep_inputs_tracking(self):
+
+    def _prep_inputs_bifacial(self):
         """
-        Calculate tracker position and AOI
+        Prepare inputs for bifacial simulation including orientation and aoi
         """
-        self.results.tracking = self.system.singleaxis(
+        self.results.tracking = tracking.singleaxis(
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
-        self.results.tracking['surface_tilt'] = (
-            self.results.tracking['surface_tilt']
-                .fillna(self.system.axis_tilt))
-        self.results.tracking['surface_azimuth'] = (
-            self.results.tracking['surface_azimuth']
-                .fillna(self.system.axis_azimuth))
-        self.results.aoi = self.results.tracking['aoi']
+
+        self.results.aoi = self.system.get_aoi(
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
         return self
+
 
     def _prep_inputs_fixed(self):
         """
@@ -1253,6 +1252,83 @@ class ModelChain:
         else:
             self.results.times = self.results.weather.index
 
+    def _prep_inputs_tracking(self):
+        """
+        Calculate tracker position and AOI
+        """
+        self.results.tracking = self.system.get_tracking(self.results.solar_position['apparent_zenith'],
+                                                self.results.solar_position['azimuth'])
+        self.results.aoi = self.system.get_aoi(self.results.solar_position['apparent_zenith'],
+                                                self.results.solar_position['azimuth'])
+
+        return self
+
+    def prepare_inputs_bifacial(self, weather):
+        """
+        Prepare the solar position, irradiance, and weather inputs to
+        the model, starting with GHI, DNI and DHI.
+        Parameters
+        ----------
+        weather : DataFrame, or tuple or list of DataFrame
+            Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
+            Optional column names are ``'wind_speed'``, ``'temp_air'``; if not
+            provided, air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame.
+            If `weather` is a tuple or list, it must be of the same length and
+            order as the Arrays of the ModelChain's PVSystem.
+        Raises
+        ------
+        ValueError
+            If any `weather` DataFrame(s) is missing an irradiance component.
+        ValueError
+            If `weather` is a tuple or list and the DataFrames it contains have
+            different indices.
+        ValueError
+            If `weather` is a tuple or list with a different length than the
+            number of Arrays in the system.
+        Notes
+        -----
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
+        See also
+        --------
+        ModelChain.complete_irradiance
+        """
+        weather = _to_tuple(weather)
+        self._check_multiple_input(weather, strict=False)
+        self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
+        self._assign_weather(weather)
+
+        self._prep_inputs_solar_pos(weather)
+        self._prep_inputs_airmass()
+
+        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
+        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
+        # have different method signatures. Use partial to handle
+        # the differences.
+
+        self._prep_inputs_tracking()
+        get_irradiance = partial(
+            self.system.get_bifacial_irradiance,
+            self.results.tracking['surface_tilt'],
+            self.results.tracking['surface_azimuth'],
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
+
+        self.results.bifacial_irrad = get_irradiance(
+            _tuple_from_dfs(self.results.weather, 'dni'),
+            _tuple_from_dfs(self.results.weather, 'ghi'),
+            _tuple_from_dfs(self.results.weather, 'dhi'),
+            airmass=self.results.airmass['airmass_relative'],
+            model=self.transposition_model
+        )
+
+        self.results.total_irrad = self.results.bifacial_irrad[['poa_global', 'poa_diffuse',
+                                                                'poa_direct', 'poa_sky_diffuse',
+                                                                'poa_ground_diffuse']]
+
+        return self
+
     def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to
@@ -1296,20 +1372,12 @@ class ModelChain:
         # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
         # have different method signatures. Use partial to handle
         # the differences.
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.tracking['surface_tilt'],
-                self.results.tracking['surface_azimuth'],
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
-        else:
-            self._prep_inputs_fixed()
-            get_irradiance = partial(
-                self.system.get_irradiance,
-                self.results.solar_position['apparent_zenith'],
-                self.results.solar_position['azimuth'])
+
+        self._prep_inputs_fixed()
+        get_irradiance = partial(
+            self.system.get_irradiance,
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
 
         self.results.total_irrad = get_irradiance(
             _tuple_from_dfs(self.results.weather, 'dni'),
@@ -1345,52 +1413,6 @@ class ModelChain:
                              f"in system. Expected {self.system.num_arrays}, "
                              f"got {len(data)}.")
         _all_same_index(data)
-
-    def prepare_inputs_from_poa(self, data):
-        """
-        Prepare the solar position, irradiance and weather inputs to
-        the model, starting with plane-of-array irradiance.
-        Parameters
-        ----------
-        data : DataFrame, or tuple or list of DataFrame
-            Contains plane-of-array irradiance data. Required column names
-            include ``'poa_global'``, ``'poa_direct'`` and ``'poa_diffuse'``.
-            Columns with weather-related data are ssigned to the
-            ``weather`` attribute.  If columns for ``'temp_air'`` and
-            ``'wind_speed'`` are not provided, air temperature of 20 C and wind
-            speed of 0 m/s are assumed.
-            If list or tuple, must be of the same length and order as the
-            Arrays of the ModelChain's PVSystem.
-        Raises
-        ------
-        ValueError
-             If the number of DataFrames passed in `data` is not the same
-             as the number of Arrays in the system.
-        Notes
-        -----
-        Assigns attributes to ``results``: ``times``, ``weather``,
-        ``total_irrad``, ``solar_position``, ``airmass``, ``aoi``.
-        See also
-        --------
-        pvlib.modelchain.ModelChain.prepare_inputs
-        """
-        data = _to_tuple(data)
-        self._check_multiple_input(data)
-        self._assign_weather(data)
-
-        self._verify_df(data, required=['poa_global', 'poa_direct',
-                                        'poa_diffuse'])
-        self._assign_total_irrad(data)
-
-        self._prep_inputs_solar_pos(data)
-        self._prep_inputs_airmass()
-
-        if isinstance(self.system, SingleAxisTracker):
-            self._prep_inputs_tracking()
-        else:
-            self._prep_inputs_fixed()
-
-        return self
 
     def _get_cell_temperature(self, data,
                               poa, temperature_model_parameters):
@@ -1527,6 +1549,55 @@ class ModelChain:
         """
         weather = _to_tuple(weather)
         self.prepare_inputs(weather)
+        self.aoi_model()
+        self.spectral_model()
+        self.effective_irradiance_model()
+
+        self._run_from_effective_irrad(weather)
+
+        return self
+
+    def run_model_bifacial(self, weather):
+        """
+        Run the model chain starting with broadband global, diffuse and/or
+        direct irradiance.
+        Parameters
+        ----------
+        weather : DataFrame, or tuple or list of DataFrame
+            Irradiance column names must include ``'dni'``, ``'ghi'``, and
+            ``'dhi'``. If optional columns ``'temp_air'`` and ``'wind_speed'``
+            are not provided, air temperature of 20 C and wind speed of 0 m/s
+            are added to the DataFrame. If optional column
+            ``'cell_temperature'`` is provided, these values are used instead
+            of `temperature_model`. If optional column `module_temperature`
+            is provided, `temperature_model` must be ``'sapm'``.
+            If list or tuple, must be of the same length and order as the
+            Arrays of the ModelChain's PVSystem.
+        Returns
+        -------
+        self
+        Raises
+        ------
+        ValueError
+            If the number of DataFrames in `data` is different than the number
+            of Arrays in the PVSystem.
+        ValueError
+            If the DataFrames in `data` have different indexes.
+        Notes
+        -----
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``,
+        ``aoi_modifier``, ``spectral_modifier``, and
+        ``effective_irradiance``, ``cell_temperature``, ``dc``, ``ac``,
+        ``losses``, ``diode_params`` (if dc_model is a single diode
+        model).
+        See also
+        --------
+        pvlib.modelchain.ModelChain.run_model_from_poa
+        pvlib.modelchain.ModelChain.run_model_from_effective_irradiance
+        """
+        weather = _to_tuple(weather)
+        self.prepare_inputs_bifacial(weather)
         self.aoi_model()
         self.spectral_model()
         self.effective_irradiance_model()
