@@ -89,8 +89,8 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-15'
-date2 = '2018-10-22'
+date1 = '2018-7-15'
+date2 = '2018-7-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
