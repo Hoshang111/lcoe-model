@@ -115,3 +115,14 @@ def align_years(yield_series, cost_series):
     aligned_years=pd.concat([yield_series]*cost_series.shape[0], ignore_index=True)
     aligned_years.index=dt_index
     return aligned_years, dt_index
+
+def apply_degradation(yield_series, first_year_degradation, degradation_rate):
+
+    years = yield_series.index.year()
+    delta_years = years-years[0]
+    fiddle = delta_years-1
+    fiddle[fiddle<0] = 0
+    degradation_factor = 1-delta_years*(degradation_rate+first_year_degradation)+fiddle*first_year_degradation
+    degraded_series = yield_series*degradation_factor
+
+    return degraded_series

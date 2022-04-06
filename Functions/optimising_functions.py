@@ -215,7 +215,8 @@ def extract_cost_tables(scenarios):
 def analyse_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, temp_model,
                      export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate, fig_title=None):
+                     data_tables, discount_rate, first_year_degradation,
+                     degradation_rate, fig_title=None):
 
     # %% ======================================
     # Rack_module
@@ -240,12 +241,13 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
     #%% ==========================================
-    # resize yield output to match cost time series
+    # resize yield output to match cost time series and apply degradation
     kWh_series, test_index = testing.align_years(dc_df, cash_flow_by_year)
+    kWh_degraded = testing.apply_degradation(kWh_series, first_year_degradation, degradation_series)
 
     # %% ==========================================
     # Revenue and storage behaviour
-    kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
+    kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_degraded, export_lim, scheduled_price, storage_capacity)
 
     # %% ==========================================
     # Net present value (NPV)
