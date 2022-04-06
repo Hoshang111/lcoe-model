@@ -47,7 +47,7 @@ import pandas as pd
 import Functions.simulation_functions as func
 import Functions.sizing_functions as sizing
 import Functions.plotting_functions as plot_func
-
+import Functions.testing as testing
 
 # mpl.use('Qt5Agg')
 
@@ -212,6 +212,51 @@ def extract_cost_tables(scenarios):
 
     return extracted_scenario_list, extracted_scenario_system_link
 
+def analyse_layout(weather_simulation, rack_type, module_type, install_year,
+                     DCTotal, num_of_zones, zone_area, temp_model,
+                     export_lim, storage_capacity, scheduled_price,
+                     data_tables, discount_rate, fig_title=None):
+
+    # %% ======================================
+    # Rack_module
+    rack_params, module_params = func.rack_module_params(rack_type, module_type)
+
+    # %%
+    # Sizing/rack and module numbers
+    # Call the constants from the database - unneeded if we just pass module class?
+    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
+                                                                                 rack_params, zone_area, 0.1)
+    # %% ========================================
+    # DC yield
+
+    dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
+                                               rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
+
+
+    #%% ==========================================
+    # Revenue and storage behaviour
+
+    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
+
+    #%% ==========================================
+    # Cost
+
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
+    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
+
+
+    #%% ==========================================
+    # Net present value (NPV)
+    # resize yield output to match cost time series
+    kWh_series = testing.align_years(dc_df, cash_flow_by_year)
+    kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
+    # ==========================================
+    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
+    LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
+    # %% =======================================
+    # Simulations to find optimum NPV according to number of racks per zone
+
+    return cash_flow_by_year, LCOE, kWh_series, revenue_series
 
 
 
