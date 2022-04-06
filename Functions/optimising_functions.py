@@ -234,25 +234,24 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
 
 
     #%% ==========================================
-    # Revenue and storage behaviour
-
-    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-
-    #%% ==========================================
     # Cost
 
     cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
-
     #%% ==========================================
-    # Net present value (NPV)
     # resize yield output to match cost time series
     kWh_series, test_index = testing.align_years(dc_df, cash_flow_by_year)
-    # kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
-    # ==========================================
-    # npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-    # LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
+
+    # %% ==========================================
+    # Revenue and storage behaviour
+    kWh_export, direct_revenue, store_revenue, revenue_series = sizing.get_revenue(kWh_series, export_lim, scheduled_price, storage_capacity)
+
+    # %% ==========================================
+    # Net present value (NPV)
+
+    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
+    LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
 
