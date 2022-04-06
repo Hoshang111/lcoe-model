@@ -106,7 +106,7 @@ import calendar
 
 def align_years(yield_series, cost_series):
 
-    # yield_series=yield_series[~(yield_series.index.month==2)&(yield_series.index.day==29)]
+    yield_series=yield_series[~((yield_series.index.month==2)&(yield_series.index.day==29))]
     start_date = datetime.datetime(cost_series.index[0], 1, 1, hour=0)
     end_date = datetime.datetime(cost_series.index[-1], 12, 31, hour=23)
     dt_index=pd.date_range(start_date, end_date,
