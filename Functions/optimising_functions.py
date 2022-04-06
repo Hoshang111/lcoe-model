@@ -243,7 +243,7 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
     #%% ==========================================
     # resize yield output to match cost time series and apply degradation
     kWh_series, test_index = testing.align_years(dc_df, cash_flow_by_year)
-    kWh_degraded = testing.apply_degradation(kWh_series, first_year_degradation, degradation_series)
+    kWh_degraded = testing.apply_degradation(kWh_series, first_year_degradation, degradation_rate)
 
     # %% ==========================================
     # Revenue and storage behaviour
