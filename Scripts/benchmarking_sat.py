@@ -21,7 +21,7 @@ weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), 
 # Chwoose which module to benchmark
 module_rating = 545
 # Choose the benchmark csv
-spacing = '8m'
+spacing = '4m'
 cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
@@ -89,8 +89,8 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-15'
-date2 = '2018-10-22'
+date1 = '2018-7-15'
+date2 = '2018-7-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -105,7 +105,7 @@ save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
-scatter_year = 2017
+scatter_year = 2020
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
