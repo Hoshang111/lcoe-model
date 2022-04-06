@@ -61,7 +61,8 @@ weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Austral
 #  local. Can make further improvements for this part.
 weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-parent_path = os.path.dirname('.')
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
 dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
