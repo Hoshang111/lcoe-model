@@ -104,12 +104,11 @@ import calendar
 
 def align_years(yield_series, cost_series):
 
+    yield_series=yield_series[~(yield_series.index.month==2)&(yield_series.index.day==29)]
     years=np.arange(cost_series.index[0], cost_series.index[-1])
-    aligned_years=pd.concat([yield_series]*len(cost_series.index))
-    myindex=(np.repeat(years,8784).astype(str)+aligned_years.index)
-    aligned_years.index=myindex
-    for year in np.arange(1980,2020):
-        if ~calendar.isleap(year):
-            aligned_years.drop(index=str(year)+'02-29',inplace=True)
-    aligned_years.index=pd.to_datetime(aligned_years.index,format='%Y%m-%d-%h')
+    dt_index=pd.date_range(start=cost_series.index[0], end=cost_series.index[-1],
+                           freq='H')
+    dt_index = dt_index[~((dt_index.month==2)&(dt_index.day==29))]
+    aligned_years=pd.concat([yield_series]*cost_series.shape[0], ignore_index=True)
+    aligned_years.index=dt_index
     return aligned_years
