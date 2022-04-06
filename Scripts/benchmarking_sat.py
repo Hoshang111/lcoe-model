@@ -19,7 +19,7 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Chwoose which module to benchmark
-module_rating = 545
+module_rating = 570
 # Choose the benchmark csv
 spacing = '4m'
 cell_type = 'bifacial'  # choose between mono or bifacial
