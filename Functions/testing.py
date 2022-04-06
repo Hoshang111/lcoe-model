@@ -114,6 +114,7 @@ def align_years(yield_series, cost_series):
     dt_index = dt_index[~((dt_index.month==2)&(dt_index.day==29))]
     aligned_years=pd.concat([yield_series]*cost_series.shape[0], ignore_index=True)
     aligned_years.index=dt_index
+    aligned_years.index=pd.to_datetime(aligned_years.index)
     return aligned_years, dt_index
 
 def apply_degradation(yield_series, first_year_degradation, degradation_rate):
