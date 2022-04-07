@@ -118,8 +118,10 @@ def align_years(yield_series, cost_series):
 
 def apply_degradation(yield_series, first_year_degradation, degradation_rate):
 
-    years = yield_series.year()
-    delta_years = years-years[0]
+    years = kWh_series.index.year
+    year_df = pd.Series(years)
+    year_df.index = kWh_series.index
+    delta_years = year_df-year_df[0]
     fiddle = delta_years-1
     fiddle[fiddle<0] = 0
     degradation_factor = 1-delta_years*(degradation_rate+first_year_degradation)+fiddle*first_year_degradation
