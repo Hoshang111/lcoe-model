@@ -114,7 +114,7 @@ rack_type = 'SAT_1_update'
 
 
 
-kWh_series, dt_index , dc_df = analyse_layout(weather_simulation, \
+kWh_series, dt_index , dc_df, LCOE, kWh_discounted = analyse_layout(weather_simulation, \
                                                                rack_type, module_type, install_year, DCTotal,
                                                                num_of_zones, zone_area, \
                                                                temp_model, export_lim, storage_capacity,
