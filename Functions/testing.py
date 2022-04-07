@@ -125,6 +125,6 @@ def apply_degradation(yield_series, first_year_degradation, degradation_rate):
     fiddle = delta_years-1
     fiddle[fiddle<0] = 0
     degradation_factor = 1-delta_years*(degradation_rate+first_year_degradation)+fiddle*first_year_degradation
-    degraded_series = yield_series*degradation_factor
+    # degraded_series = yield_series*degradation_factor
 
-    return degraded_series
+    return degradation_factor
