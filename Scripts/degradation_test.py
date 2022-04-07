@@ -83,7 +83,7 @@ num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
 rack_interval_ratio = 0.04
 first_year_degradation = 0.02
-degradation_rate = 0.01
+degradation_rate = 0.005
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
