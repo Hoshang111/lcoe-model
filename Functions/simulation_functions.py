@@ -431,7 +431,7 @@ def dc_yield(DCTotal,
 
         if module_params['Bifacial'] > 0:
             mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
-                                                             gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                                             gcr=gcr_range, cross_axis_tilt=0, racking_model='open_rack',
                                                              module_height=rack_params['elevation'])
 
             sat_array = bifacial_pvsystem.Array(mount=mount,
@@ -449,7 +449,7 @@ def dc_yield(DCTotal,
 
         else:
             mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
-                                                 gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                                 gcr=gcr_range, cross_axis_tilt=0, racking_model='open_rack',
                                                  module_height=rack_params['elevation'])
 
             sat_array = pvsys.Array(mount=mount,
