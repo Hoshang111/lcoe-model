@@ -438,7 +438,7 @@ def dc_yield(DCTotal,
                                                 module_parameters=module_params,
                                                 temperature_model_parameters=temperature_model_parameters,
                                                 modules_per_string=num_of_module_per_string,
-                                                strings=num_of_strings_per_inverter)
+                                                strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
             inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
             mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
@@ -456,7 +456,7 @@ def dc_yield(DCTotal,
                                     module_parameters=module_params,
                                     temperature_model_parameters=temperature_model_parameters,
                                     modules_per_string=num_of_module_per_string,
-                                    strings=num_of_strings_per_inverter)
+                                    strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
             inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
             mc = ModelChain(inverter_sat_system, location)
