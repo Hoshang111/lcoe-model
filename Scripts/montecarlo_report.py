@@ -398,7 +398,7 @@ for analysis_year in [
             # plt.savefig(file_name)
             plt.show()
 
-        font_size = 8
+        font_size = 14
         rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
               'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
         plt.rcParams.update(**rc)
@@ -477,42 +477,42 @@ for analysis_year in [
 graph_data = pd.DataFrame(columns=['Year','NPV','Label'], index=[*range(0,1)])
 i = 0
 for (year, label, results) in [
-    (2024, 'MAV PERC', results_MAV_PERC_2024),
-    (2026, 'MAV PERC', results_MAV_PERC_2026),
-    (2028, 'MAV PERC', results_MAV_PERC_2028),
-    (2024, 'SAT PERC', results_SAT_PERC_2024),
-    (2026, 'SAT PERC', results_SAT_PERC_2026),
-    (2028, 'SAT PERC', results_SAT_PERC_2028),
-    (2024, 'MAV PERCa', results_MAV_PERCa_2024),
-    (2026, 'MAV PERCa', results_MAV_PERCa_2026),
-    (2028, 'MAV PERCa', results_MAV_PERCa_2028),
-    (2024, 'SAT PERCa', results_SAT_PERCa_2024),
-    (2026, 'SAT PERCa', results_SAT_PERCa_2026),
-    (2028, 'SAT PERCa', results_SAT_PERCa_2028),
-    (2024, 'MAV TOP', results_MAV_TOP_2024),
-    (2026, 'MAV TOP', results_MAV_TOP_2026),
-    (2028, 'MAV TOP', results_MAV_TOP_2028),
-    (2024, 'SAT TOP', results_SAT_TOP_2024),
-    (2026, 'SAT TOP', results_SAT_TOP_2026),
-    (2028, 'SAT TOP', results_SAT_TOP_2028),
-    (2024, 'MAV TOPa', results_MAV_TOPa_2024),
-    (2026, 'MAV TOPa', results_MAV_TOPa_2026),
-    (2028, 'MAV TOPa', results_MAV_TOPa_2028),
-    (2024, 'SAT TOPa', results_SAT_TOPa_2024),
-    (2026, 'SAT TOPa', results_SAT_TOPa_2026),
-    (2028, 'SAT TOPa', results_SAT_TOPa_2028),
-    (2024, 'MAV HJT', results_MAV_HJT_2024),
-    (2026, 'MAV HJT', results_MAV_HJT_2026),
-    (2028, 'MAV HJT', results_MAV_HJT_2028),
-    (2024, 'SAT HJT', results_SAT_HJT_2024),
-    (2026, 'SAT HJT', results_SAT_HJT_2026),
-    (2028, 'SAT HJT', results_SAT_HJT_2028),
-    (2024, 'MAV HJTa', results_MAV_HJTa_2024),
-    (2026, 'MAV HJTa', results_MAV_HJTa_2026),
-    (2028, 'MAV HJTa', results_MAV_HJTa_2028),
-    (2024, 'SAT HJTa', results_SAT_HJTa_2024),
-    (2026, 'SAT HJTa', results_SAT_HJTa_2026),
-    (2028, 'SAT HJTa', results_SAT_HJTa_2028)
+    (2024, 'T2 PERC', results_MAV_PERC_2024),
+    (2026, 'T2 PERC', results_MAV_PERC_2026),
+    (2028, 'T2 PERC', results_MAV_PERC_2028),
+    (2024, 'T1 PERC', results_SAT_PERC_2024),
+    (2026, 'T1 PERC', results_SAT_PERC_2026),
+    (2028, 'T1 PERC', results_SAT_PERC_2028),
+    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
+    (2026, 'T2 PERCa', results_MAV_PERCa_2026),
+    (2028, 'T2 PERCa', results_MAV_PERCa_2028),
+    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
+    (2026, 'T1 PERCa', results_SAT_PERCa_2026),
+    (2028, 'T1 PERCa', results_SAT_PERCa_2028),
+    (2024, 'T2 TOP', results_MAV_TOP_2024),
+    (2026, 'T2 TOP', results_MAV_TOP_2026),
+    (2028, 'T2 TOP', results_MAV_TOP_2028),
+    (2024, 'T1 TOP', results_SAT_TOP_2024),
+    (2026, 'T1 TOP', results_SAT_TOP_2026),
+    (2028, 'T1 TOP', results_SAT_TOP_2028),
+    (2024, 'T2 TOPa', results_MAV_TOPa_2024),
+    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
+    (2028, 'T2 TOPa', results_MAV_TOPa_2028),
+    (2024, 'T1 TOPa', results_SAT_TOPa_2024),
+    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
+    (2028, 'T1 TOPa', results_SAT_TOPa_2028),
+    (2024, 'T2 HJT', results_MAV_HJT_2024),
+    (2026, 'T2 HJT', results_MAV_HJT_2026),
+    (2028, 'T2 HJT', results_MAV_HJT_2028),
+    (2024, 'T1 HJT', results_SAT_HJT_2024),
+    (2026, 'T1 HJT', results_SAT_HJT_2026),
+    (2028, 'T1 HJT', results_SAT_HJT_2028),
+    (2024, 'T2 HJTa', results_MAV_HJTa_2024),
+    (2026, 'T2 HJTa', results_MAV_HJTa_2026),
+    (2028, 'T2 HJTa', results_MAV_HJTa_2028),
+    (2024, 'T2 HJTa', results_SAT_HJTa_2024),
+    (2026, 'T1 HJTa', results_SAT_HJTa_2026),
+    (2028, 'T1 HJTa', results_SAT_HJTa_2028)
     ]:
     SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output = results
     graph_data.loc[i,'Year'] = year

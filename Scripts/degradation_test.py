@@ -78,12 +78,12 @@ weather_simulation = weather_dnv
 
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 8000  # DC size in MW
+DCTotal = 4000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
 rack_interval_ratio = 0.06
 first_year_degradation = 0.01
-degradation_rate = 0.0025
+degradation_rate = 0.002
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
@@ -94,7 +94,7 @@ storage_capacity = 4e7 # Wh per zone
 scheduled_price = 0.00004  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
-discount_rate = 0.07
+discount_rate = 0.06
 
 if use_previous_airtable_data:
     data_tables = import_excel_data('CostDatabaseFeb2022a.xlsx')
