@@ -217,6 +217,26 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
                      export_lim, storage_capacity, scheduled_price,
                      data_tables, discount_rate, first_year_degradation,
                      degradation_rate, fig_title=None):
+    """
+
+    :param weather_simulation:
+    :param rack_type:
+    :param module_type:
+    :param install_year:
+    :param DCTotal:
+    :param num_of_zones:
+    :param zone_area:
+    :param temp_model:
+    :param export_lim:
+    :param storage_capacity:
+    :param scheduled_price:
+    :param data_tables:
+    :param discount_rate:
+    :param first_year_degradation:
+    :param degradation_rate:
+    :param fig_title:
+    :return:
+    """
 
     # %% ======================================
     # Rack_module
@@ -255,7 +275,7 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
     LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_export)
 
-    return kWh_series, test_index, dc_df, kWh_degraded, degradation_factor, LCOE, kWh_export
+    return kWh_series, test_index, dc_df, kWh_degraded, degradation_factor, LCOE, kWh_export, revenue_series
 
 
 

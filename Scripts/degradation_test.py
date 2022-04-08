@@ -82,8 +82,8 @@ DCTotal = 11000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
 rack_interval_ratio = 0.04
-first_year_degradation = 0.02
-degradation_rate = 0.005
+first_year_degradation = 0.01
+degradation_rate = 0.0025
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
@@ -114,7 +114,7 @@ rack_type = 'SAT_1_update'
 
 
 
-kWh_series, test_index, dc_df, kWh_degraded, degradation_factor, LCOE, kWh_export = analyse_layout(weather_simulation, \
+kWh_series, test_index, dc_df, kWh_degraded, degradation_factor, LCOE, kWh_export, revenue_series = analyse_layout(weather_simulation, \
                                                                rack_type, module_type, install_year, DCTotal,
                                                                num_of_zones, zone_area, \
                                                                temp_model, export_lim, storage_capacity,
