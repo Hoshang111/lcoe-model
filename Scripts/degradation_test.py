@@ -81,7 +81,7 @@ weather_simulation = weather_dnv
 DCTotal = 11000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
-rack_interval_ratio = 0.04
+rack_interval_ratio = 0.06
 first_year_degradation = 0.01
 degradation_rate = 0.0025
 
