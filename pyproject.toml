@@ -12,7 +12,7 @@ scipy = "^1.8.0"
 PyQt5 = "^5.15.6"
 openpyxl = "^3.0.9"
 pvfactors = "^1.5.2"
-pvlib = "^0.9.0"
+pvlib = "^0.9.1"
 airtable-python-wrapper = "^0.15.3"
 [tool.poetry.dev-dependencies]
 
