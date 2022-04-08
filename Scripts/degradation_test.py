@@ -78,7 +78,7 @@ weather_simulation = weather_dnv
 
 # Sizing/rack and module numbers
 # Call the constants from the database - unneeded if we just pass module class?
-DCTotal = 11000  # DC size in MW
+DCTotal = 8000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
 rack_interval_ratio = 0.06
