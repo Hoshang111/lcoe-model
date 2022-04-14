@@ -3,11 +3,8 @@
 # %% Import
 import pandas as pd
 import numpy as np
-import simulation_functions as func
-import sizing
-import plotting as plot_func
+from Functions import simulation_functions as func
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import os
 # mpl.use('Qt5Agg')
 # %%
@@ -22,10 +19,10 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Chwoose which module to benchmark
-module_rating = 545
+module_rating = 570
 # Choose the benchmark csv
 spacing = '8m'
-cell_type = 'mono'  # choose between mono or bifacial
+cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
 
@@ -35,7 +32,7 @@ weather_dnv = func.weather_benchmark_adjustment(weather_solcast, weather_dnv_fil
 # Rack_module
 rack_type = 'SAT_1'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively
 
-if cell_type == 'mono':
+if cell_type == 'bifacial':
       module_type = 'Longi LR5-72HBD-%dM' % module_rating  # Enter one of the modules from the SunCable module database
 else:
       module_type = 'Longi LR5-72HBD-%dM_mono' % module_rating
@@ -64,7 +61,9 @@ weather_simulation_dnv.index = weather_simulation_dnv.index.tz_localize('Austral
 #  local. Can make further improvements for this part.
 weather_simulation_solcast.index = weather_simulation_solcast.index.tz_localize('Australia/Darwin')
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
@@ -77,7 +76,7 @@ weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
 dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
-                                            module_rating, gcr)
+                                            module_rating, gcr, cell_type=cell_type)
 dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
@@ -90,8 +89,8 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-15'
-date2 = '2018-10-22'
+date1 = '2018-7-15'
+date2 = '2018-7-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -102,11 +101,11 @@ ax.legend()
 # plt.show()
 fig_name = 'LinePlot-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,month)
 
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
-scatter_year = 2017
+scatter_year = 2020
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -129,7 +128,7 @@ plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
 fig_name = 'Scatter-%s-%s-%d-%d' %(rack_type,cell_type,module_rating,scatter_year)
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% bar plot
@@ -154,5 +153,5 @@ ax2.set_ylim(0,10)
 
 #plt.show()
 fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
-save_path = "C:/Users/Phillip/UNSW/LCOE( ) tool Project - General/Figures/Benchmarking/phill/" + fig_name
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
