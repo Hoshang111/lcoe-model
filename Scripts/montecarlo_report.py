@@ -35,18 +35,16 @@ Once the optimum NPV is found cost function also give the Monte-Carlo distributi
 """
 
 # %% Import
-import importlib
+import sys
+sys.path.append( '..' )
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-import simulation_functions as func
-from layout_optimiser import form_new_data_tables, optimise_layout
-import layout_optimiser as optimiser
-from simulation_functions import weather
-from plotting import plot_save
-from sizing import get_airtable
-from suncable_cost import calculate_scenarios_iterations, create_iteration_tables, \
+import Functions.simulation_functions as func
+from Functions.optimising_functions import form_new_data_tables, optimise_layout
+from Functions.sizing_functions import get_airtable
+from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 
 # %%
@@ -68,7 +66,9 @@ weather_dnv = func.weather_benchmark_adjustment_mk2(weather_solcast_simulation, 
 weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
 # %% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'), index_col=0)
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
@@ -92,7 +92,7 @@ temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSys
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
 storage_capacity = 4e7 # Wh per zone
-scheduled_price = 0.00004  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+scheduled_price = 0.00015  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
 discount_rate = 0.07
@@ -198,8 +198,8 @@ results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_t
 # Call Monte Carlo Cost analysis
 
 for analysis_year in [
-    #2024,
-    #2026,
+    2024,
+    2026,
     2028
 
                       ]:
@@ -230,7 +230,7 @@ for analysis_year in [
 
     if analysis_year == 2024:
         install_year = 2024
-        results = [[results_SAT_PERC_2024,
+        results_list = [[results_SAT_PERC_2024,
                    results_MAV_PERC_2024,
                    results_SAT_HJT_2024,
                    results_MAV_HJT_2024,
@@ -325,8 +325,10 @@ for analysis_year in [
             fig_title = parameter + ' - ' + str(install_year)
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
-            # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
-            # plt.savefig(file_name)
+            current_path = os.getcwd()
+            parent_path = os.path.dirname(current_path)
+            file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+            plt.savefig(file_name)
             plt.show()
 
     # %%

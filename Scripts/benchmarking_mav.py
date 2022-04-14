@@ -1,15 +1,15 @@
 """ This is the benchmarking script for DC yield assessment for 5B MAVs.
 """
 # %% Import
+import sys
+sys.path.append('../')
 import pandas as pd
 import numpy as np
-import simulation_functions as func
-from airtable import airtable
-import sizing
-import plotting as plot_func
+import Functions.simulation_functions as func
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import os
+import warnings
+
 # mpl.use('Qt5Agg')
 
 # %%
@@ -18,6 +18,7 @@ import os
 # DNV weather data don't have dni data but it has bhi (beam horizontal radiation: horizontal component of dni)
 # We need the cos theta (zenith angle) to derive dni from bhi (dni is needed by pvlib simulations). We are going to
 # extract the cost theta from Solcast weather files and use it in DNV weather data for the corresponding timestamps.
+warnings.simplefilter(action='ignore', category=FutureWarning)
 simulation_years = np.arange(2007, 2022, 1)
 weather_file = 'Solcast_PT60M.csv'
 weather_solcast = func.weather(simulation_years, weather_file)
@@ -45,7 +46,8 @@ DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
 #%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+parent_path = os.path.dirname('.')
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 

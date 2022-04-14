@@ -5,7 +5,7 @@ Sizing functions to calculate LCOE
 # Code to spit out rack splits, technology agnostic
 import pandas as pd
 import numpy as np
-from suncable_cost import calculate_scenarios, calculate_scenarios_iterations, \
+from Functions.cost_functions import calculate_scenarios, calculate_scenarios_iterations, \
     create_iteration_tables, import_airtable_data
 
 def get_racks(dc_total, number_of_zones, module_params, rack_params, zone_area, \

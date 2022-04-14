@@ -13,7 +13,7 @@ import pvlib
 import os.path
 import os
 import sys
-import suncable_cost as SunCost
+import cost_functions as SunCost
 
 
 # Define plot setting
@@ -70,8 +70,8 @@ StorageEff = 0.85
 
 coordinates = [(-18.7692,133.1659,'Suncable_Site', 00, 'Australia/Darwin')]
 
-weather = pd.read_csv(os.path.join('Data','WeatherData','Solcast_PT60M.csv'), index_col=0,
-                         infer_datetime_format=True,parse_dates=[1],low_memory=False)
+weather = pd.read_csv(os.path.join('../Data', 'WeatherData', 'Solcast_PT60M.csv'), index_col=0,
+                      infer_datetime_format=True, parse_dates=[1], low_memory=False)
 
 # weather = weather.drop(weather.columns[4],1)
 
@@ -92,12 +92,12 @@ weather['precipitable_water'] = weather['precipitable_water']/10
 
 # Import Suncable Module Database
 
-suncable_modules = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0, skiprows=[1,2]).T
+suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0, skiprows=[1, 2]).T
 
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
 # Import Rack Data from database
-suncable_racks = pd.read_csv(os.path.join('Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0, skiprows=[1]).T
+suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0, skiprows=[1]).T
 
 rack = suncable_racks['SAT_1']
 
