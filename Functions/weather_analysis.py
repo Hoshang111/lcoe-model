@@ -66,8 +66,8 @@ correlation_xy = correlation_matrix[0,1]
 r_squared = correlation_xy**2
 
 ax.plot(satellite_ghi, satellite_ghi * m + b, linewidth=3, color='C1')
-ax.set_ylim(0,1.25)
-ax.set_xlim(0,1.25)
+# ax.set_ylim(0,1.25)
+# ax.set_xlim(0,1.25)
 plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
