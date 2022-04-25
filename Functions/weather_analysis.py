@@ -57,7 +57,7 @@ fig, ax = plt.subplots(figsize=(25, 20))
 ax.scatter(x, y)
 ax.set_xlabel('Satellite GHI', **fontdict)
 ax.set_ylabel('Ground GHI', **fontdict)
-ax.set_title('Weather Correction')
+ax.set_title('Uncorrected Weather 2018')
 
 # Best fit line
 m, b = np.polyfit(x, y, 1)
