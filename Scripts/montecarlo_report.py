@@ -198,8 +198,8 @@ results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_t
 # Call Monte Carlo Cost analysis
 
 for analysis_year in [
-    2024,
-    2026,
+    # 2024,
+    # 2026,
     2028
 
                       ]:
@@ -263,15 +263,15 @@ for analysis_year in [
 
     elif analysis_year == 2028:
         install_year = 2028
-        results_list = [[results_SAT_PERC_2028,
-                  results_MAV_PERC_2028,
-                  results_SAT_HJT_2028,
-                  results_MAV_HJT_2028,
-                  results_SAT_TOP_2028,
-                  results_MAV_TOP_2028],
-                   [results_SAT_PERCa_2028,
-                   results_MAV_PERCa_2028,
-                   results_SAT_HJTa_2028,
+        results_list = [ #[results_SAT_PERC_2028,
+            #      results_MAV_PERC_2028,
+            #      results_SAT_HJT_2028,
+            #      results_MAV_HJT_2028,
+            #      results_SAT_TOP_2028,
+            #      results_MAV_TOP_2028],
+            #       [results_SAT_PERCa_2028,
+            #       results_MAV_PERCa_2028,
+                   [results_SAT_HJTa_2028,
                    results_MAV_HJTa_2028,
                    results_SAT_TOPa_2028,
                    results_MAV_TOPa_2028,
@@ -328,8 +328,8 @@ for analysis_year in [
             current_path = os.getcwd()
             parent_path = os.path.dirname(current_path)
             file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
-            plt.savefig(file_name)
-            plt.show()
+            plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+            # plt.show()
 
     # %%
 
@@ -338,7 +338,7 @@ for analysis_year in [
     elif analysis_year == 2026:
         analysis_list = [(['SAT PERC 2026', 'MAV PERC 2026'], 'SAT vs MAV 2026')]
     elif analysis_year == 2028:
-        analysis_list = [(['SAT PERC 2028', 'MAV PERC 2028'], 'SAT vs MAV 2028')]
+        analysis_list = [(['SAT HJTa 2028', 'MAV HJTa 2028'], 'SAT vs MAV 2028')]
     else:
         analysis_list == []
     for (scenarios, title) in analysis_list:
@@ -380,8 +380,8 @@ for analysis_year in [
         comparison_list = [('MAV PERC 2026', 'SAT PERC 2026', 'MAV vs SAT PERC 2026'),
                            ('MAV HJT 2026', 'MAV PERC 2026', 'HJT vs PERC MAV 2026')]
     elif analysis_year == 2028:
-        comparison_list = [('MAV PERC 2028', 'SAT PERC 2028', 'MAV vs SAT PERC 2028'),
-                           ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
+        comparison_list = [('MAV HJTa 2028', 'SAT HJTa 2028', 'MAV vs SAT HJT 2028')]
+                           # ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
 
     for (scenario_1, scenario_2, savename) in comparison_list:
 
@@ -391,12 +391,14 @@ for analysis_year in [
 
             data['Difference'] = data[scenario_2] - data[scenario_1]
             data['Difference'].plot.hist(bins=50, histtype='step')
-            fig_title = 'Difference in '+ parameter + ': ' + scenario_2 + ' - ' + scenario_1
+            fig_title = 'Difference in ' + parameter + ': ' + scenario_2 + ' - ' + scenario_1
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
-            # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),'OutputFigures/', fig_title)
-            # plt.savefig(file_name)
-            plt.show()
+            current_path = os.getcwd()
+            parent_path = os.path.dirname(current_path)
+            file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+            plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+            # plt.show()
 
         font_size = 14
         rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
@@ -477,42 +479,42 @@ for analysis_year in [
 graph_data = pd.DataFrame(columns=['Year','NPV','Label'], index=[*range(0,1)])
 i = 0
 for (year, label, results) in [
-    (2024, 'T2 PERC', results_MAV_PERC_2024),
-    (2026, 'T2 PERC', results_MAV_PERC_2026),
-    (2028, 'T2 PERC', results_MAV_PERC_2028),
-    (2024, 'T1 PERC', results_SAT_PERC_2024),
-    (2026, 'T1 PERC', results_SAT_PERC_2026),
-    (2028, 'T1 PERC', results_SAT_PERC_2028),
-    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
-    (2026, 'T2 PERCa', results_MAV_PERCa_2026),
-    (2028, 'T2 PERCa', results_MAV_PERCa_2028),
-    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
-    (2026, 'T1 PERCa', results_SAT_PERCa_2026),
-    (2028, 'T1 PERCa', results_SAT_PERCa_2028),
-    (2024, 'T2 TOP', results_MAV_TOP_2024),
-    (2026, 'T2 TOP', results_MAV_TOP_2026),
-    (2028, 'T2 TOP', results_MAV_TOP_2028),
-    (2024, 'T1 TOP', results_SAT_TOP_2024),
-    (2026, 'T1 TOP', results_SAT_TOP_2026),
-    (2028, 'T1 TOP', results_SAT_TOP_2028),
-    (2024, 'T2 TOPa', results_MAV_TOPa_2024),
-    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
-    (2028, 'T2 TOPa', results_MAV_TOPa_2028),
-    (2024, 'T1 TOPa', results_SAT_TOPa_2024),
-    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
-    (2028, 'T1 TOPa', results_SAT_TOPa_2028),
-    (2024, 'T2 HJT', results_MAV_HJT_2024),
-    (2026, 'T2 HJT', results_MAV_HJT_2026),
-    (2028, 'T2 HJT', results_MAV_HJT_2028),
-    (2024, 'T1 HJT', results_SAT_HJT_2024),
-    (2026, 'T1 HJT', results_SAT_HJT_2026),
-    (2028, 'T1 HJT', results_SAT_HJT_2028),
-    (2024, 'T2 HJTa', results_MAV_HJTa_2024),
-    (2026, 'T2 HJTa', results_MAV_HJTa_2026),
-    (2028, 'T2 HJTa', results_MAV_HJTa_2028),
-    (2024, 'T2 HJTa', results_SAT_HJTa_2024),
-    (2026, 'T1 HJTa', results_SAT_HJTa_2026),
-    (2028, 'T1 HJTa', results_SAT_HJTa_2028)
+#    (2024, 'T2 PERC', results_MAV_PERC_2024),
+#    (2026, 'T2 PERC', results_MAV_PERC_2026),
+#    (2028, 'T2 PERC', results_MAV_PERC_2028),
+#    (2024, 'T1 PERC', results_SAT_PERC_2024),
+#    (2026, 'T1 PERC', results_SAT_PERC_2026),
+#    (2028, 'T1 PERC', results_SAT_PERC_2028),
+#    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
+#    (2026, 'T2 PERCa', results_MAV_PERCa_2026),
+#    (2028, 'T2 PERCa', results_MAV_PERCa_2028),
+#    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
+#    (2026, 'T1 PERCa', results_SAT_PERCa_2026),
+#    (2028, 'T1 PERCa', results_SAT_PERCa_2028),
+#    (2024, 'T2 TOP', results_MAV_TOP_2024),
+#    (2026, 'T2 TOP', results_MAV_TOP_2026),
+#    (2028, 'T2 TOP', results_MAV_TOP_2028),
+#    (2024, 'T1 TOP', results_SAT_TOP_2024),
+#    (2026, 'T1 TOP', results_SAT_TOP_2026),
+#    (2028, 'T1 TOP', results_SAT_TOP_2028),
+#    (2024, 'T2 TOPa', results_MAV_TOPa_2024),
+#    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
+#    (2028, 'T1 TOPa', results_MAV_TOPa_2028),
+#    (2024, 'T1 TOPa', results_SAT_TOPa_2024),
+#    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
+#    (2028, 'T2 TOPa', results_SAT_TOPa_2028),
+#    (2024, 'T2 HJT', results_MAV_HJT_2024),
+#    (2026, 'T2 HJT', results_MAV_HJT_2026),
+#    (2028, 'T2 HJT', results_MAV_HJT_2028),
+#    (2024, 'T1 HJT', results_SAT_HJT_2024),
+#    (2026, 'T1 HJT', results_SAT_HJT_2026),
+#    (2028, 'T1 HJT', results_SAT_HJT_2028),
+#    (2024, 'T2 HJTa', results_MAV_HJTa_2024),
+#    (2026, 'T2 HJTa', results_MAV_HJTa_2026),
+    (2028, 'T2', results_MAV_HJTa_2028),
+#    (2024, 'T1 HJTa', results_SAT_HJTa_2024),
+#    (2026, 'T1 HJTa', results_SAT_HJTa_2026),
+    (2028, 'T1', results_SAT_HJTa_2028)
     ]:
     SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output = results
     graph_data.loc[i,'Year'] = year
@@ -529,7 +531,7 @@ plt.gca().legend(bbox_to_anchor=(1.1, 1.05))
 plt.gca().set_title('NPV AUD Million')
 plt.show()
 
-for year in [2024, 2026, 2028]:
+for year in [2028]:
     graph_data_year = graph_data.loc[year,:].T
     graph_data_year.plot.bar()
     plt.gca().set_title('NPV for ' + str(year) + ' installation')
@@ -551,8 +553,10 @@ map = 'seismic'
 colorbartitle = 'Delta LCOE'
 fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
+vmax = z.abs().max()
+vmin = -vmax
 
-scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=None, vmax=None, s=None)
+scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=vmin, vmax=vmax, s=None)
 plt.colorbar(scatterplot, cax=ax1)
 ax1.set_title(colorbartitle)
 
@@ -560,5 +564,9 @@ ax0.set_xlabel(p1_description)
 ax0.set_ylabel(p2_description)
 ax0.set_title(title)
 
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+file_name = os.path.join(parent_path, 'OutputFigures', 'scatter plot')
+plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
 
-plt.show()
+# plt.show()

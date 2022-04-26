@@ -21,7 +21,7 @@ weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), 
 # Chwoose which module to benchmark
 module_rating = 570
 # Choose the benchmark csv
-spacing = '8m'
+spacing = '4m'
 cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
@@ -80,7 +80,7 @@ dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_p
 dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
-font_size = 25
+font_size = 35
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
       'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
 plt.rcParams.update(**rc)
@@ -89,8 +89,8 @@ plt.rc('font', weight='bold')
 fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-7-15'
-date2 = '2018-7-22'
+date1 = '2018-1-15'
+date2 = '2018-1-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
