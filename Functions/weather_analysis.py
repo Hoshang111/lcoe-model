@@ -4,6 +4,9 @@ import os
 import datetime as dt
 import matplotlib.pyplot as plt
 
+
+#%% Correction of satellite and ground data
+
 data_path = "D:/Bangladesh Application/weather_data/"
 ground_path = os.path.join(data_path, "ground_measurements_feni.csv")
 ground_data = pd.read_csv(ground_path, index_col=0, header=1)
@@ -100,3 +103,36 @@ ax2.set_ylim(0,10)
 fig_name = 'Bar-Feni_GHI'
 save_path = "D:/Bangladesh Application/weather_data/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+#%% Filling in data gaps
+
+def weather_gaps(weather_file):
+      """
+
+      :param weather_file:
+      :return:
+      """
+
+
+
+#%% DNI Generation
+
+def dni_generation(location, weather_file):
+      """
+
+      :param location:
+      :param weather_file:
+      :return:
+      """
+
+
+#%% Saving Weather Files as ordered arrays
+
+monthly_ghi = weather.resample
+
+store_path=
+store_name= store_path + ''
+for array in ???
+      for dataframe in array
+            key_name=
+            df.to_hdf(store_name, key=key_name)
