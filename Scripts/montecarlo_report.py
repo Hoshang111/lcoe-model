@@ -194,6 +194,27 @@ results_MAV_HJTa_2028 = optimize (MAV, HJT2031, 2028, 'MAV HJTa 2028',scenario_t
 results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
 results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
 
+# %% Save and download optimized layouts
+
+output_data = []
+for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tables_2028]:
+    for results in scenario_tables:
+        index = results[1]
+        install_dummy = results[0][1]['InstallNumber']
+        install_dummy2 = install_dummy.reset_index()
+        install_dummy3 = install_dummy2['InstallNumber']
+        Racks = install_dummy3[0]
+        Modules = install_dummy3[3]
+        output_data.append([index, Racks, Modules])
+
+optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules'])
+optimised_tables.set_index('scenario', inplace=True)
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+file_name = os.path.join(parent_path, 'OutputFigures', 'Optimised_layouts.csv')
+optimised_tables.to_csv(file_name)
+
+
 # %%
 # Call Monte Carlo Cost analysis
 
