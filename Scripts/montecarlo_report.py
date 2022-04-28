@@ -198,8 +198,8 @@ results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_t
 # Call Monte Carlo Cost analysis
 
 for analysis_year in [
-    # 2024,
-    # 2026,
+    2024,
+    2026,
     2028
 
                       ]:
@@ -263,15 +263,15 @@ for analysis_year in [
 
     elif analysis_year == 2028:
         install_year = 2028
-        results_list = [ #[results_SAT_PERC_2028,
-            #      results_MAV_PERC_2028,
-            #      results_SAT_HJT_2028,
-            #      results_MAV_HJT_2028,
-            #      results_SAT_TOP_2028,
-            #      results_MAV_TOP_2028],
-            #       [results_SAT_PERCa_2028,
-            #       results_MAV_PERCa_2028,
-                   [results_SAT_HJTa_2028,
+        results_list = [ [results_SAT_PERC_2028,
+                  results_MAV_PERC_2028,
+                  results_SAT_HJT_2028,
+                  results_MAV_HJT_2028,
+                  results_SAT_TOP_2028,
+                  results_MAV_TOP_2028],
+                   [results_SAT_PERCa_2028,
+                   results_MAV_PERCa_2028,
+                   results_SAT_HJTa_2028,
                    results_MAV_HJTa_2028,
                    results_SAT_TOPa_2028,
                    results_MAV_TOPa_2028,
@@ -380,8 +380,8 @@ for analysis_year in [
         comparison_list = [('MAV PERC 2026', 'SAT PERC 2026', 'MAV vs SAT PERC 2026'),
                            ('MAV HJT 2026', 'MAV PERC 2026', 'HJT vs PERC MAV 2026')]
     elif analysis_year == 2028:
-        comparison_list = [('MAV HJTa 2028', 'SAT HJTa 2028', 'MAV vs SAT HJT 2028')]
-                           # ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
+        comparison_list = [('MAV HJTa 2028', 'SAT HJTa 2028', 'MAV vs SAT HJT 2028'),
+                           ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
 
     for (scenario_1, scenario_2, savename) in comparison_list:
 
@@ -391,7 +391,7 @@ for analysis_year in [
 
             data['Difference'] = data[scenario_2] - data[scenario_1]
             data['Difference'].plot.hist(bins=50, histtype='step')
-            fig_title = 'Difference in ' + parameter + ': ' + scenario_2 + ' - ' + scenario_1
+            fig_title = 'Difference in ' + parameter + savename
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
             current_path = os.getcwd()
@@ -467,7 +467,13 @@ for analysis_year in [
         ax0.set_ylabel(p2_description)
         ax0.set_title(title)
 
-        plt.show()
+        fig_title = "Delta LCOE - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+
+        # plt.show()
 
 
 
