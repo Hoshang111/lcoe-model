@@ -491,10 +491,10 @@ for (year, label, results) in [
 #    (2024, 'T1 PERC', results_SAT_PERC_2024),
 #    (2026, 'T1 PERC', results_SAT_PERC_2026),
 #    (2028, 'T1 PERC', results_SAT_PERC_2028),
-#    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
+    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
 #    (2026, 'T2 PERCa', results_MAV_PERCa_2026),
 #    (2028, 'T2 PERCa', results_MAV_PERCa_2028),
-#    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
+    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
 #    (2026, 'T1 PERCa', results_SAT_PERCa_2026),
 #    (2028, 'T1 PERCa', results_SAT_PERCa_2028),
 #    (2024, 'T2 TOP', results_MAV_TOP_2024),
@@ -504,10 +504,10 @@ for (year, label, results) in [
 #    (2026, 'T1 TOP', results_SAT_TOP_2026),
 #    (2028, 'T1 TOP', results_SAT_TOP_2028),
 #    (2024, 'T2 TOPa', results_MAV_TOPa_2024),
-#    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
+    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
 #    (2028, 'T1 TOPa', results_MAV_TOPa_2028),
 #    (2024, 'T1 TOPa', results_SAT_TOPa_2024),
-#    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
+    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
 #    (2028, 'T2 TOPa', results_SAT_TOPa_2028),
 #    (2024, 'T2 HJT', results_MAV_HJT_2024),
 #    (2026, 'T2 HJT', results_MAV_HJT_2026),
@@ -537,7 +537,7 @@ plt.gca().legend(bbox_to_anchor=(1.1, 1.05))
 plt.gca().set_title('NPV AUD Million')
 plt.show()
 
-for year in [2028]:
+for year in [2024, 2026, 2028]:
     graph_data_year = graph_data.loc[year,:].T
     graph_data_year.plot.bar()
     plt.gca().set_title('NPV for ' + str(year) + ' installation')
