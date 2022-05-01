@@ -7,24 +7,24 @@ import matplotlib.pyplot as plt
 
 #%% Correction of satellite and ground data
 
-data_path = "D:/Bangladesh Application/weather_data/"
+data_path = "C:\Users\phill\Documents\Bangladesh Application\weather_data"
 ground_path = os.path.join(data_path, "ground_measurements_feni.csv")
 ground_data = pd.read_csv(ground_path, index_col=0, header=1)
 ground_data.set_index(pd.to_datetime(ground_data.index), inplace=True)
 
-satellite_path = os.path.join(data_path, "ninja_feni_joined.csv")
+satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
 satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
 satellite_data.set_index(pd.to_datetime(satellite_data.index), inplace=True)
 
 # satellite_data_aligned =
 ground_data_hourly = ground_data.resample('H', axis=0).mean()
-ground_data_aligned = ground_data_hourly.reindex(satellite_data.index)
+satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
-ground_dhi = ground_data_aligned['DHI_ThPyra2_Wm-2_avg']
-ground_ghi = ground_data_aligned['GHI_ThPyra1_Wm-2_avg']
+ground_dhi = ground_data_hourly['DHI_ThPyra2_Wm-2_avg']
+ground_ghi = ground_data_hourly['GHI_ThPyra1_Wm-2_avg']
 
-satellite_dhi = satellite_data['irradiance_diffuse']*1000
-satellite_ghi = satellite_data['irradiance_total']*1000
+satellite_dhi = satellite_data_aligned['Gb(i)']
+satellite_ghi = satellite_data_aligned['Gb(i)']+satellite_data_aligned['Gd(i)']
 
 #%% Plot features
 font_size = 25
