@@ -65,6 +65,7 @@ weather_dnv = func.weather_benchmark_adjustment_mk2(weather_solcast_simulation, 
 
 weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
+
 # %% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
 current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
@@ -76,7 +77,10 @@ weather_dnv.drop(['dni'],axis=1,inplace=True)
 weather_dnv = weather_dnv.join(dni_dummy, how='left')
 weather_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_dnv = weather_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
-weather_simulation = weather_dnv
+
+# shift weather files 30 min so that solar position is calculated at midpoint of period
+weather_dnv_mod= weather_simulation_mod = weather_dnv.shift(periods=30, freq='T')
+weather_simulation = weather_dnv_mod
 
 
 # Sizing/rack and module numbers
