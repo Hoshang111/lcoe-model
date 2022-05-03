@@ -17,7 +17,9 @@ satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
 satellite_data.set_index(pd.to_datetime(satellite_data.index, format='%Y%m%d:%H%M'), inplace=True)
 
 # satellite_data_aligned =
-ground_data_hourly = ground_data.resample('H', axis=0).mean()
+ground_data_mod = ground_data.shift(periods=30, freq='T')
+ground_data_hourlyA = ground_data_mod.resample('H', axis=0).mean()
+ground_data_hourly = ground_data_hourlyA.shift(periods=-30, freq='T')
 satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
 ground_dhi = ground_data_hourly['DHI_ThPyra2_Wm-2_avg']
