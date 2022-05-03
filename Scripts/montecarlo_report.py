@@ -79,7 +79,7 @@ weather_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_dnv = weather_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
 
 # shift weather files 30 min so that solar position is calculated at midpoint of period
-weather_dnv_mod= weather_simulation_mod = weather_dnv.shift(periods=30, freq='T')
+weather_dnv_mod = weather_dnv.shift(periods=30, freq='T')
 weather_simulation = weather_dnv_mod
 
 
