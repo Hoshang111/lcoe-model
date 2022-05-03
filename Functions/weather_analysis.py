@@ -5,28 +5,43 @@ import datetime as dt
 import matplotlib.pyplot as plt
 
 
-#%% Correction of satellite and ground data
+#%% import ground and satellite data
 
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
 ground_path = os.path.join(data_path, "ground_measurements_feni.csv")
-ground_data = pd.read_csv(ground_path, index_col=0, header=1)
-ground_data.set_index(pd.to_datetime(ground_data.index), inplace=True)
+ground_data_a = pd.read_csv(ground_path, index_col=0, header=1)
+ground_data_a.set_index(pd.to_datetime(ground_data_a.index), inplace=True)
+ground_data = ground_data_a.tz_localize("UTC")
 
-satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
-satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
-satellite_data.set_index(pd.to_datetime(satellite_data.index, format='%Y%m%d:%H%M'), inplace=True)
+# satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
+# satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
+# satellite_data.set_index(pd.to_datetime(satellite_data.index, format='%Y%m%d:%H%M'), inplace=True)
 
+satellite_data_2017_path = os.path.join(data_path, "Himawari_2017.csv")
+satellite_data_2018_path = os.path.join(data_path, "Himawari_2018.csv")
+satellite_data_2019_path = os.path.join(data_path, "Himawari_2019.csv")
+satellite_data_2017 = pd.read_csv(satellite_data_2017_path, header=2)
+satellite_data_2018 = pd.read_csv(satellite_data_2018_path, header=2)
+satellite_data_2019 = pd.read_csv(satellite_data_2019_path, header=2)
+satellite_data_2017.set_index(pd.to_datetime(satellite_data_2017[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
+satellite_data_2018.set_index(pd.to_datetime(satellite_data_2018[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
+satellite_data_2019.set_index(pd.to_datetime(satellite_data_2019[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
+satellite_data_localtz = pd.concat([satellite_data_2017, satellite_data_2018, satellite_data_2019], axis=0)
+satellite_data_aware = satellite_data_localtz.tz_localize("Asia/Dhaka")
+satellite_data = satellite_data_aware.tz_convert("UTC")
+
+#%% Align Data
 # satellite_data_aligned =
-ground_data_mod = ground_data.shift(periods=30, freq='T')
-ground_data_hourlyA = ground_data_mod.resample('H', axis=0).mean()
-ground_data_hourly = ground_data_hourlyA.shift(periods=30, freq='T')
+ground_data_mod = ground_data.shift(periods=5, freq='T')
+ground_data_hourly = ground_data_mod.resample('10T', axis=0).mean()
+# ground_data_hourly = ground_data_hourlyA.shift(periods=-5, freq='T')
 satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
 ground_dhi = ground_data_hourly['DHI_ThPyra2_Wm-2_avg']
 ground_ghi = ground_data_hourly['GHI_ThPyra1_Wm-2_avg']
 
-satellite_dhi = satellite_data['Gb(i)']
-satellite_ghi = satellite_data['Gb(i)']+satellite_data['Gd(i)']
+satellite_dhi = satellite_data['DHI']
+satellite_ghi = satellite_data['GHI']
 
 #%% Plot features
 font_size = 25
@@ -39,8 +54,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-3-15'
-date2 = '2018-3-22'
+date1 = '2018-7-15'
+date2 = '2018-7-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -77,7 +92,7 @@ plot_text = 'R-squared = %.2f' %r_squared
 plt.text(0.3, 0.3, plot_text, fontsize=25)
 
 #plt.show()
-fig_name = 'Scatter-2020_GHI'
+fig_name = 'Scatter-2018_GHI'
 save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
