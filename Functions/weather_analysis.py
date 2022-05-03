@@ -19,7 +19,7 @@ satellite_data.set_index(pd.to_datetime(satellite_data.index, format='%Y%m%d:%H%
 # satellite_data_aligned =
 ground_data_mod = ground_data.shift(periods=30, freq='T')
 ground_data_hourlyA = ground_data_mod.resample('H', axis=0).mean()
-ground_data_hourly = ground_data_hourlyA.shift(periods=-30, freq='T')
+ground_data_hourly = ground_data_hourlyA.shift(periods=30, freq='T')
 satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
 ground_dhi = ground_data_hourly['DHI_ThPyra2_Wm-2_avg']
@@ -39,8 +39,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-4-15'
-date2 = '2018-4-22'
+date1 = '2018-3-15'
+date2 = '2018-3-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
