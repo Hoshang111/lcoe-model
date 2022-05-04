@@ -49,6 +49,7 @@ satellite_monthly = satellite_data.groupby(pd.Grouper(freq='M'))
 ground_list=[group for _, group in ground_monthly]
 satellite_list = [group for _, group in satellite_monthly]
 
+ground_sorted = sorted(ground_list, key = lambda x:x['GHI_ThPyra1_Wm-2_avg'].sum())
 satellite_sorted = sorted(satellite_list, key = lambda x:x['GHI'].sum())
 
 #%% Plot features
