@@ -44,13 +44,33 @@ satellite_dhi = satellite_data['DHI']
 satellite_ghi = satellite_data['GHI']
 
 #%% Group by month
-ground_monthly = ground_data_hourly.groupby(ground_data_hourly.index.month)
-satellite_monthly = satellite_data.groupby(satellite_data.index.month)
-ground_list=[group for _, group in ground_monthly]
-satellite_list = [group for _, group in satellite_monthly]
 
-ground_sorted = sorted(ground_list, key = lambda x:x['GHI_ThPyra1_Wm-2_avg'].sum())
-satellite_sorted = sorted(satellite_list, key = lambda x:x['GHI'].sum())
+def weather_sort(weather_file):
+      """
+
+      :param weather_file:
+      :return:
+      """
+
+      weather_monthly = weather_file.groupby(weather_file.index.month)
+      weather_list = [group for _, group in weather_monthly]
+      months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+      weather = {}
+
+      for i in range(len(months_list)):
+            weather[months_list[i]] = {}
+            unsorted_data = weather_list[i]
+            split_data = unsorted_data.groupby(unsorted_data.index.year)
+            unsorted_list = [group for _, group in split_data]
+            sorted_list = sorted(unsorted_list, key=lambda x: x['GHI_ThPyra1_Wm-2_avg'].sum())
+            for j in range(len(sorted_list)):
+                  weather[months_list[i]][j] = sorted_list[j]
+
+      return weather
+
+ground_weather_sorted = weather_sort(ground_data_hourly)
+satellite_weather_sorted = weather_sort(satellite_data)
+
 
 #%% Plot features
 font_size = 25
