@@ -73,7 +73,7 @@ def weather_sort(weather_file):
             unsorted_data = weather_list[i]
             split_data = unsorted_data.groupby(unsorted_data.index.year)
             unsorted_list = [group for _, group in split_data]
-            sorted_list = sorted(unsorted_list, key=lambda x: x['GHI_ThPyra1_Wm-2_avg'].sum())
+            sorted_list = sorted(unsorted_list, key=lambda x: x['ghi'].sum())
             for j in range(len(sorted_list)):
                   weather[months_list[i]][j] = sorted_list[j]
 
