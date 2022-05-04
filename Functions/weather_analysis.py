@@ -43,6 +43,14 @@ ground_ghi = ground_data_hourly['GHI_ThPyra1_Wm-2_avg']
 satellite_dhi = satellite_data['DHI']
 satellite_ghi = satellite_data['GHI']
 
+#%% Group by month
+ground_monthly = ground_data_hourly.groupby(pd.Grouper(freq='M'))
+satellite_monthly = satellite_data.groupby(pd.Grouper(freq='M'))
+ground_list=[group for _, group in ground_monthly]
+satellite_list = [group for _, group in satellite_monthly]
+
+satellite_sorted = sorted(satellite_list, key = lambda x:x['GHI'].sum())
+
 #%% Plot features
 font_size = 25
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
