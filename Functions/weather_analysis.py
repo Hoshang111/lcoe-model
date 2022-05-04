@@ -11,6 +11,12 @@ data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
 ground_path = os.path.join(data_path, "ground_measurements_feni.csv")
 ground_data_a = pd.read_csv(ground_path, index_col=0, header=1)
 ground_data_a.set_index(pd.to_datetime(ground_data_a.index), inplace=True)
+ground_data_a = ground_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
+                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
+                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
+                                                 'Temp_ThPyra1_degC_avg':'temp',
+                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
+                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
 ground_data = ground_data_a.tz_localize("UTC")
 
 # satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
@@ -29,6 +35,11 @@ satellite_data_2019.set_index(pd.to_datetime(satellite_data_2019[["Year", "Month
 satellite_data_localtz = pd.concat([satellite_data_2017, satellite_data_2018, satellite_data_2019], axis=0)
 satellite_data_aware = satellite_data_localtz.tz_localize("Asia/Dhaka")
 satellite_data = satellite_data_aware.tz_convert("UTC")
+satellite_data = satellite_data.rename(columns={'GHI':'ghi',
+                                                'DHI':'dhi',
+                                                'DNI':'dni',
+                                                'Temperature':'temp',
+                                                'Wind Speed':'wind_speed'})
 
 #%% Align Data
 # satellite_data_aligned =
@@ -37,11 +48,11 @@ ground_data_hourly = ground_data_mod.resample('10T', axis=0).mean()
 # ground_data_hourly = ground_data_hourlyA.shift(periods=-5, freq='T')
 satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
-ground_dhi = ground_data_hourly['DHI_ThPyra2_Wm-2_avg']
-ground_ghi = ground_data_hourly['GHI_ThPyra1_Wm-2_avg']
+ground_dhi = ground_data_hourly['dhi']
+ground_ghi = ground_data_hourly['ghi']
 
-satellite_dhi = satellite_data['DHI']
-satellite_ghi = satellite_data['GHI']
+satellite_dhi = satellite_data['dhi']
+satellite_ghi = satellite_data['ghi']
 
 #%% Group by month
 
