@@ -44,8 +44,8 @@ satellite_dhi = satellite_data['DHI']
 satellite_ghi = satellite_data['GHI']
 
 #%% Group by month
-ground_monthly = ground_data_hourly.groupby(pd.Grouper(freq='M'))
-satellite_monthly = satellite_data.groupby(pd.Grouper(freq='M'))
+ground_monthly = ground_data_hourly.groupby(ground_data_hourly.index.month)
+satellite_monthly = satellite_data.groupby(satellite_data.index.month)
 ground_list=[group for _, group in ground_monthly]
 satellite_list = [group for _, group in satellite_monthly]
 
