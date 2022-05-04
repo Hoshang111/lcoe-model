@@ -3,6 +3,7 @@ import numpy as np
 import os
 import datetime as dt
 import matplotlib.pyplot as plt
+import pickle
 
 
 #%% import ground and satellite data
@@ -82,6 +83,9 @@ def weather_sort(weather_file):
 ground_weather_sorted = weather_sort(ground_data_hourly)
 satellite_weather_sorted = weather_sort(satellite_data)
 
+#%% pickle data for use elsewhere
+save_path = os.path.join(data_path, "ground_weather.p")
+pickle.dump(ground_weather_sorted, open(save_path, "wb"))
 
 #%% Plot features
 font_size = 25

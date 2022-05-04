@@ -143,6 +143,29 @@ def weather_benchmark_adjustment_mk2(weather_solcast,
     weather_dnv.sort_index(inplace=True)
     return weather_dnv_simulations
 
+def weather_sort(weather_file):
+    """
+
+    :param weather_file:
+    :return:
+    """
+
+    weather_monthly = weather_file.groupby(weather_file.index.month)
+    weather_list = [group for _, group in weather_monthly]
+    months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    weather = {}
+
+    for i in range(len(months_list)):
+        weather[months_list[i]] = {}
+        unsorted_data = weather_list[i]
+        split_data = unsorted_data.groupby(unsorted_data.index.year)
+        unsorted_list = [group for _, group in split_data]
+        sorted_list = sorted(unsorted_list, key=lambda x: x['ghi'].sum())
+        for j in range(len(sorted_list)):
+            weather[months_list[i]][j] = sorted_list[j]
+
+    return weather
+
 def rack_module_params(rack_type,
                        module_type):
     """
