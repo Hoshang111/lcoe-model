@@ -95,8 +95,8 @@ temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSys
 
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
-storage_capacity = 5e7 # Wh per zone
-scheduled_price = 0.00015  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+storage_capacity = 4e7 # Wh per zone
+scheduled_price = 0.000075  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
 discount_rate = 0.07
@@ -227,7 +227,6 @@ for analysis_year in [
     2024,
     2026,
     2028
-
                       ]:
 
 
@@ -306,6 +305,7 @@ for analysis_year in [
     else:
         print('Error!')
 
+#%%
 
     for results in results_list:
         for (scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output) in results:
@@ -357,8 +357,6 @@ for analysis_year in [
             plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
             # plt.show()
 
-    # %%
-
     if analysis_year == 2024:
         analysis_list = [(['SAT PERC 2024','MAV PERC 2024'], 'SAT vs MAV 2024')]
     elif analysis_year == 2026:
@@ -392,10 +390,6 @@ for analysis_year in [
                                                          columns=['ScenarioID'])
         scenario_costs_total_nodiscount.plot.hist(bins=50, histtype='step')
         plt.show()
-
-
-
-    # %%
 
     if analysis_year==2024:
         comparison_list = [('MAV HJT 2024','SAT HJT 2024', 'MAV vs SAT HJT 2024'),
@@ -561,7 +555,7 @@ print(graph_data)
 graph_data.plot.line()
 plt.gca().legend(bbox_to_anchor=(1.1, 1.05))
 plt.gca().set_title('NPV AUD Million')
-plt.show()
+# plt.show()
 
 for year in [2024, 2026, 2028]:
     graph_data_year = graph_data.loc[year,:].T
