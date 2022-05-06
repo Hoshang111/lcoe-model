@@ -124,7 +124,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
                                                                    scheduled_price, data_tables, discount_rate,
                                                                    fig_title=SCENARIO_LABEL)
 
-    scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
+    scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL, module_power))
 
     return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, module_power
 
@@ -209,7 +209,7 @@ for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tab
         install_dummy3 = install_dummy2['InstallNumber']
         Racks = install_dummy3[0]
         Modules = install_dummy3[3]
-        MW_per_zone = Modules*results[5]
+        MW_per_zone = Modules*results[2]
         Total_GW = MW_per_zone*num_of_zones
         output_data.append([index, Racks, Modules, MW_per_zone, Total_GW])
 
