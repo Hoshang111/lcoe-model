@@ -167,12 +167,105 @@ plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Filling in data gaps
 
-def weather_gaps(weather_file):
-      """
+def weather_compare(ground_file, satellite_file):
+      """"""
+      satellite_file_aligned = satellite_file.reindex(ground_file.index)
+      satellite_monthly = satellite_file_aligned.groupby(satellite_file_aligned.index.month)
+      ground_monthly = ground_file.groupby(ground_file.index.month)
+      satellite_list = [group for _, group in satellite_monthly]
+      ground_list = [group for _, group in ground_monthly]
+      months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+      satellite_dict = {}
+      ground_dict = {}
 
-      :param weather_file:
-      :return:
-      """
+      for i in range(len(months_list)):
+          ground_dict[months_list[i]] = {}
+          satellite_dict[months_list[i]] = {}
+          unsorted_data = ground_list[i]
+          split_data = unsorted_data.groupby(unsorted_data.index.year)
+          ground_unsorted = [group for _, group in split_data]
+          unsorted_data = satellite_list[i]
+          split_data = unsorted_data.groupby(unsorted_data.index.year)
+          satellite_unsorted = [group for _, group in split_data]
+
+          for j in range(len(sorted_list)):
+              ground_dict[months_list[i]][j] = ground_unsorted[j]
+              satellite_dict[months_list[i][j]] = satellite_unsorted
+
+      return ground_dict, satellite_dict
+
+def weather_correction(ground, satellite, parameter_key):
+    """"""
+
+    # determine month and year for labels
+    month_value = ground.index[1].month
+    month = str(month_value)
+
+    # scatter plot for uncorrected data with linear fit
+    x = satellite[parameter_key]
+    y = ground[parameter_key]
+    fig, ax = plt.subplots(figsize=(25, 20))
+    ax.scatter(x, y)
+    ax.set_xlabel('Satellite', **fontdict)
+    ax.set_ylabel('Ground', **fontdict)
+    ax.set_title('Uncorrected_' + parameter_key + '_' + month)
+
+    # Best fit line
+    m, b = np.polyfit(x, y, 1)
+    correlation_matrix = np.corrcoef(x.values, y.values)
+    correlation_xy = correlation_matrix[0, 1]
+    r_squared = correlation_xy ** 2
+
+    ax.plot(satellite_ghi, satellite_ghi * m + b, linewidth=3, color='C1')
+    # ax.set_ylim(0,1.25)
+    # ax.set_xlim(0,1.25)
+    plot_text = 'R-squared = %.2f' % r_squared
+    plt.text(0.3, 0.3, plot_text, fontsize=25)
+
+    # plt.show()
+    fig_name = 'Uncorrected_' + parameter_key + '_' + month
+    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    satellite_corrected = m*satellite + b
+
+    # re-plot with corrected data
+    x = satellite_corrected
+    y = ground
+    fig, ax = plt.subplots(figsize=(25, 20))
+    ax.scatter(x, y)
+    ax.set_xlabel('Satellite', **fontdict)
+    ax.set_ylabel('Ground', **fontdict)
+    ax.set_title('Corrected_' + parameter_key + '_' + month)
+
+    # Best fit line
+    m, b = np.polyfit(x, y, 1)
+    correlation_matrix = np.corrcoef(x.values, y.values)
+    correlation_xy = correlation_matrix[0, 1]
+    r_squared = correlation_xy ** 2
+
+    ax.plot(satellite_ghi, satellite_ghi * m + b, linewidth=3, color='C1')
+    # ax.set_ylim(0,1.25)
+    # ax.set_xlim(0,1.25)
+    plot_text = 'R-squared = %.2f' % r_squared
+    plt.text(0.3, 0.3, plot_text, fontsize=25)
+
+    # plt.show()
+    fig_name = 'Corrected_' + parameter_key + '_' + month
+    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    return m, b, satellite_corrected
+
+ground_dict, satellite_dict = weather_compare(ground_data_hourly, satellite_data)
+months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+ground_concat = {}
+satellite_concat = {}
+
+for month in months_list:
+    ground_concat[month] = pd.concat(ground_dict[month], axis=0)
+    satellite_concat = pd.concat(satellite_dict[month], axis=0)
 
 
 
@@ -187,13 +280,3 @@ def dni_generation(location, weather_file):
       """
 
 
-#%% Saving Weather Files as ordered arrays
-
-monthly_ghi = weather.resample
-
-store_path=
-store_name= store_path + ''
-for array in ???
-      for dataframe in array
-            key_name=
-            df.to_hdf(store_name, key=key_name)
