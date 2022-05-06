@@ -124,7 +124,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
                                                                    scheduled_price, data_tables, discount_rate,
                                                                    fig_title=SCENARIO_LABEL)
 
-    scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL, module_power))
+    scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
     return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, module_power
 
@@ -209,9 +209,9 @@ for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tab
         install_dummy3 = install_dummy2['InstallNumber']
         Racks = install_dummy3[0]
         Modules = install_dummy3[3]
-        MW_per_zone = Modules*results[2]
-        Total_GW = MW_per_zone*num_of_zones/1000
-        output_data.append([index, Racks, Modules, MW_per_zone, Total_GW])
+        # MW_per_zone = Modules*results[2]
+        # Total_GW = MW_per_zone*num_of_zones/1000
+        output_data.append([index, Racks, Modules])
 
 optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules', 'MW_per_zone', 'total_GW'])
 optimised_tables.set_index('scenario', inplace=True)
@@ -219,7 +219,6 @@ current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
 file_name = os.path.join(parent_path, 'OutputFigures', 'Optimised_layouts.csv')
 optimised_tables.to_csv(file_name)
-
 
 # %%
 # Call Monte Carlo Cost analysis
@@ -239,7 +238,7 @@ for analysis_year in [
     elif analysis_year == 2028:
         scenario_tables = scenario_tables_2028
     # First generate data tables with the ScenarioID changed to something more intuitive
-    new_data_tables = form_new_data_tables(data_tables,scenario_tables)
+    new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
     # Create iteration data
     data_tables_iter = create_iteration_tables(new_data_tables, 5000, iteration_start=0)
