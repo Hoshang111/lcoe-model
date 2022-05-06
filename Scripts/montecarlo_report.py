@@ -88,7 +88,7 @@ weather_simulation = weather_dnv_mod
 DCTotal = 11000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
-rack_interval_ratio = 0.04
+rack_interval_ratio = 0.01
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
@@ -209,7 +209,9 @@ for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tab
         install_dummy3 = install_dummy2['InstallNumber']
         Racks = install_dummy3[0]
         Modules = install_dummy3[3]
-        output_data.append([index, Racks, Modules])
+        MW_per_zone = Modules*results[5]
+        Total_GW = MW_per_zone*num_of_zones
+        output_data.append([index, Racks, Modules, MW_per_zone, Total_GW])
 
 optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules'])
 optimised_tables.set_index('scenario', inplace=True)
@@ -510,42 +512,42 @@ for analysis_year in [
 graph_data = pd.DataFrame(columns=['Year','NPV','Label'], index=[*range(0,1)])
 i = 0
 for (year, label, results) in [
-#    (2024, 'T2 PERC', results_MAV_PERC_2024),
-#    (2026, 'T2 PERC', results_MAV_PERC_2026),
-#    (2028, 'T2 PERC', results_MAV_PERC_2028),
-#    (2024, 'T1 PERC', results_SAT_PERC_2024),
-#    (2026, 'T1 PERC', results_SAT_PERC_2026),
-#    (2028, 'T1 PERC', results_SAT_PERC_2028),
-    (2024, 'T2 PERCa', results_MAV_PERCa_2024),
-#    (2026, 'T2 PERCa', results_MAV_PERCa_2026),
-#    (2028, 'T2 PERCa', results_MAV_PERCa_2028),
-    (2024, 'T1 PERCa', results_SAT_PERCa_2024),
-#    (2026, 'T1 PERCa', results_SAT_PERCa_2026),
-#    (2028, 'T1 PERCa', results_SAT_PERCa_2028),
-#    (2024, 'T2 TOP', results_MAV_TOP_2024),
-#    (2026, 'T2 TOP', results_MAV_TOP_2026),
-#    (2028, 'T2 TOP', results_MAV_TOP_2028),
-#    (2024, 'T1 TOP', results_SAT_TOP_2024),
-#    (2026, 'T1 TOP', results_SAT_TOP_2026),
-#    (2028, 'T1 TOP', results_SAT_TOP_2028),
-#    (2024, 'T2 TOPa', results_MAV_TOPa_2024),
-    (2026, 'T2 TOPa', results_MAV_TOPa_2026),
-#    (2028, 'T1 TOPa', results_MAV_TOPa_2028),
-#    (2024, 'T1 TOPa', results_SAT_TOPa_2024),
-    (2026, 'T1 TOPa', results_SAT_TOPa_2026),
-#    (2028, 'T2 TOPa', results_SAT_TOPa_2028),
-#    (2024, 'T2 HJT', results_MAV_HJT_2024),
-#    (2026, 'T2 HJT', results_MAV_HJT_2026),
-#    (2028, 'T2 HJT', results_MAV_HJT_2028),
-#    (2024, 'T1 HJT', results_SAT_HJT_2024),
-#    (2026, 'T1 HJT', results_SAT_HJT_2026),
-#    (2028, 'T1 HJT', results_SAT_HJT_2028),
-#    (2024, 'T2 HJTa', results_MAV_HJTa_2024),
-#    (2026, 'T2 HJTa', results_MAV_HJTa_2026),
-    (2028, 'T2', results_MAV_HJTa_2028),
-#    (2024, 'T1 HJTa', results_SAT_HJTa_2024),
-#    (2026, 'T1 HJTa', results_SAT_HJTa_2026),
-    (2028, 'T1', results_SAT_HJTa_2028)
+    (2024, 'MAV PERC', results_MAV_PERC_2024),
+    (2026, 'MAV PERC', results_MAV_PERC_2026),
+    (2028, 'MAV PERC', results_MAV_PERC_2028),
+    (2024, 'SAT PERC', results_SAT_PERC_2024),
+    (2026, 'SAT PERC', results_SAT_PERC_2026),
+    (2028, 'SAT PERC', results_SAT_PERC_2028),
+    (2024, 'MAV PERCa', results_MAV_PERCa_2024),
+    (2026, 'MAV PERCa', results_MAV_PERCa_2026),
+    (2028, 'MAV PERCa', results_MAV_PERCa_2028),
+    (2024, 'SAT PERCa', results_SAT_PERCa_2024),
+    (2026, 'SAT PERCa', results_SAT_PERCa_2026),
+    (2028, 'SAT PERCa', results_SAT_PERCa_2028),
+    (2024, 'MAV TOP', results_MAV_TOP_2024),
+    (2026, 'MAV TOP', results_MAV_TOP_2026),
+    (2028, 'MAV TOP', results_MAV_TOP_2028),
+    (2024, 'SAT TOP', results_SAT_TOP_2024),
+    (2026, 'SAT TOP', results_SAT_TOP_2026),
+    (2028, 'SAT TOP', results_SAT_TOP_2028),
+    (2024, 'MAV TOPa', results_MAV_TOPa_2024),
+    (2026, 'MAV TOPa', results_MAV_TOPa_2026),
+    (2028, 'MAV TOPa', results_MAV_TOPa_2028),
+    (2024, 'SAT TOPa', results_SAT_TOPa_2024),
+    (2026, 'SAT TOPa', results_SAT_TOPa_2026),
+    (2028, 'SAT TOPa', results_SAT_TOPa_2028),
+    (2024, 'MAV HJT', results_MAV_HJT_2024),
+    (2026, 'MAV HJT', results_MAV_HJT_2026),
+    (2028, 'MAV HJT', results_MAV_HJT_2028),
+    (2024, 'SAT HJT', results_SAT_HJT_2024),
+    (2026, 'SAT HJT', results_SAT_HJT_2026),
+    (2028, 'SAT HJT', results_SAT_HJT_2028),
+    (2024, 'MAV HJTa', results_MAV_HJTa_2024),
+    (2026, 'MAV HJTa', results_MAV_HJTa_2026),
+    (2028, 'MAV HJTa', results_MAV_HJTa_2028),
+    (2024, 'SAT HJTa', results_SAT_HJTa_2024),
+    (2026, 'SAT HJTa', results_SAT_HJTa_2026),
+    (2028, 'SAT HJTa', results_SAT_HJTa_2028)
     ]:
     SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output = results
     graph_data.loc[i,'Year'] = year
@@ -568,8 +570,12 @@ for year in [2024, 2026, 2028]:
     plt.gca().set_title('NPV for ' + str(year) + ' installation')
     plt.gca().set_xlabel('Scenario')
     plt.gca().set_ylabel('AUD Million')
+    fig_title = "NPV - " + str(year)
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
 
-    plt.show()
 
 
 # %%
