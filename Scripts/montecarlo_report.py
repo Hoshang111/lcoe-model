@@ -117,7 +117,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
     install_year = INSTALL_YEAR
     rack_type = RACK_TYPE
 
-    scenario_tables_optimum, revenue, kWh_export, npv_output, module_power = optimise_layout(weather_simulation, \
+    scenario_tables_optimum, revenue, kWh_export, npv_output = optimise_layout(weather_simulation, \
                                                                    rack_type, module_type, install_year, DCTotal,
                                                                    num_of_zones, zone_area, rack_interval_ratio, \
                                                                    temp_model, export_lim, storage_capacity,
@@ -126,7 +126,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
 
     scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
-    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, module_power
+    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output
 
 # Create variables to hold the results of each analysis
 SAT = 'SAT_1_update'
@@ -208,12 +208,12 @@ for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tab
         install_dummy2 = install_dummy.reset_index()
         install_dummy3 = install_dummy2['InstallNumber']
         Racks = install_dummy3[0]
-        Modules = install_dummy3[3]
+        W_zone = install_dummy3[3]
         # MW_per_zone = Modules*results[2]
         # Total_GW = MW_per_zone*num_of_zones/1000
-        output_data.append([index, Racks, Modules])
+        output_data.append([index, Racks, W_zone])
 
-optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules', 'MW_per_zone', 'total_GW'])
+optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
 optimised_tables.set_index('scenario', inplace=True)
 current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
