@@ -165,7 +165,7 @@ fig_name = 'Bar-Feni_GHI'
 save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-#%% Filling in data gaps
+#%% Comparing and correcting satellite file
 
 def weather_compare(ground_file, satellite_file):
       """"""
@@ -188,18 +188,14 @@ def weather_compare(ground_file, satellite_file):
           split_data = unsorted_data.groupby(unsorted_data.index.year)
           satellite_unsorted = [group for _, group in split_data]
 
-          for j in range(len(sorted_list)):
+          for j in range(len(ground_unsorted)):
               ground_dict[months_list[i]][j] = ground_unsorted[j]
-              satellite_dict[months_list[i][j]] = satellite_unsorted
+              satellite_dict[months_list[i]][j] = satellite_unsorted[j]
 
       return ground_dict, satellite_dict
 
-def weather_correction(ground, satellite, parameter_key):
+def weather_correction(ground, satellite, parameter_key, month):
     """"""
-
-    # determine month and year for labels
-    month_value = ground.index[1].month
-    month = str(month_value)
 
     # scatter plot for uncorrected data with linear fit
     x = satellite[parameter_key]
@@ -216,7 +212,7 @@ def weather_correction(ground, satellite, parameter_key):
     correlation_xy = correlation_matrix[0, 1]
     r_squared = correlation_xy ** 2
 
-    ax.plot(satellite_ghi, satellite_ghi * m + b, linewidth=3, color='C1')
+    ax.plot(x, x * m + b, linewidth=3, color='C1')
     # ax.set_ylim(0,1.25)
     # ax.set_xlim(0,1.25)
     plot_text = 'R-squared = %.2f' % r_squared
@@ -227,11 +223,12 @@ def weather_correction(ground, satellite, parameter_key):
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-    satellite_corrected = m*satellite + b
+    satellite_dummy = x * m + b
+    satellite_corr = satellite_dummy.clip(lower=0, upper=None)
 
     # re-plot with corrected data
-    x = satellite_corrected
-    y = ground
+    x = satellite_corr
+    y = ground[parameter_key]
     fig, ax = plt.subplots(figsize=(25, 20))
     ax.scatter(x, y)
     ax.set_xlabel('Satellite', **fontdict)
@@ -239,12 +236,12 @@ def weather_correction(ground, satellite, parameter_key):
     ax.set_title('Corrected_' + parameter_key + '_' + month)
 
     # Best fit line
-    m, b = np.polyfit(x, y, 1)
+    m_a, b_a = np.polyfit(x, y, 1)
     correlation_matrix = np.corrcoef(x.values, y.values)
     correlation_xy = correlation_matrix[0, 1]
     r_squared = correlation_xy ** 2
 
-    ax.plot(satellite_ghi, satellite_ghi * m + b, linewidth=3, color='C1')
+    ax.plot(satellite_ghi, satellite_ghi * m_a + b_a, linewidth=3, color='C1')
     # ax.set_ylim(0,1.25)
     # ax.set_xlim(0,1.25)
     plot_text = 'R-squared = %.2f' % r_squared
@@ -255,18 +252,23 @@ def weather_correction(ground, satellite, parameter_key):
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
-    return m, b, satellite_corrected
+    return m, b, satellite_corr
 
 ground_dict, satellite_dict = weather_compare(ground_data_hourly, satellite_data)
 months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 ground_concat = {}
 satellite_concat = {}
+correction_factors = {}
+satellite_corrected = {}
 
 for month in months_list:
     ground_concat[month] = pd.concat(ground_dict[month], axis=0)
-    satellite_concat = pd.concat(satellite_dict[month], axis=0)
+    satellite_concat[month] = pd.concat(satellite_dict[month], axis=0)
+    m, b, satellite_corrected[month] = weather_correction(ground_concat[month], satellite_concat[month], 'ghi', month)
+    correction_factors[month] = [m, b]
 
+satellite_full =
 
 
 #%% DNI Generation
