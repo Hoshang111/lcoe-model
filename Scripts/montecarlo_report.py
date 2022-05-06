@@ -126,7 +126,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
 
     scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
-    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output
+    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, module_power
 
 # Create variables to hold the results of each analysis
 SAT = 'SAT_1_update'
