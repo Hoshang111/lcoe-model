@@ -210,10 +210,10 @@ for scenario_tables in [scenario_tables_2024, scenario_tables_2026, scenario_tab
         Racks = install_dummy3[0]
         Modules = install_dummy3[3]
         MW_per_zone = Modules*results[2]
-        Total_GW = MW_per_zone*num_of_zones
+        Total_GW = MW_per_zone*num_of_zones/1000
         output_data.append([index, Racks, Modules, MW_per_zone, Total_GW])
 
-optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules'])
+optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'modules', 'MW_per_zone', 'total_GW'])
 optimised_tables.set_index('scenario', inplace=True)
 current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
