@@ -214,6 +214,8 @@ satellite_corrected_dummy = pd.concat(satellite_corrected, axis=0)
 satellite_corrected_full = satellite_corrected_dummy.droplevel(level=0)
 satellite_corrected_series = satellite_corrected_full.sort_index()
 
+m_final, b_final = weather_scatter(ground_ghi, satellite_corrected_series, 'Corrected_Full')
+
 
 #%% DNI Generation
 
