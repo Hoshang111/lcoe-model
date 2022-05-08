@@ -52,8 +52,8 @@ satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 ground_dhi = ground_data_hourly['dhi']
 ground_ghi = ground_data_hourly['ghi']
 
-satellite_dhi = satellite_data['dhi']
-satellite_ghi = satellite_data['ghi']
+satellite_dhi = satellite_data_aligned['dhi']
+satellite_ghi = satellite_data_aligned['ghi']
 
 #%% Group by month
 
@@ -114,6 +114,42 @@ save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + f
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 plt.clf()
 
+#%% Initial scatter plot
+
+# scatter plot for uncorrected data with linear fit
+
+def weather_scatter(ground, satellite, fig_name):
+    """"""
+
+    x = satellite
+    y = ground
+    fig, ax = plt.subplots(figsize=(25, 20))
+    ax.scatter(x, y)
+    ax.set_xlabel('Satellite', **fontdict)
+    ax.set_ylabel('Ground', **fontdict)
+    ax.set_title(fig_name)
+
+    # Best fit line
+    m, b = np.polyfit(x, y, 1)
+    correlation_matrix = np.corrcoef(x.values, y.values)
+    correlation_xy = correlation_matrix[0, 1]
+    r_squared = correlation_xy ** 2
+
+    ax.plot(x, x * m + b, linewidth=3, color='C1')
+    # ax.set_ylim(0,1.25)
+    # ax.set_xlim(0,1.25)
+    plot_text = 'R-squared = %.2f' % r_squared
+    plt.text(0.3, 0.3, plot_text, fontsize=25)
+
+    # plt.show()
+    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    return m, b
+
+m_init, b_init = weather_scatter(ground_ghi, satellite_ghi, 'Uncorrected_Full')
+
 #%% Comparing and correcting satellite file
 
 def weather_compare(ground_file, satellite_file):
@@ -146,62 +182,15 @@ def weather_compare(ground_file, satellite_file):
 def weather_correction(ground, satellite, parameter_key, month):
     """"""
 
-    # scatter plot for uncorrected data with linear fit
-    x = satellite[parameter_key]
-    y = ground[parameter_key]
-    fig, ax = plt.subplots(figsize=(25, 20))
-    ax.scatter(x, y)
-    ax.set_xlabel('Satellite', **fontdict)
-    ax.set_ylabel('Ground', **fontdict)
-    ax.set_title('Uncorrected_' + parameter_key + '_' + month)
-
-    # Best fit line
-    m, b = np.polyfit(x, y, 1)
-    correlation_matrix = np.corrcoef(x.values, y.values)
-    correlation_xy = correlation_matrix[0, 1]
-    r_squared = correlation_xy ** 2
-
-    ax.plot(x, x * m + b, linewidth=3, color='C1')
-    # ax.set_ylim(0,1.25)
-    # ax.set_xlim(0,1.25)
-    plot_text = 'R-squared = %.2f' % r_squared
-    plt.text(0.3, 0.3, plot_text, fontsize=25)
-
-    # plt.show()
     fig_name = 'Uncorrected_' + parameter_key + '_' + month
-    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    m, b = weather_scatter(ground[parameter_key], satellite[parameter_key], fig_name)
 
-    satellite_dummy = x * m + b
+    satellite_dummy = satellite[parameter_key] * m + b
     satellite_corr = satellite_dummy.clip(lower=0, upper=None)
-    plt.close(fig)
 
     # re-plot with corrected data
-    x = satellite_corr
-    y = ground[parameter_key]
-    fig, ax = plt.subplots(figsize=(25, 20))
-    ax.scatter(x, y)
-    ax.set_xlabel('Satellite', **fontdict)
-    ax.set_ylabel('Ground', **fontdict)
-    ax.set_title('Corrected_' + parameter_key + '_' + month)
-
-    # Best fit line
-    m_a, b_a = np.polyfit(x, y, 1)
-    correlation_matrix = np.corrcoef(x.values, y.values)
-    correlation_xy = correlation_matrix[0, 1]
-    r_squared = correlation_xy ** 2
-
-    ax.plot(satellite_ghi, satellite_ghi * m_a + b_a, linewidth=3, color='C1')
-    # ax.set_ylim(0,1.25)
-    # ax.set_xlim(0,1.25)
-    plot_text = 'R-squared = %.2f' % r_squared
-    plt.text(0.3, 0.3, plot_text, fontsize=25)
-
-    # plt.show()
     fig_name = 'Corrected_' + parameter_key + '_' + month
-    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.close(fig)
+    m_a, b_a = weather_scatter(ground[parameter_key, satellite_corr, fig_name])
 
     return m, b, satellite_corr
 
@@ -214,12 +203,16 @@ correction_factors = {}
 satellite_corrected = {}
 
 for month in months_list:
-    ground_concat[month] = pd.concat(ground_dict[month], axis=0)
-    satellite_concat[month] = pd.concat(satellite_dict[month], axis=0)
+    ground_concat_dummy = pd.concat(ground_dict[month], axis=0)
+    ground_concat[month] = ground_concat_dummy.droplevel(level=0)
+    satellite_concat_dummy = pd.concat(satellite_dict[month], axis=0)
+    satellite_concat[month] = satellite_concat_dummy.droplevel(level=0)
     m, b, satellite_corrected[month] = weather_correction(ground_concat[month], satellite_concat[month], 'ghi', month)
     correction_factors[month] = [m, b]
 
-satellite_full = pd.concat(satellite_concat, axis=0)
+satellite_corrected_dummy = pd.concat(satellite_corrected, axis=0)
+satellite_corrected_full = satellite_corrected_dummy.droplevel(level=0)
+satellite_corrected_series = satellite_corrected_full.sort_index()
 
 
 #%% DNI Generation
