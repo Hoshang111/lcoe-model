@@ -190,7 +190,7 @@ def weather_correction(ground, satellite, parameter_key, month):
 
     # re-plot with corrected data
     fig_name = 'Corrected_' + parameter_key + '_' + month
-    m_a, b_a = weather_scatter(ground[parameter_key, satellite_corr, fig_name])
+    m_a, b_a = weather_scatter(ground[parameter_key], satellite_corr, fig_name)
 
     return m, b, satellite_corr
 
