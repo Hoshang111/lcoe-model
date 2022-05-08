@@ -129,13 +129,14 @@ def weather_scatter(ground, satellite, fig_name):
     ax.set_ylabel('Ground', **fontdict)
     ax.set_title(fig_name)
 
-    # Best fit line
-    m, b = np.polyfit(x, y, 1)
+    # Best fit line - edit changed to second order
+    # m, b = np.polyfit(x, y, 1)
+    c2, c1, c0 = np.polyfit(x, y, 2)
     correlation_matrix = np.corrcoef(x.values, y.values)
     correlation_xy = correlation_matrix[0, 1]
     r_squared = correlation_xy ** 2
 
-    ax.plot(x, x * m + b, linewidth=3, color='C1')
+    ax.plot(x, x * x * c2 + x * c1 + c0, linewidth=3, color='C1')
     # ax.set_ylim(0,1.25)
     # ax.set_xlim(0,1.25)
     plot_text = 'R-squared = %.2f' % r_squared
@@ -146,9 +147,9 @@ def weather_scatter(ground, satellite, fig_name):
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-    return m, b
+    return c0, c1, c2
 
-m_init, b_init = weather_scatter(ground_ghi, satellite_ghi, 'Uncorrected_Full')
+c0_init, c1_init, c2_init = weather_scatter(ground_ghi, satellite_ghi, 'Uncorrected_Full')
 
 #%% Comparing and correcting satellite file
 
@@ -183,16 +184,16 @@ def weather_correction(ground, satellite, parameter_key, month):
     """"""
 
     fig_name = 'Uncorrected_' + parameter_key + '_' + month
-    m, b = weather_scatter(ground[parameter_key], satellite[parameter_key], fig_name)
+    c0, c1, c2 = weather_scatter(ground[parameter_key], satellite[parameter_key], fig_name)
 
-    satellite_dummy = satellite[parameter_key] * m + b
+    satellite_dummy = satellite[parameter_key] ** 2 * c2 + satellite[parameter_key] * c1 + c0
     satellite_corr = satellite_dummy.clip(lower=0, upper=None)
 
     # re-plot with corrected data
     fig_name = 'Corrected_' + parameter_key + '_' + month
-    m_a, b_a = weather_scatter(ground[parameter_key], satellite_corr, fig_name)
+    c0_a, c1_a, c2_a = weather_scatter(ground[parameter_key], satellite_corr, fig_name)
 
-    return m, b, satellite_corr
+    return c0, c1, c2, satellite_corr
 
 ground_dict, satellite_dict = weather_compare(ground_data_hourly, satellite_data)
 months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
@@ -207,14 +208,14 @@ for month in months_list:
     ground_concat[month] = ground_concat_dummy.droplevel(level=0)
     satellite_concat_dummy = pd.concat(satellite_dict[month], axis=0)
     satellite_concat[month] = satellite_concat_dummy.droplevel(level=0)
-    m, b, satellite_corrected[month] = weather_correction(ground_concat[month], satellite_concat[month], 'ghi', month)
-    correction_factors[month] = [m, b]
+    c0, c1, c2, satellite_corrected[month] = weather_correction(ground_concat[month], satellite_concat[month], 'ghi', month)
+    correction_factors[month] = [c0, c1, c2]
 
 satellite_corrected_dummy = pd.concat(satellite_corrected, axis=0)
 satellite_corrected_full = satellite_corrected_dummy.droplevel(level=0)
 satellite_corrected_series = satellite_corrected_full.sort_index()
 
-m_final, b_final = weather_scatter(ground_ghi, satellite_corrected_series, 'Corrected_Full')
+c0_final, c1_final, c2_final = weather_scatter(ground_ghi, satellite_corrected_series, 'Corrected_Full')
 
 
 #%% DNI Generation
