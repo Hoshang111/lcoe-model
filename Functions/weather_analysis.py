@@ -174,7 +174,7 @@ def weather_correction(ground, satellite, parameter_key, month):
 
     satellite_dummy = x * m + b
     satellite_corr = satellite_dummy.clip(lower=0, upper=None)
-    plt.clf()
+    plt.close(fig)
 
     # re-plot with corrected data
     x = satellite_corr
@@ -201,7 +201,7 @@ def weather_correction(ground, satellite, parameter_key, month):
     fig_name = 'Corrected_' + parameter_key + '_' + month
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.clf()
+    plt.close(fig)
 
     return m, b, satellite_corr
 
