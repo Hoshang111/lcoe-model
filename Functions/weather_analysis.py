@@ -254,7 +254,7 @@ def generate_TMY(weather_dict):
         month_data = weather_percentile(0.5, weather_dict, month)
         TMY = pd.concat([TMY, month_data], axis=0)
 
-    measure_freq = pd.infer_freq(weather_dict['jan'][0])
+    measure_freq = pd.infer_freq(weather_dict['jan'][0].index)
     TMY_index = pd.date_range(start='1/1/1990', end='12/31/1990', freq=measure_freq, tz=pytz.UTC)
     TMY = TMY.set_index(TMY_index)
 
