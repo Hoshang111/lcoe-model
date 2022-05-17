@@ -239,7 +239,9 @@ def weather_percentile(num, weather_dict, month):
 
     ref_num = num*(len(weather_dict[month])-1)
     int_num = round(ref_num)
-    return weather_dict[month][int_num]
+    month_percentile = weather_dict[month][int_num]
+
+    return month_percentile
 
 def generate_TMY(weather_dict):
     """"""
