@@ -228,4 +228,29 @@ def dni_generation(location, weather_file):
       :return:
       """
 
+def weather_percentile(num, weather_dict, month):
+    """
+
+    :param num: percentile (as fraction) of weather data desired
+    :param weather_dict: dict containing ordered weather data for each month
+    :param month: month desired in three letter format e.g. 'jan', 'jun'
+    :return: returns a dataframe with weather data for selected month
+    """
+
+    ref_num = num*(len(weather_dict[month])-1)
+    int_num = round(ref_num)
+    return weather_dict[month][int_num]
+
+def generate_TMY(weather_dict):
+    """"""
+
+    months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    TMY = pd.DataFrame()
+
+    for month in months_list:
+        month_data = weather_percentile(0.5, weather_dict, month)
+        pd.concat(TMY, month_data, axis=0)
+
+    return TMY
+
 
