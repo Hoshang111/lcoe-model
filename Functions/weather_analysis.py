@@ -249,7 +249,7 @@ def generate_TMY(weather_dict):
 
     for month in months_list:
         month_data = weather_percentile(0.5, weather_dict, month)
-        pd.concat(TMY, month_data, axis=0)
+        pd.concat([TMY, month_data], axis=0)
 
     return TMY
 
