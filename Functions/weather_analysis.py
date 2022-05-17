@@ -255,4 +255,4 @@ def generate_TMY(weather_dict):
 
     return TMY
 
-TMY = generate_TMY(satellite_weather_sorted)
+TMY_file = generate_TMY(satellite_weather_sorted)
