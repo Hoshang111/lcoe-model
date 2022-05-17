@@ -256,7 +256,7 @@ def generate_TMY(weather_dict):
 
     measure_freq = pd.infer_freq(weather_dict['jan'][0])
     TMY_index = pd.date_range(start=1/1/1990, end=12/31/1990, freq=measure_freq, tz=pytz.UTC)
-    TMY_file = TMY_file.set_index(TMY_index)
+    TMY = TMY.set_index(TMY_index)
 
 
     return TMY
