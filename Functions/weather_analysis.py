@@ -4,6 +4,7 @@ import os
 import datetime as dt
 import matplotlib.pyplot as plt
 import pickle
+import pytz
 
 
 #%% import ground and satellite data
@@ -252,6 +253,11 @@ def generate_TMY(weather_dict):
     for month in months_list:
         month_data = weather_percentile(0.5, weather_dict, month)
         TMY = pd.concat([TMY, month_data], axis=0)
+
+    measure_freq = pd.infer_freq(weather_dict['jan'][0])
+    TMY_index = pd.date_range(start=1/1/1990, end=12/31/1990, freq=measure_freq, tz=pytz.UTC)
+    TMY_file = TMY_file.set_index(TMY_index)
+
 
     return TMY
 
