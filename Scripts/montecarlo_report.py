@@ -95,8 +95,8 @@ temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSys
 
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
-storage_capacity = 4e7 # Wh per zone
-scheduled_price = 0.000075  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+storage_capacity = 5e7 # Wh per zone
+scheduled_price = 0.00015  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
 discount_rate = 0.07
@@ -107,7 +107,11 @@ else:
     # cost data tables from airtable
     data_tables = get_airtable(save_tables=True)
 
-
+font_size = 14
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+        'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
 
 # %%
 # Cycle through alternative analysis scenarios
