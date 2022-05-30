@@ -9,7 +9,7 @@ import os
 
 
 # ================== Global parameters for fonts & sizes =================
-font_size = 15
+font_size = 25
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
       'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
 plt.rcParams.update(**rc)
