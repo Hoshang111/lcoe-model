@@ -130,17 +130,6 @@ def plot_temp_models(annual_yield_sapm, annual_yield_pvsyst, dc_size):
 
 def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost_array, npv_revenue_array,
              module_per_rack, module_rated_power, fig_title=None):
-
-    font_size = 15
-    rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
-          'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
-    plt.rcParams.update(**rc)
-    plt.rc('font', weight='bold')
-
-    # For label titles
-    fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
-    # can add in above dictionary: 'verticalalignment': 'baseline'
-
     rack_range_plot = np.array(rack_per_zone_num_range_array).flatten()
     npv_plot = np.array(npv_array).flatten()
     npv_cost_plot = np.array(npv_cost_array).flatten()
