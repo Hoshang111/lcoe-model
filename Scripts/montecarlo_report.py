@@ -107,12 +107,6 @@ else:
     # cost data tables from airtable
     data_tables = get_airtable(save_tables=True)
 
-font_size = 14
-rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
-        'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
-plt.rcParams.update(**rc)
-plt.rc('font', weight='bold')
-
 # %%
 # Cycle through alternative analysis scenarios
 
