@@ -454,6 +454,9 @@ for analysis_year in [
         factor = generate_difference_factor(discounted_sum, 'LCOE', scenario_1, scenario_2, 'LCOE_Difference')
         parameters_flat = parameters_flat.join(factor)
 
+        factor = generate_difference_factor(discounted_sum, 'NPV', scenario_1, scenario_2, 'NPV_Difference')
+        paramters_flat = parameters_flat.join(factor)
+
         parameters_flat.to_csv('Tempparameters.csv')
         baseline_year = 2024
         parameters_flat['Module Cost'] = parameters_flat['ComponentID 33 BaselineCost'] * parameters_flat[
