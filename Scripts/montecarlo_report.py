@@ -516,7 +516,7 @@ for analysis_year in [
         title = 'Impact on NPV difference'
         p1_description = 'Module Cost'
         p2_description = 'Labour Index'
-        map = 'seismic'
+        map = 'seismic_r'
         colorbartitle = 'Delta NPV'
         fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
@@ -544,7 +544,7 @@ for analysis_year in [
         title = 'Impact on NPV difference'
         p1_description = 'Module Cost'
         p2_description = 'MAV Hardware Multiplier'
-        map = 'seismic'
+        map = 'seismic_r'
         colorbartitle = 'Delta NPV'
         fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
@@ -572,7 +572,7 @@ for analysis_year in [
         title = 'Impact on NPV difference'
         p1_description = 'Module Cost'
         p2_description = 'MAV Labour Multiplier'
-        map = 'seismic'
+        map = 'seismic_r'
         colorbartitle = 'Delta NPV'
         fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
@@ -595,8 +595,8 @@ for analysis_year in [
         plt.close()
         # plt.show()
 
-        x = parameters_flat['MAV Labour Annual Multiplier']
-        y = parameters_flat['NPV_Difference']
+        x = parameters_flat['MAV Labour Annual Multiplier'].astype(str).astype(float)
+        y = parameters_flat['NPV_Difference'].astype(str).astype(float)
         fig, ax = plt.subplots(figsize=(25, 20))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Labour Multiplier', **fontdict)
@@ -612,7 +612,7 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        plt.text(0.3, 0.3, plot_text, fontsize=25)
+        plt.text(x.mean, y.mean, plot_text, fontsize=25)
 
         fig_title = "Regression NPV labour - " + savename
         current_path = os.getcwd()
@@ -621,8 +621,8 @@ for analysis_year in [
         plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
         plt.close()
 
-        x = parameters_flat['MAV Hardware Annual Multiplier']
-        y = parameters_flat['NPV_Difference']
+        x = parameters_flat['MAV Hardware Annual Multiplier'].astype(str).astype(float)
+        y = parameters_flat['NPV_Difference'].astype(str).astype(float)
         fig, ax = plt.subplots(figsize=(25, 20))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Hardware Multiplier', **fontdict)
@@ -638,7 +638,7 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        plt.text(0.3, 0.3, plot_text, fontsize=25)
+        plt.text(x.mean, y.mean, plot_text, fontsize=25)
 
         fig_title = "Regression NPV hardware - " + savename
         current_path = os.getcwd()
