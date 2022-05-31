@@ -612,8 +612,8 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        xt = x.mean() - x.min() / 2 + x.min()
-        yt = y.mean() / 2 - y.min() / 2 + y.min()
+        xt = (x.mean() - x.min()) / 2 + x.min()
+        yt = (y.mean() / 2 - y.min()) / 2 + y.min()
         plt.text(xt, yt, plot_text, fontsize=25)
 
         fig_title = "Regression NPV labour - " + savename
@@ -640,8 +640,8 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        xt = x.mean()-x.min()/2+x.min()
-        yt = y.mean()/2-y.min()/2+y.min()
+        xt = (x.mean()-x.min())/2+x.min()
+        yt = (y.mean()-y.min())/2+y.min()
         plt.text(xt, yt, plot_text, fontsize=25)
 
         fig_title = "Regression NPV hardware - " + savename
