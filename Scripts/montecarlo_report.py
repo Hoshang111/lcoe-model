@@ -42,6 +42,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import Functions.simulation_functions as func
+from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
@@ -602,7 +603,7 @@ for analysis_year in [
         ax.set_ylabel('Difference in NPV', **fontdict)
         ax.set_title('Regression for MAV Labour')
 
-        c1, c0 = np.polyfit(x, y, 1)
+        c1, c0 = Polynomial.fit(x, y, 1)
         correlation_matrix = np.corrcoef(x.values, y.values)
         correlation_xy = correlation_matrix[0, 1]
         r_squared = correlation_xy ** 2
@@ -628,7 +629,7 @@ for analysis_year in [
         ax.set_ylabel('Difference in NPV', **fontdict)
         ax.set_title('Regression for MAV Hardware')
 
-        c1, c0 = np.polyfit(x, y, 1)
+        c1, c0 = Polynomial.fit(x, y, 1)
         correlation_matrix = np.corrcoef(x.values, y.values)
         correlation_xy = correlation_matrix[0, 1]
         r_squared = correlation_xy ** 2
