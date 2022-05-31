@@ -455,7 +455,7 @@ for analysis_year in [
         parameters_flat = parameters_flat.join(factor)
 
         factor = generate_difference_factor(discounted_sum, 'NPV', scenario_1, scenario_2, 'NPV_Difference')
-        paramters_flat = parameters_flat.join(factor)
+        parameters_flat = parameters_flat.join(factor)
 
         parameters_flat.to_csv('Tempparameters.csv')
         baseline_year = 2024
