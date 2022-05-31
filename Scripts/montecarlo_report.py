@@ -595,7 +595,7 @@ for analysis_year in [
         # plt.show()
 
         x = parameters_flat['MAV Labour Annual Multiplier']
-        y = parameters_flat['NPV_difference']
+        y = parameters_flat['NPV_Difference']
         fig, ax = plt.subplots(figsize=(25, 20))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Labour Multiplier', **fontdict)
@@ -621,7 +621,7 @@ for analysis_year in [
         plt.close()
 
         x = parameters_flat['MAV Hardware Annual Multiplier']
-        y = parameters_flat['NPV_difference']
+        y = parameters_flat['NPV_Difference']
         fig, ax = plt.subplots(figsize=(25, 20))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Hardware Multiplier', **fontdict)
