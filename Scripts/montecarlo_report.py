@@ -391,7 +391,7 @@ for analysis_year in [
                                                      index=['ScenarioID'], aggfunc=np.sum,
                                                      columns=['CostCategory_ShortName'])
         scenario_costs_total_category.to_csv('temp_category_costs' + str(analysis_year) + '.csv')
-        scenario_costs_total_category.plot.bar(stacked=True,title='Total Costs by Category - ' + title)
+        scenario_costs_total_category.plot.bar(stacked=True, title='Total Costs by Category - ' + title)
         current_path = os.getcwd()
         parent_path = os.path.dirname(current_path)
         file_name = os.path.join(parent_path, 'OutputFigures', 'Scenario Costs')
