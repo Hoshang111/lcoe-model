@@ -597,7 +597,7 @@ for analysis_year in [
 
         x = parameters_flat['MAV Labour Annual Multiplier'].astype(str).astype(float)
         y = parameters_flat['NPV_Difference'].astype(str).astype(float)
-        fig, ax = plt.subplots(figsize=(12, 10))
+        fig, ax = plt.subplots(figsize=(10, 8))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Labour Multiplier', **fontdict)
         ax.set_ylabel('Difference in NPV', **fontdict)
@@ -625,7 +625,7 @@ for analysis_year in [
 
         x = parameters_flat['MAV Hardware Annual Multiplier'].astype(str).astype(float)
         y = parameters_flat['NPV_Difference'].astype(str).astype(float)
-        fig, ax = plt.subplots(figsize=(12, 10))
+        fig, ax = plt.subplots(figsize=(10, 8))
         ax.scatter(x, y)
         ax.set_xlabel('MAV Hardware Multiplier', **fontdict)
         ax.set_ylabel('Difference in NPV', **fontdict)
