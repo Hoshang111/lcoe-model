@@ -612,7 +612,7 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        plt.text(x.mean, y.mean, plot_text, fontsize=25)
+        plt.text(x.mean()/2, y.mean()/2, plot_text, fontsize=25)
 
         fig_title = "Regression NPV labour - " + savename
         current_path = os.getcwd()
@@ -638,7 +638,7 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        plt.text(x.mean, y.mean, plot_text, fontsize=25)
+        plt.text(x.mean()/2, y.mean()/2, plot_text, fontsize=25)
 
         fig_title = "Regression NPV hardware - " + savename
         current_path = os.getcwd()
