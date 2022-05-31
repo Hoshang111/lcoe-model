@@ -611,7 +611,7 @@ for analysis_year in [
         ax.plot(x, x * c1 + c0, linewidth=3, color='C1')
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
-        plot_text = 'R-squared = %.2f' % r_squared
+        plot_text = 'r = %.2f' % correlation_xy
         xt = (x.mean() - x.min()) / 2 + x.min()
         yt = (y.mean() / 2 - y.min()) / 2 + y.min()
         plt.text(xt, yt, plot_text, fontsize=25)
@@ -639,7 +639,7 @@ for analysis_year in [
         ax.plot(x, x * c1 + c0, linewidth=3, color='C1')
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
-        plot_text = 'R-squared = %.2f' % r_squared
+        plot_text = 'r = %.2f' % correlation_xy
         xt = (x.mean()-x.min())/2+x.min()
         yt = (y.mean()-y.min())/2+y.min()
         plt.text(xt, yt, plot_text, fontsize=25)
