@@ -430,7 +430,7 @@ for analysis_year in [
 
             data['Difference'] = data[scenario_2] - data[scenario_1]
             data['Difference'].plot.hist(bins=50, histtype='step')
-            fig_title = 'Difference in ' + parameter + savename
+            fig_title = 'Difference in ' + parameter + ' ' + savename
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
             current_path = os.getcwd()
@@ -638,7 +638,9 @@ for analysis_year in [
         # ax.set_ylim(0,1.25)
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
-        plt.text(x.mean()/2, y.mean()/2, plot_text, fontsize=25)
+        xt = x.mean()/2
+        yt = y.mean()/2
+        plt.text(xt, yt, plot_text, fontsize=25)
 
         fig_title = "Regression NPV hardware - " + savename
         current_path = os.getcwd()
