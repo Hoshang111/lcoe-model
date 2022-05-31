@@ -150,7 +150,7 @@ def plot_npv(rack_per_zone_num_range_array, npv_array, gcr_range_array, npv_cost
     ax[1, 0].set_xlabel('Number of units per zone', **fontdict)
     ax[1, 0].set_ylabel('Cost & revenue ($m)', **fontdict)
     ax[1, 1].scatter(rack_range_plot, rated_power_per_zone_plot, s=size, color='C5')
-    ax[1, 1].set_ylabel('Rated power per zone (MW)', **fontdict)
+    ax[1, 1].set_ylabel('Rated DC power per zone (MW)', **fontdict)
     ax[1, 1].set_xlabel('Number of units per zone', **fontdict)
     fig.legend(['NPV', 'GCR', 'Cost', 'Revenue', 'Size'], loc='upper right', prop={'size': 24})
     if fig_title is not None:
