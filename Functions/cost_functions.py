@@ -2,6 +2,7 @@ import os
 import datetime
 import math
 import random as rd
+import numpy.random as nprd
 import numbers
 import pandas as pd
 import numpy as np
@@ -170,7 +171,7 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
     distribution_set = set()
 
     if default_dist_type is None:
-        dist_type = 'two_half_log_normal'
+        default_dist_type = 'two_half_log_normal'
 
     for col in columns_to_process:
         if (col + '_H' in columns_to_process) & (col + '_L' in columns_to_process):
@@ -263,7 +264,7 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
                     fill_random_data(input_parameter_list, index_name, ID, col, this_dist_name, parameter_generator, suppress_errors=suppress_errors)
 
                 else:
-                    fill_random_data(input_parameter_list, index_name, ID, col, dist_type, parameter_generator,suppress_errors=suppress_errors)
+                    fill_random_data(input_parameter_list, index_name, ID, col, default_dist_type, parameter_generator,suppress_errors=suppress_errors)
             if index_description is None:
                 parameter_name = index_name + ' ' + str(ID) + ' ' + col
             else:
@@ -369,6 +370,8 @@ def fill_random_data(parameters_file, ID_name, ID_value, parameter_name, dist_ty
         # this means a two-half log-normal distribution
         output_data[parameter_name] = output_data[parameter_name].apply(generate_log_normal_apply,
                                                                         args=(nom_in, low_in, high_in))
+    elif dist_type == 'flat':
+        output_data[parameter_name] = nprd.uniform(size = output_data[parameter_name].shape[0], low=low_in, high = high_in)
     else:
 
         print('**** ERROR - distribution not available')
