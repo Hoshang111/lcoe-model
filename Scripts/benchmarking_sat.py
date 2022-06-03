@@ -165,7 +165,7 @@ global_incident = global_incident_front + global_incident_rear
 global_incident = global_incident.rename('global_incident')
 DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
-performance_ratio = DC_output/global_incident/1e6
+performance_ratio = DC_output/global_incident/1e3
 performance_ratio = performance_ratio.rename('PR')
 
 summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
