@@ -155,3 +155,19 @@ ax2.set_ylim(0,10)
 fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+#%% Generate Report for Comparison
+
+global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.year)['ghi'].sum()
+global_incident_front = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_front'].sum()
+global_incident_rear = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_back'].sum()
+global_incident = global_incident_front + global_incident_rear
+DC_output = dc_results.groupby(dc_results.index.year).sum()
+performance_ratio = DC_output/global_incident/1e9
+
+timeseries_output = mc.results.weather
+timeseries_output = timeseries_output.join(mc.results.dc, how='left')
+timeseries_output = timeseries_output.join(mc.results.cell_temperature)
+timeseries_output = timeseries_output.join(mc.results.bifacial_irrad)
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries"
+timeseries_output.to_csv(save_path)
