@@ -163,7 +163,7 @@ global_incident_front = mc.results.bifacial_irrad.groupby(mc.results.bifacial_ir
 global_incident_rear = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_back'].sum()
 global_incident = global_incident_front + global_incident_rear
 global_incident = global_incident.rename('global_incident')
-DC_output = dc_results.groupby(dc_results.index.year).sum()
+DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
 performance_ratio = DC_output/global_incident/1e6
 performance_ratio = performance_ratio.rename('PR')
@@ -177,6 +177,8 @@ summary_df.to_csv(save_path)
 timeseries_output = mc.results.weather
 cell_temp = mc.results.cell_temperature
 cell_temp = cell_temp.rename('cell_temp')
-timeseries_output = timeseries_output.join([mc.results.dc, cell_temp, mc.results.bifacial_irrad], how='left')
+dc_results_unaligned = dc_results_unaligned.rename('Power (W)')
+timeseries_output = timeseries_output.join([mc.results.dc, dc_results_unaligned, cell_temp, mc.results.bifacial_irrad], how='left')
+timeseries_output = timeseries_output.shift(periods=-30, freq='T')
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries.csv"
 timeseries_output.to_csv(save_path)
