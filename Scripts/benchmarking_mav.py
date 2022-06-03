@@ -45,17 +45,7 @@ rack_params, module_params = func.rack_module_params(rack_type, module_type)
 DCTotal = 1000  # DC size in MW
 num_of_zones = 167  # Number of smaller zones that will make up the solar farm
                     # (this is equal number of SMA MV 6000 stations)
-#%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-parent_path = os.path.dirname('.')
-dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
-dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
-dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
-weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
-weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
-weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
-weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
-weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 #%%
 # Because of the lack of DNI data in DNV files and since SAT is quite sensitive to DNI, instead of stitching up DNI to
 # DNV weather files, we will use Solcast weather for the simulations (this gives more consistent and sensible SAT output)
@@ -70,8 +60,23 @@ weather_simulation = weather_dnv['2010-01-01':'2020-12-31']
 weather_simulation.index = weather_simulation.index.tz_localize('Australia/Darwin')
 # Or you can manually shift by weather_simulation = weather_simulation.shift(9)
 
-dc_results = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation, module_rating)
-dc_results_dnv = weather_simulation['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
+#%% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'dni_simulated.csv'), index_col=0)
+dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+weather_simulation_dnv.drop(['dni'],axis=1,inplace=True)
+weather_simulation_dnv = weather_simulation_dnv.join(dni_dummy, how='left')
+weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
+weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
+weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
+
+dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_sat(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
+                                            module_rating, gcr, cell_type=cell_type)
+dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
+dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
 #%% Plot features
 font_size = 25
 rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
