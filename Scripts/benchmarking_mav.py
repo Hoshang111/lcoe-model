@@ -159,7 +159,9 @@ plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.year)['ghi'].sum()
 global_incident_east = mc.results.total_irrad[0].groupby(mc.results.total_irrad[0].index.year)['poa_global'].sum()
+global_incident_east = global_incident_east.rename('poa_global_east')
 global_incident_west = mc.results.total_irrad[1].groupby(mc.results.total_irrad[0].index.year)['poa_global'].sum()
+global_incident_west = global_incident_west.rename('poa_global_west')
 DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
 performance_ratio = DC_output/(global_incident_east+global_incident_west)/2e3
@@ -178,9 +180,16 @@ cell_temp_west = mc.results.cell_temperature[1]
 cell_temp_west = cell_temp_east.rename('cell_temp_west')
 dc_results_unaligned = dc_results_unaligned.rename('Power (W)')
 dc_results_east = mc.results.dc[0]
+dc_results_east = dc_results_east.rename(columns={'i_sc':'i_sc_east', 'v_oc':'v_oc_east', 'i_mp':'i_mp_east',
+                                                  'v_mp':'v_mp_east', 'p_mp':'p_mp_east', 'i_x':'i_x_east', 'i_xx':'i_xx_east'})
 dc_results_west = mc.results.dc[1]
+dc_results_west = dc_results_west.rename(columns={'i_sc':'i_sc_west', 'v_oc':'v_oc_west', 'i_mp':'i_mp_west',
+                                                  'v_mp':'v_mp_west', 'p_mp':'p_mp_west', 'i_x':'i_x_west', 'i_xx':'i_xx_west'})
 irradiance_east = mc.results.total_irrad[0]
+irradiance_east = irradiance_east.rename(columns={'poa_global':'poa_global_east', 'poa_direct':'poa_direct_east',
+                                                  'poa_diffuse':'poa_diffuse_east'})
 irradiance_west = mc.results.total_irrad[1]
+irradiance_west = irradiance_west.rename(columns={})
 timeseries_output = timeseries_output.join([dc_results_unaligned, dc_results_east, cell_temp_east, irradiance_east,
                                             dc_results_west, cell_temp_west, irradiance_west], how='left')
 timeseries_output = timeseries_output.shift(periods=-30, freq='T')
