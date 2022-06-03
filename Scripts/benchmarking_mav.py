@@ -158,23 +158,31 @@ plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Generate Report for Comparison
 
 global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.year)['ghi'].sum()
-global_incident = mc.results.total_irrad['poa_global'].groupby(mc.results.total_irrad['poa_global'].index.year).sum()
+global_incident_east = mc.results.total_irrad[0].groupby(mc.results.total_irrad[0].index.year)['poa_global'].sum()
+global_incident_west = mc.results.total_irrad[1].groupby(mc.results.total_irrad[0].index.year)['poa_global'].sum()
 DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
-performance_ratio = DC_output/global_incident/1e3
+performance_ratio = DC_output/(global_incident_east+global_incident_west)/2e3
 performance_ratio = performance_ratio.rename('PR')
 
-summary_df = pd.DataFrame([global_horizontal, global_incident,
+summary_df = pd.DataFrame([global_horizontal, global_incident_east, global_incident_west,
                            DC_output, performance_ratio])
 summary_df = summary_df.transpose()
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary.csv"
 summary_df.to_csv(save_path)
 
 timeseries_output = mc.results.weather
-cell_temp = mc.results.cell_temperature
-cell_temp = cell_temp.rename('cell_temp')
+cell_temp_east = mc.results.cell_temperature[0]
+cell_temp_east = cell_temp_east.rename('cell_temp_east')
+cell_temp_west = mc.results.cell_temperature[1]
+cell_temp_west = cell_temp_east.rename('cell_temp_west')
 dc_results_unaligned = dc_results_unaligned.rename('Power (W)')
-timeseries_output = timeseries_output.join([mc.results.dc, dc_results_unaligned, cell_temp, mc.results.total_irrad], how='left')
+dc_results_east = mc.results.dc[0]
+dc_results_west = mc.results.dc[1]
+irradiance_east = mc.results.total_irrad[0]
+irradiance_west = mc.results.total_irrad[1]
+timeseries_output = timeseries_output.join([dc_results_unaligned, dc_results_east, cell_temp_east, irradiance_east,
+                                            dc_results_west, cell_temp_west, irradiance_west], how='left')
 timeseries_output = timeseries_output.shift(periods=-30, freq='T')
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries.csv"
 timeseries_output.to_csv(save_path)
