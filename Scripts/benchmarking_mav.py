@@ -158,7 +158,7 @@ plt.savefig(save_path, dpi=300, bbox_inches='tight')
 #%% Generate Report for Comparison
 
 global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.year)['ghi'].sum()
-global_incident = mc.results.total_irrad.groupby(mc.results.total_irrad.index.year)['poa_global'].sum()
+global_incident = mc.results.total_irrad['poa_global'].groupby(mc.results.total_irrad['poa_global'].index.year).sum()
 DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
 performance_ratio = DC_output/global_incident/1e3
