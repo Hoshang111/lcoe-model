@@ -73,7 +73,7 @@ weather_simulation_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_simulation_dnv = weather_simulation_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
 weather_simulation_mod = weather_simulation_dnv.shift(periods=30, freq='T')
 
-dc_results_unaligned, mc, mount = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
+dc_results_unaligned, mc = func.dc_yield_benchmarking_mav(DCTotal, rack_params, module_params, temp_model, weather_simulation_mod,
                                             module_rating)
 dc_results = dc_results_unaligned.shift(periods=-30, freq='T')
 dc_results_dnv = weather_simulation_dnv['dc_yield'] * num_of_zones  # dnv gives dc yield per zone
