@@ -163,7 +163,7 @@ global_incident_front = mc.results.bifacial_irrad.groupby(mc.results.bifacial_ir
 global_incident_rear = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_back'].sum()
 global_incident = global_incident_front + global_incident_rear
 DC_output = dc_results.groupby(dc_results.index.year).sum()
-performance_ratio = DC_output/global_incident/1e9
+performance_ratio = DC_output/global_incident/1e6
 
 summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
                            DC_output, performance_ratio], index=global_horizontal.index)
