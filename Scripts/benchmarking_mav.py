@@ -187,9 +187,12 @@ dc_results_west = dc_results_west.rename(columns={'i_sc':'i_sc_west', 'v_oc':'v_
                                                   'v_mp':'v_mp_west', 'p_mp':'p_mp_west', 'i_x':'i_x_west', 'i_xx':'i_xx_west'})
 irradiance_east = mc.results.total_irrad[0]
 irradiance_east = irradiance_east.rename(columns={'poa_global':'poa_global_east', 'poa_direct':'poa_direct_east',
-                                                  'poa_diffuse':'poa_diffuse_east'})
+                                                  'poa_diffuse':'poa_diffuse_east', 'poa_sky_diffuse':'poa_sky_diffuse_east',
+                                                  'poa_ground_diffuse':'poa_ground_diffuse_east'})
 irradiance_west = mc.results.total_irrad[1]
-irradiance_west = irradiance_west.rename(columns={})
+irradiance_west = irradiance_west.rename(columns={'poa_global':'poa_global_west', 'poa_direct':'poa_direct_west',
+                                                  'poa_diffuse':'poa_diffuse_west', 'poa_sky_diffuse':'poa_sky_diffuse_west',
+                                                  'poa_ground_diffuse':'poa_ground_diffuse_west'})
 timeseries_output = timeseries_output.join([dc_results_unaligned, dc_results_east, cell_temp_east, irradiance_east,
                                             dc_results_west, cell_temp_west, irradiance_west], how='left')
 timeseries_output = timeseries_output.shift(periods=-30, freq='T')
