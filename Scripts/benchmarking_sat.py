@@ -166,7 +166,7 @@ DC_output = dc_results.groupby(dc_results.index.year).sum()
 performance_ratio = DC_output/global_incident/1e6
 
 summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
-                           DC_output, performance_ratio], index=global_horizontal.index)
+                           DC_output, performance_ratio])
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary"
 summary_df.to_csv(save_path)
 
