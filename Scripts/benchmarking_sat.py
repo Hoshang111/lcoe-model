@@ -171,7 +171,7 @@ save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary"
 summary_df.to_csv(save_path)
 
 timeseries_output = mc.results.weather
-cell_temp = mc.result.cell_temperature
+cell_temp = mc.results.cell_temperature
 timeseries_output = timeseries_output.join([mc.results.dc, cell_temp, mc.results.bifacial_irrad], how='left')
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries"
 timeseries_output.to_csv(save_path)
