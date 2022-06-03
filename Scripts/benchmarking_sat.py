@@ -162,16 +162,19 @@ global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.
 global_incident_front = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_front'].sum()
 global_incident_rear = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_back'].sum()
 global_incident = global_incident_front + global_incident_rear
+global_incident = global_incident.rename('global_incident')
 DC_output = dc_results.groupby(dc_results.index.year).sum()
 performance_ratio = DC_output/global_incident/1e6
+performance_ratio = performance_ratio.rename('PR')
 
 summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
                            DC_output, performance_ratio])
-save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary"
+summary_df = summary_df.transpose()
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary.csv"
 summary_df.to_csv(save_path)
 
 timeseries_output = mc.results.weather
 cell_temp = mc.results.cell_temperature
 timeseries_output = timeseries_output.join([mc.results.dc, cell_temp, mc.results.bifacial_irrad], how='left')
-save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries"
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries.csv"
 timeseries_output.to_csv(save_path)
