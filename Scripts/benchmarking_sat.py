@@ -165,9 +165,13 @@ global_incident = global_incident_front + global_incident_rear
 DC_output = dc_results.groupby(dc_results.index.year).sum()
 performance_ratio = DC_output/global_incident/1e9
 
+summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
+                           DC_output, performance_ratio], index=global_horizontal.index)
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary"
+summary_df.to_csv(save_path)
+
 timeseries_output = mc.results.weather
-timeseries_output = timeseries_output.join(mc.results.dc, how='left')
-timeseries_output = timeseries_output.join(mc.results.cell_temperature)
-timeseries_output = timeseries_output.join(mc.results.bifacial_irrad)
+cell_temp = mc.result.cell_temperature
+timeseries_output = timeseries_output.join([mc.results.dc, cell_temp, mc.results.bifacial_irrad], how='left')
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries"
 timeseries_output.to_csv(save_path)
