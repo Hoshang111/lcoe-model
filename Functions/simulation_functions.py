@@ -9,6 +9,8 @@ from pvlib import pvsystem as pvsys
 from pvlib.location import Location
 from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
+import Bifacial.bifacial_pvsystem as bifacial_pvsystem
+import Bifacial.bifacial_modelchain as bifacial_modelchain
 import pvlib.bifacial as bifacial
 from pvlib.tracking import singleaxis
 
@@ -140,6 +142,29 @@ def weather_benchmark_adjustment_mk2(weather_solcast,
     weather_dnv_simulations = weather_dnv[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'dc_yield']]
     weather_dnv.sort_index(inplace=True)
     return weather_dnv_simulations
+
+def weather_sort(weather_file):
+    """
+
+    :param weather_file:
+    :return:
+    """
+
+    weather_monthly = weather_file.groupby(weather_file.index.month)
+    weather_list = [group for _, group in weather_monthly]
+    months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    weather = {}
+
+    for i in range(len(months_list)):
+        weather[months_list[i]] = {}
+        unsorted_data = weather_list[i]
+        split_data = unsorted_data.groupby(unsorted_data.index.year)
+        unsorted_list = [group for _, group in split_data]
+        sorted_list = sorted(unsorted_list, key=lambda x: x['ghi'].sum())
+        for j in range(len(sorted_list)):
+            weather[months_list[i]][j] = sorted_list[j]
+
+    return weather
 
 def rack_module_params(rack_type,
                        module_type):
@@ -426,24 +451,47 @@ def dc_yield(DCTotal,
 
         dc_results = []
         dc_size = []
+
         for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
-            mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=90, backtrack=True,
-                                                    gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
-                                                    module_height=2)
+            if module_params['Bifacial'] > 0:
+                mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
+                                                                 backtrack=True,
+                                                                 gcr=gcr, cross_axis_tilt=0,
+                                                                 racking_model='open_rack',
+                                                                 module_height=rack_params['elevation'])
 
-            sat_array = pvsys.Array(mount=mount,
-                                       module_parameters=module_params,
-                                       temperature_model_parameters=temperature_model_parameters,
-                                       modules_per_string=num_of_module_per_string,
-                                       strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+                sat_array = bifacial_pvsystem.Array(mount=mount,
+                                                    module_parameters=module_params,
+                                                    temperature_model_parameters=temperature_model_parameters,
+                                                    modules_per_string=num_of_module_per_string,
+                                                    strings=num_of_strings_per_sat * num_of_sat_per_inverter)
 
-            inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+                inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array],
+                                                                 inverter_parameters=inverter_params)
+                mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
+                mc.run_model_bifacial(weather_simulation)
+                multiplication_coeff = module_num / num_of_mod_per_inverter
+                dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
+                dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
 
-            mc = ModelChain(inverter_sat_system, location)
-            mc.run_model(weather_simulation)
-            multiplication_coeff = module_num / num_of_mod_per_inverter
-            dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
-            dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
+            else:
+                mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                                     module_height=rack_params['elevation'])
+
+                sat_array = pvsys.Array(mount=mount,
+                                        module_parameters=module_params,
+                                        temperature_model_parameters=temperature_model_parameters,
+                                        modules_per_string=num_of_module_per_string,
+                                        strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+
+                inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+                mc = ModelChain(inverter_sat_system, location)
+                mc.run_model(weather_simulation)
+                multiplication_coeff = module_num / num_of_mod_per_inverter
+                dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
+                dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
+
         # Todo: we can try different back-tracking algorithms for SAT as well
         dc_df = pd.DataFrame(dc_results).T
         dc_df.columns = rack_per_zone_num_range
@@ -554,38 +602,38 @@ def dc_yield_benchmarking_sat(DCTotal,
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
 
-    if cell_type == 'bifacial':
+    # if cell_type == 'bifacial':
         # Choose an example year
-        solar_position = Location.get_solarposition(location, weather_simulation.index,
-                                                    weather_simulation['temp_air'])
-        solar_azimuth = solar_position['azimuth']
-        solar_zenith = solar_position['apparent_zenith']
+    #    solar_position = Location.get_solarposition(location, weather_simulation.index,
+    #                                                weather_simulation['temp_air'])
+    #    solar_azimuth = solar_position['azimuth']
+    #    solar_zenith = solar_position['apparent_zenith']
         # single axis tracking information
-        tracking_output = singleaxis(solar_zenith, solar_azimuth, axis_tilt=0, axis_azimuth=0, max_angle=60,
-                                     backtrack=True,
-                                     gcr=0.3, cross_axis_tilt=0)
-        surface_azimuth = tracking_output['surface_azimuth']
-        surface_tilt = tracking_output['tracker_theta']
-        axis_azimuth = 0
-        timestamps = solar_position.index
-        dni = weather_simulation['dni']
-        dhi = weather_simulation['dhi']
-        pvrow_height = 1.5
-        pvrow_width = 1.2
-        albedo = 0.25
-        n_pvrows = 3
-        index_observed_pvrow = 1
-        rho_front_pvrow = 0.03
-        rho_back_pvrow = 0.05
-        horizon_band_angle = 15
-        bifacial_output = bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
-                                                    axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
-                                                    albedo)
-        bifacial_output = pd.DataFrame(bifacial_output).T
+    #    tracking_output = singleaxis(solar_zenith, solar_azimuth, axis_tilt=0, axis_azimuth=0, max_angle=60,
+    #                                 backtrack=True,
+    #                                 gcr=0.3, cross_axis_tilt=0)
+    #    surface_azimuth = tracking_output['surface_azimuth']
+    #    surface_tilt = tracking_output['tracker_theta']
+    #    axis_azimuth = 0
+    #    timestamps = solar_position.index
+    #    dni = weather_simulation['dni']
+    #    dhi = weather_simulation['dhi']
+    #    pvrow_height = 1.5
+    #    pvrow_width = 1.2
+    #    albedo = 0.25
+    #    n_pvrows = 3
+    #    index_observed_pvrow = 1
+    #    rho_front_pvrow = 0.03
+    #    rho_back_pvrow = 0.05
+    #    horizon_band_angle = 15
+    #    bifacial_output = bifacial.pvfactors_timeseries(solar_azimuth, solar_zenith, surface_azimuth, surface_tilt,
+    #                                                axis_azimuth, timestamps, dni, dhi, gcr, pvrow_height, pvrow_width,
+    #                                                albedo)
+    #    bifacial_output = pd.DataFrame(bifacial_output).T
 
-        bifacial_output['effective_irradiance'] = bifacial_output['total_abs_front'] + bifacial_output['total_abs_back'] * \
-                                              module_params['Bifacial']
-        bifacial_output.fillna(0, inplace=True)
+    #    bifacial_output['effective_irradiance'] = bifacial_output['total_abs_front'] + bifacial_output['total_abs_back'] * \
+    #                                          module_params['Bifacial']
+    #    bifacial_output.fillna(0, inplace=True)
 
     ''' DC modelling for single axis tracking (SAT) system '''
     # Choose inverter as SMA SC 3000
@@ -612,7 +660,7 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
                                             gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
-                                            module_height=1.5)
+                                            module_height=rack_params['elevation'])
 
     sat_array = pvsys.Array(mount=mount,
                                module_parameters=module_params,
@@ -622,17 +670,40 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
 
-    mc = ModelChain(inverter_sat_system, location)
-    mc.run_model(weather_simulation)
-    multiplication_coeff = num_of_zones * num_of_inv_per_zone
-    dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
+    if cell_type == 'mono':
+        mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+                                             gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                             module_height=rack_params['elevation'])
 
-    if cell_type == 'bifacial':
-        # cell_temp_normal = mc.results.cell_temperature
-        # bifacial_output['cell_temperature'] = cell_temp_normal.values
+        sat_array = pvsys.Array(mount=mount,
+                                module_parameters=module_params,
+                                temperature_model_parameters=temperature_model_parameters,
+                                modules_per_string=num_of_module_per_string,
+                                strings=num_of_strings_per_inverter)
+
+        inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
         mc = ModelChain(inverter_sat_system, location)
-        mc.run_model_from_effective_irradiance(bifacial_output)
+        mc.run_model(weather_simulation)
+        multiplication_coeff = num_of_zones * num_of_inv_per_zone
         dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
+
+    elif cell_type == 'bifacial':
+        mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+                                             gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                             module_height=rack_params['elevation'])
+
+        sat_array = bifacial_pvsystem.Array(mount=mount,
+                                module_parameters=module_params,
+                                temperature_model_parameters=temperature_model_parameters,
+                                modules_per_string=num_of_module_per_string,
+                                strings=num_of_strings_per_inverter)
+
+        inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+        mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
+        mc.run_model_bifacial(weather_simulation)
+        multiplication_coeff = num_of_zones * num_of_inv_per_zone
+        dc_results_total = mc.results.dc['p_mp'] * multiplication_coeff
+
     return dc_results_total, mc, mount
 
 

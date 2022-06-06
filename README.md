@@ -4,6 +4,8 @@ Run montecarlo.py (can be done through a terminal using python3 montecarlo.py)
 # Post-Report priorities
 * time shift to centre of period (for sun angle etc.)
 * Implement Bi-facial
+* Update temperature coeffecients from first principles (Io based)
+* Check effect of increased revenue
 * Battery Storage
 * Probabilistic Yield - incl soiling, mismatch, degradation, failures etc.
 * 
@@ -44,10 +46,9 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 
 ### Housekeeping
 * *Sort out poetry conflicts* **(Hoshang)**
-* Merge sizing and layout_optimizer
-* Make scripts file
-* Important files: phill_dni (create into function)
-* Files to remove: parameter_extraction, system, Demo, Old Files
+* Main/Run scripts - benchmarking, montecarlo (archive everything except v_report2)
+* Function scripts - simulation_functions, sizing, suncable_cost, layout_optimiser, bifacial_integration/modelchain
+* Useful scripts - Phill_Dni, Single_diode_generation, 
 
 ### Inputs
 * Design point - accept multi-inputs
