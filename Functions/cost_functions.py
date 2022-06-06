@@ -453,6 +453,8 @@ def calculate_scenarios(input_tables, year_start, analyse_years):
             component_usage_by_year['InstallNumber'] * component_usage_by_year['Usage'],
             component_usage_by_year['TotalUsageY'])
 
+        # Need to add the new future usage parameter here - still to do
+
         ###########################################
         # Components costs per year
         # Final table will have these columns
