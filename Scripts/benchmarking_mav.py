@@ -88,8 +88,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-10-15'
-date2 = '2018-10-22'
+date1 = '2018-7-15'
+date2 = '2018-7-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -104,7 +104,7 @@ save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
 #%% Scatter Plot
-scatter_year = 2017
+scatter_year = 2020
 x = dc_results[str(scatter_year)]/1e9
 y = dc_results_dnv[str(scatter_year)]/1e9
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -164,7 +164,7 @@ global_incident_west = mc.results.total_irrad[1].groupby(mc.results.total_irrad[
 global_incident_west = global_incident_west.rename('poa_global_west')
 DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
 DC_output = DC_output.rename('kWh_DC')
-performance_ratio = DC_output/(global_incident_east+global_incident_west)/2e3
+performance_ratio = DC_output/(global_incident_east+global_incident_west)/5e2
 performance_ratio = performance_ratio.rename('PR')
 
 summary_df = pd.DataFrame([global_horizontal, global_incident_east, global_incident_west,
@@ -177,7 +177,7 @@ timeseries_output = mc.results.weather
 cell_temp_east = mc.results.cell_temperature[0]
 cell_temp_east = cell_temp_east.rename('cell_temp_east')
 cell_temp_west = mc.results.cell_temperature[1]
-cell_temp_west = cell_temp_east.rename('cell_temp_west')
+cell_temp_west = cell_temp_west.rename('cell_temp_west')
 dc_results_unaligned = dc_results_unaligned.rename('Power (W)')
 dc_results_east = mc.results.dc[0]
 dc_results_east = dc_results_east.rename(columns={'i_sc':'i_sc_east', 'v_oc':'v_oc_east', 'i_mp':'i_mp_east',
