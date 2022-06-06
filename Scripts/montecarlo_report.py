@@ -42,6 +42,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import Functions.simulation_functions as func
+from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
@@ -65,8 +66,11 @@ weather_dnv = func.weather_benchmark_adjustment_mk2(weather_solcast_simulation, 
 
 weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
+
 # %% Now create a new weather data for DNV with simulated dni and simulate with this weather data...
-dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'), index_col=0)
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+dni_dummy = pd.read_csv(os.path.join(parent_path, 'Data', 'WeatherData', 'TMY_dni_simulated_1minute.csv'), index_col=0)
 dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
 dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
@@ -74,7 +78,10 @@ weather_dnv.drop(['dni'],axis=1,inplace=True)
 weather_dnv = weather_dnv.join(dni_dummy, how='left')
 weather_dnv.rename(columns={"0": "dni"}, inplace=True)
 weather_dnv = weather_dnv[['ghi','dni','dhi','temp_air','wind_speed','precipitable_water','dc_yield']]
-weather_simulation = weather_dnv
+
+# shift weather files 30 min so that solar position is calculated at midpoint of period
+weather_dnv_mod = weather_dnv.shift(periods=30, freq='T')
+weather_simulation = weather_dnv_mod
 
 
 # Sizing/rack and module numbers
@@ -82,15 +89,15 @@ weather_simulation = weather_dnv
 DCTotal = 11000  # DC size in MW
 num_of_zones = 720  # Number of smaller zones that will make up the solar farm
 zone_area = 1.4e5   # Zone Area in m2
-rack_interval_ratio = 0.04
+rack_interval_ratio = 0.01
 
 # Yield Assessment Inputs
 temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
-storage_capacity = 4e7 # Wh per zone
-scheduled_price = 0.00004  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+storage_capacity = 5e7 # Wh per zone
+scheduled_price = 0.000150  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
 # Financial Parameters
 discount_rate = 0.07
@@ -100,8 +107,6 @@ if use_previous_airtable_data:
 else:
     # cost data tables from airtable
     data_tables = get_airtable(save_tables=True)
-
-
 
 # %%
 # Cycle through alternative analysis scenarios
@@ -148,43 +153,43 @@ HJT2031 = 'HJT_2031_M10'
 # 2028 - assume modules PERC_2028_M10, etc
 # 2028 - assume modules PERC_2031_M10, etc
 
-scenario_tables_2024 = []
-results_SAT_PERC_2024 = optimize (SAT, PERC2023, 2024, 'SAT PERC 2024', scenario_tables_2024)
-results_MAV_PERC_2024 = optimize (MAV, PERC2023, 2024, 'MAV PERC 2024', scenario_tables_2024)
-results_SAT_HJT_2024 = optimize (SAT, HJT2023, 2024, 'SAT HJT 2024', scenario_tables_2024)
-results_MAV_HJT_2024 = optimize (MAV, HJT2023, 2024, 'MAV HJT 2024', scenario_tables_2024)
-results_SAT_TOP_2024 = optimize (SAT, TOP2023, 2024, 'SAT TOP 2024', scenario_tables_2024)
-results_MAV_TOP_2024 = optimize (MAV, TOP2023, 2024, 'MAV TOP 2024', scenario_tables_2024)
-results_SAT_PERCa_2024 = optimize (SAT, PERC2025, 2024, 'SAT PERCa 2024', scenario_tables_2024)
-results_MAV_PERCa_2024 = optimize (MAV, PERC2025, 2024, 'MAV PERCa 2024', scenario_tables_2024)
-results_SAT_HJTa_2024 = optimize (SAT, HJT2025, 2024, 'SAT HJTa 2024', scenario_tables_2024)
-results_MAV_HJTa_2024 = optimize (MAV, HJT2025, 2024, 'MAV HJTa 2024', scenario_tables_2024)
-results_SAT_TOPa_2024 = optimize (SAT, TOP2025, 2024, 'SAT TOPa 2024', scenario_tables_2024)
-results_MAV_TOPa_2024 = optimize (MAV, TOP2025, 2024, 'MAV TOPa 2024', scenario_tables_2024)
+# scenario_tables_2024 = []
+# results_SAT_PERC_2024 = optimize (SAT, PERC2023, 2024, 'SAT PERC 2024', scenario_tables_2024)
+# results_MAV_PERC_2024 = optimize (MAV, PERC2023, 2024, 'MAV PERC 2024', scenario_tables_2024)
+# results_SAT_HJT_2024 = optimize (SAT, HJT2023, 2024, 'SAT HJT 2024', scenario_tables_2024)
+# results_MAV_HJT_2024 = optimize (MAV, HJT2023, 2024, 'MAV HJT 2024', scenario_tables_2024)
+# results_SAT_TOP_2024 = optimize (SAT, TOP2023, 2024, 'SAT TOP 2024', scenario_tables_2024)
+# results_MAV_TOP_2024 = optimize (MAV, TOP2023, 2024, 'MAV TOP 2024', scenario_tables_2024)
+# results_SAT_PERCa_2024 = optimize (SAT, PERC2025, 2024, 'SAT PERCa 2024', scenario_tables_2024)
+# results_MAV_PERCa_2024 = optimize (MAV, PERC2025, 2024, 'MAV PERCa 2024', scenario_tables_2024)
+# results_SAT_HJTa_2024 = optimize (SAT, HJT2025, 2024, 'SAT HJTa 2024', scenario_tables_2024)
+# results_MAV_HJTa_2024 = optimize (MAV, HJT2025, 2024, 'MAV HJTa 2024', scenario_tables_2024)
+# results_SAT_TOPa_2024 = optimize (SAT, TOP2025, 2024, 'SAT TOPa 2024', scenario_tables_2024)
+# results_MAV_TOPa_2024 = optimize (MAV, TOP2025, 2024, 'MAV TOPa 2024', scenario_tables_2024)
 
-scenario_tables_2026 = []
-results_SAT_PERC_2026 = optimize (SAT, PERC2025, 2026, 'SAT PERC 2026',scenario_tables_2026)
-results_MAV_PERC_2026 = optimize (MAV, PERC2025, 2026, 'MAV PERC 2026',scenario_tables_2026)
-results_SAT_HJT_2026 = optimize (SAT, HJT2025, 2026, 'SAT HJT 2026',scenario_tables_2026)
-results_MAV_HJT_2026 = optimize (MAV, HJT2025, 2026, 'MAV HJT 2026',scenario_tables_2026)
-results_SAT_TOP_2026 = optimize (SAT, TOP2025, 2026, 'SAT TOP 2026',scenario_tables_2026)
-results_MAV_TOP_2026 = optimize (MAV, TOP2025, 2026, 'MAV TOP 2026',scenario_tables_2026)
-results_SAT_PERCa_2026 = optimize (SAT, PERC2028, 2026, 'SAT PERCa 2026',scenario_tables_2026)
-results_MAV_PERCa_2026 = optimize (MAV, PERC2028, 2026, 'MAV PERCa 2026',scenario_tables_2026)
-results_SAT_HJTa_2026 = optimize (SAT, HJT2028, 2026, 'SAT HJTa 2026',scenario_tables_2026)
-results_MAV_HJTa_2026 = optimize (MAV, HJT2028, 2026, 'MAV HJTa 2026',scenario_tables_2026)
-results_SAT_TOPa_2026 = optimize (SAT, TOP2028, 2026, 'SAT TOPa 2026',scenario_tables_2026)
-results_MAV_TOPa_2026 = optimize (MAV, TOP2028, 2026, 'MAV TOPa 2026',scenario_tables_2026)
+# scenario_tables_2026 = []
+# results_SAT_PERC_2026 = optimize (SAT, PERC2025, 2026, 'SAT PERC 2026',scenario_tables_2026)
+# results_MAV_PERC_2026 = optimize (MAV, PERC2025, 2026, 'MAV PERC 2026',scenario_tables_2026)
+# results_SAT_HJT_2026 = optimize (SAT, HJT2025, 2026, 'SAT HJT 2026',scenario_tables_2026)
+# results_MAV_HJT_2026 = optimize (MAV, HJT2025, 2026, 'MAV HJT 2026',scenario_tables_2026)
+# results_SAT_TOP_2026 = optimize (SAT, TOP2025, 2026, 'SAT TOP 2026',scenario_tables_2026)
+# results_MAV_TOP_2026 = optimize (MAV, TOP2025, 2026, 'MAV TOP 2026',scenario_tables_2026)
+# results_SAT_PERCa_2026 = optimize (SAT, PERC2028, 2026, 'SAT PERCa 2026',scenario_tables_2026)
+# results_MAV_PERCa_2026 = optimize (MAV, PERC2028, 2026, 'MAV PERCa 2026',scenario_tables_2026)
+# results_SAT_HJTa_2026 = optimize (SAT, HJT2028, 2026, 'SAT HJTa 2026',scenario_tables_2026)
+# results_MAV_HJTa_2026 = optimize (MAV, HJT2028, 2026, 'MAV HJTa 2026',scenario_tables_2026)
+# results_SAT_TOPa_2026 = optimize (SAT, TOP2028, 2026, 'SAT TOPa 2026',scenario_tables_2026)
+# results_MAV_TOPa_2026 = optimize (MAV, TOP2028, 2026, 'MAV TOPa 2026',scenario_tables_2026)
 
 
 
 scenario_tables_2028 = []
-results_SAT_PERC_2028 = optimize (SAT, PERC2028, 2028, 'SAT PERC 2028',scenario_tables_2028)
-results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV PERC 2028',scenario_tables_2028)
-results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT HJT 2028',scenario_tables_2028)
-results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV HJT 2028',scenario_tables_2028)
-results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT TOP 2028',scenario_tables_2028)
-results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV TOP 2028',scenario_tables_2028)
+# results_SAT_PERC_2028 = optimize (SAT, PERC2028, 2028, 'SAT PERC 2028',scenario_tables_2028)
+# results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV PERC 2028',scenario_tables_2028)
+# results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT HJT 2028',scenario_tables_2028)
+# results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV HJT 2028',scenario_tables_2028)
+#results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT TOP 2028',scenario_tables_2028)
+# results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV TOP 2028',scenario_tables_2028)
 results_SAT_PERCa_2028 = optimize (SAT, PERC2031, 2028, 'SAT PERCa 2028',scenario_tables_2028)
 results_MAV_PERCa_2028 = optimize (MAV, PERC2031, 2028, 'MAV PERCa 2028',scenario_tables_2028)
 results_SAT_HJTa_2028 = optimize (SAT, HJT2031, 2028, 'SAT HJTa 2028',scenario_tables_2028)
@@ -192,14 +197,35 @@ results_MAV_HJTa_2028 = optimize (MAV, HJT2031, 2028, 'MAV HJTa 2028',scenario_t
 results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
 results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
 
+# %% Save and download optimized layouts
+
+output_data = []
+for scenario_tables in [scenario_tables_2028]:
+    for results in scenario_tables:
+        index = results[1]
+        install_dummy = results[0][1]['InstallNumber']
+        install_dummy2 = install_dummy.reset_index()
+        install_dummy3 = install_dummy2['InstallNumber']
+        Racks = install_dummy3[0]
+        W_zone = install_dummy3[3]
+        # MW_per_zone = Modules*results[2]
+        # Total_GW = MW_per_zone*num_of_zones/1000
+        output_data.append([index, Racks, W_zone])
+
+optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
+optimised_tables.set_index('scenario', inplace=True)
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+file_name = os.path.join(parent_path, 'OutputFigures', 'Optimised_layouts.csv')
+optimised_tables.to_csv(file_name)
+
 # %%
 # Call Monte Carlo Cost analysis
 
 for analysis_year in [
-    #2024,
-    #2026,
+    # 2024,
+    # 2026,
     2028
-
                       ]:
 
 
@@ -210,7 +236,7 @@ for analysis_year in [
     elif analysis_year == 2028:
         scenario_tables = scenario_tables_2028
     # First generate data tables with the ScenarioID changed to something more intuitive
-    new_data_tables = form_new_data_tables(data_tables,scenario_tables)
+    new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
     # Create iteration data
     data_tables_iter = create_iteration_tables(new_data_tables, 5000, iteration_start=0)
@@ -261,12 +287,13 @@ for analysis_year in [
 
     elif analysis_year == 2028:
         install_year = 2028
-        results_list = [[results_SAT_PERC_2028,
-                  results_MAV_PERC_2028,
-                  results_SAT_HJT_2028,
-                  results_MAV_HJT_2028,
-                  results_SAT_TOP_2028,
-                  results_MAV_TOP_2028],
+        results_list = [
+                  # [results_SAT_PERC_2028,
+                  # results_MAV_PERC_2028,
+                  # results_SAT_HJT_2028,
+                  # results_MAV_HJT_2028,
+                  # results_SAT_TOP_2028,
+                  #results_MAV_TOP_2028],
                    [results_SAT_PERCa_2028,
                    results_MAV_PERCa_2028,
                    results_SAT_HJTa_2028,
@@ -278,6 +305,16 @@ for analysis_year in [
     else:
         print('Error!')
 
+#%%
+
+    font_size = 14
+    rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+          'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+    plt.rcParams.update(**rc)
+    plt.rc('font', weight='bold')
+
+    # For label titles
+    fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
     for results in results_list:
         for (scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output) in results:
@@ -323,18 +360,19 @@ for analysis_year in [
             fig_title = parameter + ' - ' + str(install_year)
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
-            # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'OutputFigures/', fig_title)
-            # plt.savefig(file_name)
-            plt.show()
-
-    # %%
+            current_path = os.getcwd()
+            parent_path = os.path.dirname(current_path)
+            file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+            plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+            plt.close()
+            # plt.show()
 
     if analysis_year == 2024:
         analysis_list = [(['SAT PERC 2024','MAV PERC 2024'], 'SAT vs MAV 2024')]
     elif analysis_year == 2026:
         analysis_list = [(['SAT PERC 2026', 'MAV PERC 2026'], 'SAT vs MAV 2026')]
     elif analysis_year == 2028:
-        analysis_list = [(['SAT PERC 2028', 'MAV PERC 2028'], 'SAT vs MAV 2028')]
+        analysis_list = [(['SAT HJTa 2028', 'MAV HJTa 2028'], 'SAT vs MAV 2028')]
     else:
         analysis_list == []
     for (scenarios, title) in analysis_list:
@@ -353,19 +391,23 @@ for analysis_year in [
                                                      index=['ScenarioID'], aggfunc=np.sum,
                                                      columns=['CostCategory_ShortName'])
         scenario_costs_total_category.to_csv('temp_category_costs' + str(analysis_year) + '.csv')
-        scenario_costs_total_category.plot.bar(stacked=True,title='Total Costs by Category - ' + title)
-        plt.show()
+        scenario_costs_total_category.plot.bar(stacked=True, title='Total Costs by Category - ' + title)
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', 'Scenario Costs')
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
 
 
         scenario_costs_total_nodiscount = pd.pivot_table(scenario_costs_iter, values='TotalCostAUDY',
                                                          index=['Iteration'], aggfunc=np.sum,
                                                          columns=['ScenarioID'])
         scenario_costs_total_nodiscount.plot.hist(bins=50, histtype='step')
-        plt.show()
-
-
-
-    # %%
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', 'Scenario Costs No Discount')
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
 
     if analysis_year==2024:
         comparison_list = [('MAV HJT 2024','SAT HJT 2024', 'MAV vs SAT HJT 2024'),
@@ -376,8 +418,9 @@ for analysis_year in [
         comparison_list = [('MAV PERC 2026', 'SAT PERC 2026', 'MAV vs SAT PERC 2026'),
                            ('MAV HJT 2026', 'MAV PERC 2026', 'HJT vs PERC MAV 2026')]
     elif analysis_year == 2028:
-        comparison_list = [('MAV PERC 2028', 'SAT PERC 2028', 'MAV vs SAT PERC 2028'),
-                           ('MAV HJT 2028', 'MAV PERC 2028', 'HJT vs PERC MAV 2028')]
+        comparison_list = [('MAV HJTa 2028', 'SAT HJTa 2028', 'MAV vs SAT HJT 2028'),
+                           ('MAV HJTa 2028', 'MAV PERCa 2028', 'HJT vs PERC MAV 2028'),
+                           ('SAT HJTa 2028', 'SAT PERCa 2028', 'HJT vs PERC SAT 2028')]
 
     for (scenario_1, scenario_2, savename) in comparison_list:
 
@@ -387,21 +430,15 @@ for analysis_year in [
 
             data['Difference'] = data[scenario_2] - data[scenario_1]
             data['Difference'].plot.hist(bins=50, histtype='step')
-            fig_title = 'Difference in '+ parameter + ': ' + scenario_2 + ' - ' + scenario_1
+            fig_title = 'Difference in ' + parameter + ' ' + savename
             plt.title(fig_title)
             # savefig.save_figure(fig_title)
-            # file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)),'OutputFigures/', fig_title)
-            # plt.savefig(file_name)
-            plt.show()
-
-        font_size = 8
-        rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
-              'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
-        plt.rcParams.update(**rc)
-        plt.rc('font', weight='bold')
-
-        # For label titles
-        fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
+            current_path = os.getcwd()
+            parent_path = os.path.dirname(current_path)
+            file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+            plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+            plt.close()
+            # plt.show()
 
         def generate_difference_factor(df, parameter, scenario_1, scenario_2, parameter_name):
             data = df[parameter].reset_index()
@@ -416,6 +453,9 @@ for analysis_year in [
         parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in parameters_flat.columns.values]
 
         factor = generate_difference_factor(discounted_sum, 'LCOE', scenario_1, scenario_2, 'LCOE_Difference')
+        parameters_flat = parameters_flat.join(factor)
+
+        factor = generate_difference_factor(discounted_sum, 'NPV', scenario_1, scenario_2, 'NPV_Difference')
         parameters_flat = parameters_flat.join(factor)
 
         parameters_flat.to_csv('Tempparameters.csv')
@@ -434,7 +474,9 @@ for analysis_year in [
 
         parameters_flat = parameters_flat.rename(columns={
             'ComponentID 45 AnnualMultiplier': 'Onsite Labour Annual Multiplier',
-            'ComponentID 33 AnnualMultiplier': 'Module cost Annual Multiplier'
+            'ComponentID 33 AnnualMultiplier': 'Module cost Annual Multiplier',
+            'SystemComponentID 163 UsageAnnualMultiplier': 'MAV Hardware Annual Multiplier',
+            'SystemComponentID 164 UsageAnnualMultiplier': 'MAV Labour Annual Multiplier'
         })
 
 
@@ -461,10 +503,153 @@ for analysis_year in [
         ax0.set_ylabel(p2_description)
         ax0.set_title(title)
 
-        plt.show()
+        fig_title = "Delta LCOE - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
 
+        x = parameters_flat['Module Cost']
+        y = parameters_flat['Onsite Labour Index']
+        z = parameters_flat['NPV_Difference']
+        title = 'Impact on NPV difference'
+        p1_description = 'Module Cost'
+        p2_description = 'Labour Index'
+        map = 'seismic_r'
+        colorbartitle = 'Delta NPV'
+        fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
+        vmax = z.abs().max()
+        vmin = -vmax
 
+        scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=vmin, vmax=vmax, s=None)
+        plt.colorbar(scatterplot, cax=ax1)
+        ax1.set_title(colorbartitle)
+
+        ax0.set_xlabel(p1_description)
+        ax0.set_ylabel(p2_description)
+        ax0.set_title(title)
+
+        fig_title = "Delta NPV - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+
+        x = parameters_flat['Module Cost']
+        y = parameters_flat['MAV Hardware Annual Multiplier']
+        z = parameters_flat['NPV_Difference']
+        title = 'Impact on NPV difference'
+        p1_description = 'Module Cost'
+        p2_description = 'MAV Hardware Multiplier'
+        map = 'seismic_r'
+        colorbartitle = 'Delta NPV'
+        fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+
+        vmax = z.abs().max()
+        vmin = -vmax
+
+        scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=vmin, vmax=vmax, s=None)
+        plt.colorbar(scatterplot, cax=ax1)
+        ax1.set_title(colorbartitle)
+
+        ax0.set_xlabel(p1_description)
+        ax0.set_ylabel(p2_description)
+        ax0.set_title(title)
+
+        fig_title = "Delta NPV hardware - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+
+        x = parameters_flat['Module Cost']
+        y = parameters_flat['MAV Labour Annual Multiplier']
+        z = parameters_flat['NPV_Difference']
+        title = 'Impact on NPV difference'
+        p1_description = 'Module Cost'
+        p2_description = 'MAV Labour Multiplier'
+        map = 'seismic_r'
+        colorbartitle = 'Delta NPV'
+        fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+
+        vmax = z.abs().max()
+        vmin = -vmax
+
+        scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=vmin, vmax=vmax, s=None)
+        plt.colorbar(scatterplot, cax=ax1)
+        ax1.set_title(colorbartitle)
+
+        ax0.set_xlabel(p1_description)
+        ax0.set_ylabel(p2_description)
+        ax0.set_title(title)
+
+        fig_title = "Delta NPV labour - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+        # plt.show()
+
+        x = parameters_flat['MAV Labour Annual Multiplier'].astype(str).astype(float)
+        y = parameters_flat['NPV_Difference'].astype(str).astype(float)
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.scatter(x, y)
+        ax.set_xlabel('MAV Labour Multiplier', **fontdict)
+        ax.set_ylabel('Difference in NPV', **fontdict)
+        ax.set_title('Regression for MAV Labour')
+
+        c1, c0 = Polynomial.fit(x, y, 1)
+        correlation_matrix = np.corrcoef(x.values, y.values)
+        correlation_xy = correlation_matrix[0, 1]
+        r_squared = correlation_xy ** 2
+
+        ax.plot(x, x * c1 + c0, linewidth=3, color='C1')
+        # ax.set_ylim(0,1.25)
+        # ax.set_xlim(0,1.25)
+        plot_text = 'r = %.2f' % correlation_xy
+        xt = (x.mean() - x.min()) / 2 + x.min()
+        yt = (y.mean() / 2 - y.min()) / 2 + y.min()
+        plt.text(xt, yt, plot_text, fontsize=25)
+
+        fig_title = "Regression NPV labour - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
+
+        x = parameters_flat['MAV Hardware Annual Multiplier'].astype(str).astype(float)
+        y = parameters_flat['NPV_Difference'].astype(str).astype(float)
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.scatter(x, y)
+        ax.set_xlabel('MAV Hardware Multiplier', **fontdict)
+        ax.set_ylabel('Difference in NPV', **fontdict)
+        ax.set_title('Regression for MAV Hardware')
+
+        c1, c0 = Polynomial.fit(x, y, 1)
+        correlation_matrix = np.corrcoef(x.values, y.values)
+        correlation_xy = correlation_matrix[0, 1]
+        r_squared = correlation_xy ** 2
+
+        ax.plot(x, x * c1 + c0, linewidth=3, color='C1')
+        # ax.set_ylim(0,1.25)
+        # ax.set_xlim(0,1.25)
+        plot_text = 'r = %.2f' % correlation_xy
+        xt = (x.mean()-x.min())/2+x.min()
+        yt = (y.mean()-y.min())/2+y.min()
+        plt.text(xt, yt, plot_text, fontsize=25)
+
+        fig_title = "Regression NPV hardware - " + savename
+        current_path = os.getcwd()
+        parent_path = os.path.dirname(current_path)
+        file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+        plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+        plt.close()
 
 
 # %%
@@ -473,41 +658,41 @@ for analysis_year in [
 graph_data = pd.DataFrame(columns=['Year','NPV','Label'], index=[*range(0,1)])
 i = 0
 for (year, label, results) in [
-    (2024, 'MAV PERC', results_MAV_PERC_2024),
-    (2026, 'MAV PERC', results_MAV_PERC_2026),
-    (2028, 'MAV PERC', results_MAV_PERC_2028),
-    (2024, 'SAT PERC', results_SAT_PERC_2024),
-    (2026, 'SAT PERC', results_SAT_PERC_2026),
-    (2028, 'SAT PERC', results_SAT_PERC_2028),
-    (2024, 'MAV PERCa', results_MAV_PERCa_2024),
-    (2026, 'MAV PERCa', results_MAV_PERCa_2026),
+#    (2024, 'MAV PERC', results_MAV_PERC_2024),
+#    (2026, 'MAV PERC', results_MAV_PERC_2026),
+#    (2028, 'MAV PERC', results_MAV_PERC_2028),
+#    (2024, 'SAT PERC', results_SAT_PERC_2024),
+#    (2026, 'SAT PERC', results_SAT_PERC_2026),
+#    (2028, 'SAT PERC', results_SAT_PERC_2028),
+#    (2024, 'MAV PERCa', results_MAV_PERCa_2024),
+#    (2026, 'MAV PERCa', results_MAV_PERCa_2026),
     (2028, 'MAV PERCa', results_MAV_PERCa_2028),
-    (2024, 'SAT PERCa', results_SAT_PERCa_2024),
-    (2026, 'SAT PERCa', results_SAT_PERCa_2026),
+#    (2024, 'SAT PERCa', results_SAT_PERCa_2024),
+#    (2026, 'SAT PERCa', results_SAT_PERCa_2026),
     (2028, 'SAT PERCa', results_SAT_PERCa_2028),
-    (2024, 'MAV TOP', results_MAV_TOP_2024),
-    (2026, 'MAV TOP', results_MAV_TOP_2026),
-    (2028, 'MAV TOP', results_MAV_TOP_2028),
-    (2024, 'SAT TOP', results_SAT_TOP_2024),
-    (2026, 'SAT TOP', results_SAT_TOP_2026),
-    (2028, 'SAT TOP', results_SAT_TOP_2028),
-    (2024, 'MAV TOPa', results_MAV_TOPa_2024),
-    (2026, 'MAV TOPa', results_MAV_TOPa_2026),
+#    (2024, 'MAV TOP', results_MAV_TOP_2024),
+#    (2026, 'MAV TOP', results_MAV_TOP_2026),
+#    (2028, 'MAV TOP', results_MAV_TOP_2028),
+#    (2024, 'SAT TOP', results_SAT_TOP_2024),
+#    (2026, 'SAT TOP', results_SAT_TOP_2026),
+#    (2028, 'SAT TOP', results_SAT_TOP_2028),
+#    (2024, 'MAV TOPa', results_MAV_TOPa_2024),
+#    (2026, 'MAV TOPa', results_MAV_TOPa_2026),
     (2028, 'MAV TOPa', results_MAV_TOPa_2028),
-    (2024, 'SAT TOPa', results_SAT_TOPa_2024),
-    (2026, 'SAT TOPa', results_SAT_TOPa_2026),
+#    (2024, 'SAT TOPa', results_SAT_TOPa_2024),
+#    (2026, 'SAT TOPa', results_SAT_TOPa_2026),
     (2028, 'SAT TOPa', results_SAT_TOPa_2028),
-    (2024, 'MAV HJT', results_MAV_HJT_2024),
-    (2026, 'MAV HJT', results_MAV_HJT_2026),
-    (2028, 'MAV HJT', results_MAV_HJT_2028),
-    (2024, 'SAT HJT', results_SAT_HJT_2024),
-    (2026, 'SAT HJT', results_SAT_HJT_2026),
-    (2028, 'SAT HJT', results_SAT_HJT_2028),
-    (2024, 'MAV HJTa', results_MAV_HJTa_2024),
-    (2026, 'MAV HJTa', results_MAV_HJTa_2026),
+#    (2024, 'MAV HJT', results_MAV_HJT_2024),
+#    (2026, 'MAV HJT', results_MAV_HJT_2026),
+#    (2028, 'MAV HJT', results_MAV_HJT_2028),
+#    (2024, 'SAT HJT', results_SAT_HJT_2024),
+#    (2026, 'SAT HJT', results_SAT_HJT_2026),
+#    (2028, 'SAT HJT', results_SAT_HJT_2028),
+#    (2024, 'MAV HJTa', results_MAV_HJTa_2024),
+#    (2026, 'MAV HJTa', results_MAV_HJTa_2026),
     (2028, 'MAV HJTa', results_MAV_HJTa_2028),
-    (2024, 'SAT HJTa', results_SAT_HJTa_2024),
-    (2026, 'SAT HJTa', results_SAT_HJTa_2026),
+#    (2024, 'SAT HJTa', results_SAT_HJTa_2024),
+#    (2026, 'SAT HJTa', results_SAT_HJTa_2026),
     (2028, 'SAT HJTa', results_SAT_HJTa_2028)
     ]:
     SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output = results
@@ -523,38 +708,21 @@ print(graph_data)
 graph_data.plot.line()
 plt.gca().legend(bbox_to_anchor=(1.1, 1.05))
 plt.gca().set_title('NPV AUD Million')
-plt.show()
+# plt.show()
 
-for year in [2024, 2026, 2028]:
+for year in [2028]:
     graph_data_year = graph_data.loc[year,:].T
     graph_data_year.plot.bar()
     plt.gca().set_title('NPV for ' + str(year) + ' installation')
     plt.gca().set_xlabel('Scenario')
     plt.gca().set_ylabel('AUD Million')
-
-    plt.show()
-
-
-# %%
-
-x = parameters_flat['Module Cost']
-y = parameters_flat['Onsite Labour Index']
-z = parameters_flat['LCOE_Difference']
-title = 'Impact on LCOE difference'
-p1_description = 'Module Cost'
-p2_description = 'Labour Index'
-map = 'seismic'
-colorbartitle = 'Delta LCOE'
-fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+    fig_title = "NPV - " + str(year)
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.close()
 
 
-scatterplot = ax0.scatter(x, y, c=z, cmap=map, vmin=None, vmax=None, s=None)
-plt.colorbar(scatterplot, cax=ax1)
-ax1.set_title(colorbartitle)
-
-ax0.set_xlabel(p1_description)
-ax0.set_ylabel(p2_description)
-ax0.set_title(title)
 
 
-plt.show()
