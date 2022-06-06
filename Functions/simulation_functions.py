@@ -577,7 +577,7 @@ def dc_yield_benchmarking_mav(DCTotal,
     multiplication_coeff = num_of_zones * num_of_inv_per_zone
     dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
     # dc_results is the DC yield of the total solar farm
-    return dc_results_total
+    return dc_results_total, mc
 
 
 def dc_yield_benchmarking_sat(DCTotal,

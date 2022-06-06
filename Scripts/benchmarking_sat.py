@@ -19,9 +19,9 @@ weather_solcast = func.weather(simulation_years, weather_file)
 weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
 
 # Chwoose which module to benchmark
-module_rating = 570
+module_rating = 545
 # Choose the benchmark csv
-spacing = '4m'
+spacing = '8m'
 cell_type = 'bifacial'  # choose between mono or bifacial
 weather_dnv_file = 'Combined_Longi_%d_Tracker-%s_FullTS_%s.csv' % (module_rating, cell_type, spacing)
 
@@ -155,3 +155,30 @@ ax2.set_ylim(0,10)
 fig_name = 'Bar-%s-%s-%d' %(rack_type,cell_type,module_rating)
 save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+#%% Generate Report for Comparison
+
+global_horizontal = weather_simulation_mod.groupby(weather_simulation_mod.index.year)['ghi'].sum()
+global_incident_front = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_front'].sum()
+global_incident_rear = mc.results.bifacial_irrad.groupby(mc.results.bifacial_irrad.index.year)['poa_back'].sum()
+global_incident = global_incident_front + global_incident_rear
+global_incident = global_incident.rename('global_incident')
+DC_output = dc_results.groupby(dc_results.index.year).sum()/1e3
+DC_output = DC_output.rename('kWh_DC')
+performance_ratio = DC_output/global_incident/1e3
+performance_ratio = performance_ratio.rename('PR')
+
+summary_df = pd.DataFrame([global_horizontal, global_incident, global_incident_front, global_incident_rear,
+                           DC_output, performance_ratio])
+summary_df = summary_df.transpose()
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/summary.csv"
+summary_df.to_csv(save_path)
+
+timeseries_output = mc.results.weather
+cell_temp = mc.results.cell_temperature
+cell_temp = cell_temp.rename('cell_temp')
+dc_results_unaligned = dc_results_unaligned.rename('Power (W)')
+timeseries_output = timeseries_output.join([mc.results.dc, dc_results_unaligned, cell_temp, mc.results.bifacial_irrad], how='left')
+timeseries_output = timeseries_output.shift(periods=-30, freq='T')
+save_path = "C:/Users/phill/documents/suncable/figures/benchmarking/timeseries.csv"
+timeseries_output.to_csv(save_path)
