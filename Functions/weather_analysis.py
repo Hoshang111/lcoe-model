@@ -263,3 +263,34 @@ def generate_TMY(weather_dict):
     return TMY
 
 TMY_file = generate_TMY(satellite_weather_sorted)
+
+#%%
+# Fiddling with generating a full 30 year timeseries with randomly selected months
+
+def generate_mc_timeseries(weather_dict, start_date, end_date):
+    """"""
+
+    dummy_range = pd.date_range(start=start_date, end=end_date, freq='MS')
+    ran_gen = np.random.random(len(dummy_range))
+    generation_list = [dummy_range, ran_gen]
+    months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    mc_timeseries = pd.DataFrame()
+
+    for single_date, num in generation_list:
+        month_num = single_date.month
+        month = months_list[month_num-1]
+        weather_month = weather_percentile(num, weather_dict, month)
+        mc_timeseries = pd.concat([mc_timeseries, weather_month], axis=0)
+
+    mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
+    measure_freq = pd.infer_freq(weather_dict['jan'][0].index)
+    index_dummy = pd.date_range(start=start_date, end=end_date, freq=measure_freq, tz=pytz.UTC)
+    mc_timeseries_index = index_dummy.delete(-1)
+    mc_timeseries_index = mc_timeseries_index[~((mc_timeseries_index.month == 2) & (mc_timeseries_index.day == 29))]
+    mc_timeseries = mc_timeseries.set_index(mc_timeseries_index)
+
+test_timeseries = generate_mc_timeseries(satellite_dict, '1/1/2023', '31/12/2025')
+
+
+
+
