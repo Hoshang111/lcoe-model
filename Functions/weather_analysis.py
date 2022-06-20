@@ -42,6 +42,11 @@ satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'DNI':'dni',
                                                 'Temperature':'temp',
                                                 'Wind Speed':'wind_speed'})
+satellite_data_aware = satellite_data_aware.rename(columns={'GHI':'ghi',
+                                                'DHI':'dhi',
+                                                'DNI':'dni',
+                                                'Temperature':'temp',
+                                                'Wind Speed':'wind_speed'})
 
 #%% Align Data
 # satellite_data_aligned =
@@ -280,14 +285,13 @@ def generate_mc_timeseries(weather_dict, start_date, end_date):
     for single_date, num in generation_list:
         month_num = single_date.month
         month = months_list[month_num-1]
-        weather_month = weather_percentile(num, satellite_weather_sorted, month)
+        weather_month = weather_percentile(num, weather_dict, month)
         mc_timeseries = pd.concat([mc_timeseries, weather_month], axis=0)
 
     mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
     measure_freq = pd.infer_freq(weather_dict['jan'][0].index)
     index_dummy = pd.date_range(start=start_date, end=end_date, freq=measure_freq, tz=pytz.UTC)
-    mc_timeseries_index = index_dummy.delete(-1)
-    mc_timeseries_index = mc_timeseries_index[~((mc_timeseries_index.month == 2) & (mc_timeseries_index.day == 29))]
+    mc_timeseries_index = index_dummy[~((index_dummy.month == 2) & (index_dummy.day == 29))]
     mc_timeseries = mc_timeseries.set_index(mc_timeseries_index)
 
     return mc_timeseries
