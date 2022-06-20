@@ -83,6 +83,7 @@ def weather_sort(weather_file):
 
 ground_weather_sorted = weather_sort(ground_data_hourly)
 satellite_weather_sorted = weather_sort(satellite_data)
+satellite_weather_sort = weather_sort(satellite_data_aware)
 
 #%% pickle data for use elsewhere
 save_path = os.path.join(data_path, "ground_weather.p")
@@ -279,7 +280,7 @@ def generate_mc_timeseries(weather_dict, start_date, end_date):
     for single_date, num in generation_list:
         month_num = single_date.month
         month = months_list[month_num-1]
-        weather_month = weather_percentile(num, weather_dict, month)
+        weather_month = weather_percentile(num, satellite_weather_sorted, month)
         mc_timeseries = pd.concat([mc_timeseries, weather_month], axis=0)
 
     mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
@@ -289,7 +290,9 @@ def generate_mc_timeseries(weather_dict, start_date, end_date):
     mc_timeseries_index = mc_timeseries_index[~((mc_timeseries_index.month == 2) & (mc_timeseries_index.day == 29))]
     mc_timeseries = mc_timeseries.set_index(mc_timeseries_index)
 
-test_timeseries = generate_mc_timeseries(satellite_dict, '1/1/2023', '31/12/2025')
+    return mc_timeseries
+
+test_timeseries = generate_mc_timeseries(satellite_weather_sort, '1/1/2023', '31/12/2025')
 
 
 
