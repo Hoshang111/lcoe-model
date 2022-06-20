@@ -272,7 +272,7 @@ def generate_mc_timeseries(weather_dict, start_date, end_date):
 
     dummy_range = pd.date_range(start=start_date, end=end_date, freq='MS')
     ran_gen = np.random.random(len(dummy_range))
-    generation_list = [dummy_range, ran_gen]
+    generation_list = list(zip(dummy_range, ran_gen))
     months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
     mc_timeseries = pd.DataFrame()
 
