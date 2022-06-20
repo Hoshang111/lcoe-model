@@ -296,7 +296,7 @@ def generate_mc_timeseries(weather_dict, start_date, end_date):
 
     return mc_timeseries
 
-test_timeseries = generate_mc_timeseries(satellite_weather_sort, '1/1/2023', '31/12/2025')
+test_timeseries = generate_mc_timeseries(satellite_weather_sort, '1/1/2023 00:00:00', '31/12/2025 23:59:00')
 
 
 
