@@ -35,6 +35,7 @@ Once the optimum NPV is found cost function also give the Monte-Carlo distributi
 """
 
 # %% Import
+import random
 import sys
 sys.path.append( '..' )
 import pandas as pd
@@ -47,6 +48,7 @@ from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
+from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 
 # %%
 # Set overall conditions for this analysis
@@ -219,6 +221,34 @@ parent_path = os.path.dirname(current_path)
 file_name = os.path.join(parent_path, 'OutputFigures', 'Optimised_layouts.csv')
 optimised_tables.to_csv(file_name)
 
+# %% ===========================================================
+# Monte Carlo for yield parameters
+# first create ordered dict of weather and output
+
+yield_timeseries = dc_yield_calc(layout_params, weather_file)
+weather_dict = weather_sort(yield_timeseries)
+
+# %% ===========================================================
+# Create data tables for yield parameters
+
+start_date =
+end_date =
+month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
+yield_datatables = get_yield_datatables()
+random_timeseries = random.random(len(month_series),len(yield_datatables))
+
+# %% ===========================================================
+# Now apply losses
+
+# %% ===========================================================
+# Now calculate AC output (currently not used)
+
+
+
+# %% ==========================================================
+# Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
+# First generate a big table with index consisting of Iteration, Year, ScenarioID.
+
 # %%
 # Call Monte Carlo Cost analysis
 
@@ -245,12 +275,7 @@ for analysis_year in [
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, analyse_years=30)
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-    # %% ==========================================================
-    # Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
-    # First generate a big table with index consisting of Iteration, Year, ScenarioID.
     combined_scenario_data = pd.DataFrame()
-
-
 
     if analysis_year == 2024:
         install_year = 2024

@@ -11,6 +11,7 @@ from pvlib.modelchain import ModelChain
 from pvlib.temperature import TEMPERATURE_MODEL_PARAMETERS
 import Bifacial.bifacial_pvsystem as bifacial_pvsystem
 import Bifacial.bifacial_modelchain as bifacial_modelchain
+import Bifacial.bifacial_modelchain_dc as dc_modelchain
 import pvlib.bifacial as bifacial
 from pvlib.tracking import singleaxis
 
