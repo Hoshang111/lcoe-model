@@ -245,7 +245,7 @@ for analysis_year in [
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, analyse_years=30)
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-    # %% ==========================================================
+    #  ==========================================================
     # Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
     # First generate a big table with index consisting of Iteration, Year, ScenarioID.
     combined_scenario_data = pd.DataFrame()
@@ -305,7 +305,7 @@ for analysis_year in [
     else:
         print('Error!')
 
-#%%
+
 
     font_size = 14
     rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
@@ -331,7 +331,7 @@ for analysis_year in [
                     revenue_data.reset_index(), how='left', on='Year')
                 scenario_data['ScenarioID'] = scenario_id
 
-                combined_scenario_data = combined_scenario_data.append(scenario_data)
+                combined_scenario_data = pd.concat([combined_scenario_data, scenario_data])
 
                 # Now discount the costs, etc
                 for col_name in ['cost', 'kWh', 'revenue']:
@@ -458,7 +458,7 @@ for analysis_year in [
         factor = generate_difference_factor(discounted_sum, 'NPV', scenario_1, scenario_2, 'NPV_Difference')
         parameters_flat = parameters_flat.join(factor)
 
-        parameters_flat.to_csv('Tempparameters.csv')
+
         baseline_year = 2024
         parameters_flat['Module Cost'] = parameters_flat['ComponentID 33 BaselineCost'] * parameters_flat[
             'ComponentID 33 AnnualMultiplier'] ** (analysis_year - baseline_year)

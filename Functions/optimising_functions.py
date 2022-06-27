@@ -174,8 +174,8 @@ def form_new_data_tables(data_tables, scenarios):
                 print('Error! SYScostdata has multiple scenarios')
         else:
             print('Error! Zero or Multiple Scenarios')
-        combined_SCNcostdata = combined_SCNcostdata.append(SCNcostdata)
-        combined_SYScostdata = combined_SYScostdata.append(SYScostdata)
+        combined_SCNcostdata = pd.concat([combined_SCNcostdata,SCNcostdata])
+        combined_SYScostdata = pd.concat([combined_SYScostdata,SYScostdata])
 
     combined_SYScostdata['ScenarioSystemID'] = range(0, combined_SYScostdata.shape[0])
 
@@ -204,8 +204,8 @@ def extract_cost_tables(scenarios):
                 print('Error! SYScostdata has multiple scenarios')
         else:
             print('Error! Zero or Multiple Scenarios')
-        extracted_scenario_list = extracted_scenario_list.append(SCNcostdata)
-        extracted_scenario_system_link = extracted_scenario_system_link.append(SYScostdata)
+        extracted_scenario_list = pd.concat([extracted_scenario_list, SCNcostdata])
+        extracted_scenario_system_link = pd.concat([extracted_scenario_system_link,SYScostdata])
 
     extracted_scenario_system_link['ScenarioSystemID'] = range(0, extracted_scenario_system_link.shape[0])
 
