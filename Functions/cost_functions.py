@@ -273,7 +273,7 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
 
                 # flat_parameter_listing[parameter_name] = pd.to_numeric(parameter_generator[col])
 
-        output_table = output_table.append(parameter_generator)
+        output_table = pd.concat([output_table,parameter_generator])
     output_table = output_table.reset_index()
     return output_table
 
