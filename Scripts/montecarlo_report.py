@@ -47,7 +47,12 @@ from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
+import warnings
 
+
+# This suppresses a divide be zero warning message that occurs in pvlib tools.py.
+warnings.filterwarnings(action='ignore',
+                                message='divide by zero encountered in true_divide*')
 # %%
 # Set overall conditions for this analysis
 
