@@ -231,11 +231,12 @@ weather_dict = weather_sort(yield_timeseries)
 # %% ===========================================================
 # Create data tables for yield parameters
 
-start_date =
-end_date =
+start_date = '1/1/2029 00:00:00'
+end_date = '31/12/2059 23:59:00'
 month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
 yield_datatables = get_yield_datatables()
-random_timeseries = random.random(len(month_series),len(yield_datatables))
+random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
+generation_list = list(zip(month_series, random_timeseries))
 
 # %% ===========================================================
 # Now apply losses
