@@ -384,6 +384,12 @@ def gen_mcts(weather_dict, generation_list, start_date, end_date):
 
 test_timeseries = generate_mc_timeseries(satellite_weather_sort, '1/1/2023 00:00:00', '31/12/2025 23:59:00')
 
+test3 = pd.DataFrame()
+
+for column in random_timeseries.T:
+    generation_list=list(zip(month_series, column))
+    test2 = gen_mcts(satellite_weather_sorted, generation_list, start_date, end_date)
+    test3 = pd.concat([test2, test3], axis=0)
 
 
 
