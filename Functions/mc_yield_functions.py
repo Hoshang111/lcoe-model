@@ -182,9 +182,10 @@ def gen_mcts(ordered_dict, generation_list, start_date, end_date):
 def mc_weather_import(weather_file):
     """"""
 
-    current_path = os.getcwd()
-    file_path = os.path.join(current_path,"Data", "WeatherData",weather_file)
-    weather_dnv_dummy = pd.read_csv(file_path, index_col=0)
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    weather_dnv_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', weather_file),
+                                    delimiter=';',
+                                    index_col=0)
     weather_dnv_dummy = weather_dnv_dummy.rename(
         columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
                  'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
