@@ -184,8 +184,7 @@ def mc_weather_import(weather_file):
 
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     weather_dnv_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', weather_file),
-                                    delimiter=';',
-                                    index_col=0)
+                                    delimiter=';', index_col=0, parse_dates=True, dayfirst=True)
     weather_dnv_dummy = weather_dnv_dummy.rename(
         columns={'GlobHor': 'ghi', 'DiffHor': 'dhi', 'BeamHor': 'bhi', 'T_Amb': 'temp_air',
                  'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
