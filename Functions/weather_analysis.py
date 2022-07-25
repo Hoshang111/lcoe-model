@@ -79,7 +79,7 @@ satellite_ghi = satellite_data_aligned['ghi']
 
 #%% Group by month
 
-def weather_sort(weather_file):
+def weather_sort(weather_file, sort_by):
       """
 
       :param weather_file:
@@ -96,7 +96,7 @@ def weather_sort(weather_file):
             unsorted_data = weather_list[i]
             split_data = unsorted_data.groupby(unsorted_data.index.year)
             unsorted_list = [group for _, group in split_data]
-            sorted_list = sorted(unsorted_list, key=lambda x: x['ghi'].sum())
+            sorted_list = sorted(unsorted_list, key=lambda x: x[sort_by].mean())
             for j in range(len(sorted_list)):
                   weather[months_list[i]][j] = sorted_list[j]
 
@@ -384,12 +384,20 @@ def gen_mcts(weather_dict, generation_list, start_date, end_date):
 
 test_timeseries = generate_mc_timeseries(satellite_weather_sort, '1/1/2023 00:00:00', '31/12/2025 23:59:00')
 
+weather_dnv_file = 'Combined_Longi_570_Tracker-bifacial_FullTS_4m.csv'
+current_path = os.getcwd()
+weather_file = pd.read_csv(os.path.join(current_path, 'Data', 'WeatherData', weather_dnv_file), delimiter=';', index_col=0, parse_dates=True, dayfirst=True)
+weather_file = weather_file.rename(columns={'GlobHor': 'ghi', 'T_Amb': 'T', 'EArray': 'DC_out'})
+DC_series = pd.DataFrame(weather_file['DC_out'])
+
+DC_dict = weather_sort(DC_series, 'DC_out')
 test3 = pd.DataFrame()
+DC_series.set_index(pd.to_datetime(DC_series.index), inplace=True)
 
 for column in random_timeseries.T:
     generation_list=list(zip(month_series, column))
-    test2 = gen_mcts(satellite_weather_sorted, generation_list, start_date, end_date)
-    test3 = pd.concat([test2, test3], axis=0)
+    test2 = gen_mcts(DC_dict, generation_list, start_date, end_date)
+    test3 = pd.concat([test2, test3], axis=1)
 
 
 
