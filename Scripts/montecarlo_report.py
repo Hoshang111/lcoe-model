@@ -43,6 +43,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import Functions.simulation_functions as func
+import Functions.mc_yield_functions as mc_func
 from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable
@@ -94,7 +95,7 @@ zone_area = 1.4e5   # Zone Area in m2
 rack_interval_ratio = 0.01
 
 # Yield Assessment Inputs
-temp_model = 'sapm'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
+temp_model = 'pvsyst'  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 
 # Revenue and storage behaviour
 export_lim = 3.2e9/num_of_zones # Watts per zone
@@ -224,20 +225,40 @@ optimised_tables.to_csv(file_name)
 # %% ===========================================================
 # Monte Carlo for yield parameters
 # first create ordered dict of weather and output
+# need a weather file containing several years worth of data, no gaps allowed
 
-yield_timeseries = dc_yield_calc(layout_params, weather_file)
-weather_dict = weather_sort(yield_timeseries)
+mc_weather_name = 'Combined_Longi_570_Tracker-bifacial_FullTS_8m.csv'
+mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
+
+# create a dict of ordered dicts with dc output, including weather GHI as first column
+dc_ordered = {}
+ghi_timeseries = mc_weather_file['ghi']
+dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries)
+
+for results in scenario_tables:
+    yield_timeseries = dc_yield_calc(layout_params, mc_weather_file)
+    dc_ordered[results['SCENARIO_LABEL']] = mc_func.dict_sort(yield_timeseries)
 
 # %% ===========================================================
 # Create data tables for yield parameters
 
 start_date = '1/1/2029 00:00:00'
-end_date = '31/12/2031 23:59:00'
+end_date = '31/12/2058 23:59:00'
 month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
 yield_datatables = get_yield_datatables()
 # need to create a wrapper function to call for each set of random numbers
 random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
 
+# Calculate weighted GHI (or further down the track, weighted weather data with temp etc)
+
+
+for ordered_dict in dc_ordered:
+    for column in random_timeseries.T:
+        generation_list=list(zip(month_series, column))
+        dummy = mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date)
+        dc_output = pd.concat([dummy, dc_output], axis=1)
+
+# since GHI was first of our scenarios
 # %% ===========================================================
 # Now apply losses
 
