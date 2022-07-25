@@ -232,12 +232,13 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 
 # create a dict of ordered dicts with dc output, including weather GHI as first column
 dc_ordered = {}
-ghi_timeseries = mc_weather_file['ghi']
-dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries)
+ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
+dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries, 'ghi')
 
 for results in scenario_tables:
     yield_timeseries = dc_yield_calc(layout_params, mc_weather_file)
     dc_ordered[results['SCENARIO_LABEL']] = mc_func.dict_sort(yield_timeseries)
+    dc_ordered[results['SCENARIO_LABEL']]['label'] = results['SCENARIO_LABEL']
 
 # %% ===========================================================
 # Create data tables for yield parameters
@@ -249,14 +250,15 @@ yield_datatables = get_yield_datatables()
 # need to create a wrapper function to call for each set of random numbers
 random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
 
-# Calculate weighted GHI (or further down the track, weighted weather data with temp etc)
-
+output_dict = {}
 
 for ordered_dict in dc_ordered:
+    dc_output = pd.DataFrame()
     for column in random_timeseries.T:
         generation_list=list(zip(month_series, column))
         dummy = mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date)
         dc_output = pd.concat([dummy, dc_output], axis=1)
+    output_dict[ordered_dict['label']] = dc_output
 
 # since GHI was first of our scenarios
 # %% ===========================================================
