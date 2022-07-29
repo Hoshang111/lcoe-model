@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from Functions.cost_functions import get_airtable, generate_iterations
+import Functions.simulation_functions as func
 import pytz
 
 def weather_sort(weather_file):
@@ -194,3 +195,10 @@ def mc_weather_import(weather_file):
     weather_dnv.sort_index(inplace=True)
 
     return weather_dnv
+
+def mc_dc_yield(results, zone_area, num_of_zones, mc_weather_file):
+    """"""
+
+
+
+    return dc_timeseries

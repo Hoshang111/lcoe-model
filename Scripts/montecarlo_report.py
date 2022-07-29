@@ -191,14 +191,14 @@ scenario_tables_2028 = []
 # results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV PERC 2028',scenario_tables_2028)
 # results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT HJT 2028',scenario_tables_2028)
 # results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV HJT 2028',scenario_tables_2028)
-#results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT TOP 2028',scenario_tables_2028)
+# results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT TOP 2028',scenario_tables_2028)
 # results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV TOP 2028',scenario_tables_2028)
 results_SAT_PERCa_2028 = optimize (SAT, PERC2031, 2028, 'SAT PERCa 2028',scenario_tables_2028)
 results_MAV_PERCa_2028 = optimize (MAV, PERC2031, 2028, 'MAV PERCa 2028',scenario_tables_2028)
 results_SAT_HJTa_2028 = optimize (SAT, HJT2031, 2028, 'SAT HJTa 2028',scenario_tables_2028)
 results_MAV_HJTa_2028 = optimize (MAV, HJT2031, 2028, 'MAV HJTa 2028',scenario_tables_2028)
-results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
-results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
+# results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
+# results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
 
 # %% Save and download optimized layouts
 
@@ -236,7 +236,7 @@ ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
 dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries, 'ghi')
 
 for results in scenario_tables:
-    yield_timeseries = dc_yield_calc(layout_params, mc_weather_file)
+    yield_timeseries = mc_func.mc_dc_yield(results, zone_area, num_of_zones, mc_weather_file)
     dc_ordered[results['SCENARIO_LABEL']] = mc_func.dict_sort(yield_timeseries)
     dc_ordered[results['SCENARIO_LABEL']]['label'] = results['SCENARIO_LABEL']
 

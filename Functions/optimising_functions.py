@@ -151,7 +151,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     revenue_output = revenue_series[racks_per_zone_max]
     kWh_output = kWh_series[racks_per_zone_max]
     npv_output = npv[racks_per_zone_max]
-    return table_outputs, revenue_output, kWh_output, npv_output
+    return table_outputs, revenue_output, kWh_output, npv_output, module_params, rack_params
 
 
 def form_new_data_tables(data_tables, scenarios):
