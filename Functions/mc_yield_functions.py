@@ -196,9 +196,17 @@ def mc_weather_import(weather_file):
 
     return weather_dnv
 
-def mc_dc_yield(results, zone_area, num_of_zones, mc_weather_file):
+def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     """"""
 
+    module = results[5]
+    rack = results[6]
+    rack_per_zone = results[1][1]['InstallNumber'][0]
+    module_per_zone = rack_per_zone * rack['Modules_per_rack']
+    DCTotal = module['STC']*rack_per_zone
+    gcr = zone_area/(module_per_zone*module['A_c'])
+    dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack, module, temp_model, mc_weather_file,
+                                               rack_per_zone, module_per_zone, gcr,
+                                               num_of_zones)
 
-
-    return dc_timeseries
+    return dc_df
