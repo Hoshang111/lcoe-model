@@ -193,9 +193,10 @@ def mc_weather_import(weather_file):
     weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed', 'dc_yield']].copy()
     weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
     weather_dnv.sort_index(inplace=True)
+    weather_dnv.index = weather_dnv.index.tz_localize('Australia/Darwin')
 
     dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated_full.csv'),
-                            index_col=0)
+                            index_col=0, parse_dates=True)
     dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
     dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
