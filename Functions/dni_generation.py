@@ -4,7 +4,7 @@ import matplotlib as plt
 import pvlib
 import pytz
 import os
-import simulation_functions as func
+import Functions.simulation_functions as func
 import math
 # PV-Lib imports
 from pvlib import pvsystem
@@ -32,7 +32,7 @@ weather_dnv_dummy = weather_dnv_dummy.rename(
                  'WindVel': 'wind_speed', 'EArray': 'dc_yield'})
 
 weather_dnv = weather_dnv_dummy[['ghi', 'dhi', 'bhi', 'temp_air', 'wind_speed', 'dc_yield']].copy()
-weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
+weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False, dayfirst=True), inplace=True)
 weather_dnv.sort_index(inplace=True)
 
 solpos = location.get_solarposition(weather_dnv.index)
