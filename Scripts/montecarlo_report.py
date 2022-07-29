@@ -230,6 +230,7 @@ optimised_tables.to_csv(file_name)
 mc_weather_name = 'Combined_Longi_570_Tracker-bifacial_FullTS_8m.csv'
 mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 
+# %%
 # create a dict of ordered dicts with dc output, including weather GHI as first column
 dc_ordered = {}
 ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
