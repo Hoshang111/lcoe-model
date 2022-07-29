@@ -119,16 +119,16 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
     install_year = INSTALL_YEAR
     rack_type = RACK_TYPE
 
-    scenario_tables_optimum, revenue, kWh_export, npv_output = optimise_layout(weather_simulation, \
-                                                                   rack_type, module_type, install_year, DCTotal,
-                                                                   num_of_zones, zone_area, rack_interval_ratio, \
-                                                                   temp_model, export_lim, storage_capacity,
-                                                                   scheduled_price, data_tables, discount_rate,
-                                                                   fig_title=SCENARIO_LABEL)
+    scenario_tables_optimum, revenue, kWh_export, npv_output, rack_params, module_params = optimise_layout(
+                                                                   weather_simulation, rack_type, module_type,
+                                                                   install_year, DCTotal, num_of_zones, zone_area,
+                                                                   rack_interval_ratio, temp_model, export_lim,
+                                                                   storage_capacity, scheduled_price, data_tables,
+                                                                   discount_rate, fig_title=SCENARIO_LABEL)
 
     scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
-    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output
+    return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, rack_params, module_params
 
 # Create variables to hold the results of each analysis
 SAT = 'SAT_1_update'
