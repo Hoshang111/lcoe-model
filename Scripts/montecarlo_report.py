@@ -205,7 +205,7 @@ results_MAV_HJTa_2028 = optimize (MAV, HJT2031, 2028, 'MAV HJTa 2028',scenario_t
 output_data = []
 for scenario_tables in [scenario_tables_2028]:
     for results in scenario_tables:
-        index = results[2]
+        index = results[0]
         install_dummy = results[1][1]['InstallNumber']
         install_dummy2 = install_dummy.reset_index()
         install_dummy3 = install_dummy2['InstallNumber']
