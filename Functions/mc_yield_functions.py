@@ -194,7 +194,20 @@ def mc_weather_import(weather_file):
     weather_dnv.set_index(pd.to_datetime(weather_dnv.index, utc=False), inplace=True)
     weather_dnv.sort_index(inplace=True)
 
-    return weather_dnv
+    dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated_full.csv'),
+                            index_col=0)
+    dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
+    dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
+
+    weather_dnv.drop(['dni'], axis=1, inplace=True)
+    weather_dnv = weather_dnv.join(dni_dummy, how='left')
+    weather_dnv.rename(columns={"0": "dni"}, inplace=True)
+    weather_dnv = weather_dnv[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'dc_yield']]
+
+    # shift weather files 30 min so that solar position is calculated at midpoint of period
+    weather_dnv_mod = weather_dnv.shift(periods=30, freq='T')
+
+    return weather_dnv_mod
 
 def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     """"""
