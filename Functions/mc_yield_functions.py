@@ -200,7 +200,12 @@ def mc_weather_import(weather_file):
     dni_dummy.set_index(pd.to_datetime(dni_dummy.index, utc=False), drop=True, inplace=True)
     dni_dummy.index = dni_dummy.index.tz_convert('Australia/Darwin')
 
-    weather_dnv = weather_dnv.join(dni_dummy, how='left')
+    pw_dummy = dni_dummy = pd.read_csv(os.path.join('../Data', 'WeatherData', 'pw_full.csv'),
+                            index_col=0, parse_dates=True)
+    pw_dummy.set_index(pd.to_datetime(pw_dummy.index, utc=False), drop=True, inplace=True)
+    pw_dummy.index = pw_dummy.index.tz_convert('Australia/Darwin')
+
+    weather_dnv = weather_dnv.join([dni_dummy, pw_dummy], how='left')
     weather_dnv.rename(columns={"0": "dni"}, inplace=True)
     weather_dnv.drop(['bhi', 'dc_yield'], axis=1, inplace=True)
 

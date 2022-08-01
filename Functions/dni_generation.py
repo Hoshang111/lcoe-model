@@ -66,3 +66,40 @@ dni_simulated = (weather_dnv_aware['ghi']-weather_dnv_aware['dhi'])*dni_lookup
 
 dni_simulated.to_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated_full.csv'),
                      header='Dni')
+
+#%% Generate precipitable water
+
+solcast_file = 'Solcast_PT60m.csv'
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+weather_solcast = pd.read_csv(os.path.join('../Data', 'WeatherData', solcast_file),
+                                delimiter=',',
+                                index_col=0)
+weather_solcast.set_index(pd.to_datetime(weather_solcast.index, utc=True), inplace=True)
+weather_solcast.set_index(weather_solcast.index.tz_convert('Australia/Darwin'), inplace=True, drop=True)
+solcast_pw = pd.DataFrame(weather_solcast['PrecipitableWater'])
+solcast_pw_shift = solcast_pw.shift(periods=-0.5, freq='H')
+solcast_pw_mod = solcast_pw_shift[~((solcast_pw_shift.index.month == 2) & (solcast_pw_shift.index.day == 29))]
+solcast_TMY_pw = solcast_pw_mod.groupby([(solcast_pw_mod.index.month), (solcast_pw_mod.index.day), (solcast_pw_mod.index.hour)]).median()
+pw_index = weather_dnv_aware.index
+first_part = weather_solcast['2007-07-01':'2007-12-31']
+
+start_date = '01/01/2006 00:00'
+end_date = '31/12/2021 23:59'
+
+fun_index = pd.date_range(start=start_date, end=end_date, freq='H', tz='Australia/Darwin')
+total_index = fun_index[~((fun_index.month == 2) & (fun_index.day == 29))]
+
+pw_df = pd.concat([solcast_TMY_pw]*16, ignore_index=True)
+
+pw_df.index = total_index
+
+solcast_empty = weather_dnv_aware.join(solcast_pw_shift)
+
+solcast_empty.drop(columns=['ghi', 'bhi', 'dhi', 'temp_air', 'wind_speed', 'dc_yield'], inplace=True)
+
+pw_final = solcast_empty.fillna(pw_df)
+
+pw_final.to_csv(os.path.join('../Data', 'WeatherData', 'pw_full.csv'),
+                     header='PrecipitableWater')
+
+
