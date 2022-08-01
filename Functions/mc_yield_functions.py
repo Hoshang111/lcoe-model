@@ -208,7 +208,7 @@ def mc_weather_import(weather_file):
     weather_dnv = weather_dnv.join(dni_dummy, how='left')
     weather_dnv.rename(columns={"0": "dni"}, inplace=True)
     weather_dnv = weather_dnv.join(pw_dummy, how='left')
-    weather_dnv.rename(columns={"0": "PrecipitableWater"}, inplace=True)
+    weather_dnv.rename(columns={"0": "precipitable_water"}, inplace=True)
     weather_dnv.drop(['bhi', 'dc_yield'], axis=1, inplace=True)
 
     # shift weather files 30 min so that solar position is calculated at midpoint of period
