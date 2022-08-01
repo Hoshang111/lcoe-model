@@ -232,7 +232,6 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 
 # %%
 # create a dict of ordered dicts with dc output, including weather GHI as first column
-mc_weather_file.rename(columns={"PrecipitableWater": "precipitable_water"}, inplace=True)
 dc_ordered = {}
 ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
 dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries, 'ghi')
