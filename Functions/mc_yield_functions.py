@@ -228,8 +228,9 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     DCTotal = install_dummy3[3]*num_of_zones/1e6
     module_per_zone = rack_per_zone * rack['Modules_per_rack']
     gcr = zone_area/(module_per_zone*module['A_c'])
-    dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack, module, temp_model, mc_weather_file,
+    dc_results, dc_df, dc_size = func.mc_dc(DCTotal, rack, module, temp_model, mc_weather_file,
                                                rack_per_zone, module_per_zone, gcr,
                                                num_of_zones)
 
     return dc_df
+
