@@ -232,7 +232,7 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     dc_results, dc_df, dc_size = func.mc_dc(DCTotal, rack, module, temp_model, mc_weather_file,
                                                rack_per_zone, module_per_zone, gcr,
                                                num_of_zones)
-    dc_out = dc_df.rename(columns={"0": "dc_out"}, inplace=True)
+    dc_df.rename(columns={0: "dc_out"}, inplace=True)
 
     return dc_df
 
