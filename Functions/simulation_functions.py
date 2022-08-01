@@ -854,7 +854,7 @@ def mc_dc(DCTotal,
         # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
         dc_results = [dc_results_total.values/total_module_number * modules_per_zone]
         dc_df = pd.DataFrame(dc_results).T
-        dc_df.columns = racks_per_zone
+        # dc_df.columns = racks_per_zone
         dc_df.index = dc_results_total.index
 
     elif rack_params['rack_type'] == 'SAT':
@@ -924,7 +924,7 @@ def mc_dc(DCTotal,
 
         # Todo: we can try different back-tracking algorithms for SAT as well
         dc_df = pd.DataFrame(dc_results).T
-        dc_df.columns = racks_per_zone
+        # dc_df.columns = racks_per_zone
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
