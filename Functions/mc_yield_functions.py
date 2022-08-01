@@ -205,8 +205,10 @@ def mc_weather_import(weather_file):
     pw_dummy.set_index(pd.to_datetime(pw_dummy.index, utc=False), drop=True, inplace=True)
     pw_dummy.index = pw_dummy.index.tz_convert('Australia/Darwin')
 
-    weather_dnv = weather_dnv.join([dni_dummy, pw_dummy], how='left')
+    weather_dnv = weather_dnv.join(dni_dummy, how='left')
     weather_dnv.rename(columns={"0": "dni"}, inplace=True)
+    weather_dnv = weather_dnv.join(pw_dummy, how='left')
+    weather_dnv.rename(columns={"0": "PrecipitableWater"}, inplace=True)
     weather_dnv.drop(['bhi', 'dc_yield'], axis=1, inplace=True)
 
     # shift weather files 30 min so that solar position is calculated at midpoint of period
