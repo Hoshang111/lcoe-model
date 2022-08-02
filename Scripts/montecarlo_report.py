@@ -245,8 +245,8 @@ results_list = [
 
 for results in results_list:
     yield_timeseries = mc_func.mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file)
-    dc_ordered[results['SCENARIO_LABEL']] = mc_func.dict_sort(yield_timeseries, 'dc_out')
-    dc_ordered[results['SCENARIO_LABEL']]['label'] = results['SCENARIO_LABEL']
+    dc_ordered[results[0]] = mc_func.dict_sort(yield_timeseries, 'dc_out')
+    dc_ordered[results[0]]['label'] = results[0]
 
 # %% ===========================================================
 # Create data tables for yield parameters
