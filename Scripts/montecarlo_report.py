@@ -260,6 +260,7 @@ random_timeseries = np.random.random((len(month_series), len(yield_datatables[0]
 
 output_dict = {}
 
+#%%
 for ordered_dict in dc_ordered:
     dc_output = pd.DataFrame()
     for column in random_timeseries.T:
