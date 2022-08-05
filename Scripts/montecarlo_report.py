@@ -256,7 +256,7 @@ end_date = '31/12/2058 23:59:00'
 month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
 yield_datatables = get_yield_datatables()
 # need to create a wrapper function to call for each set of random numbers
-random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
+random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
 
 output_dict = {}
 

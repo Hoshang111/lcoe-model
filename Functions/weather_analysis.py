@@ -73,9 +73,11 @@ satellite_data_aligned = satellite_data.reindex(ground_data_hourly.index)
 
 ground_dhi = ground_data_hourly['dhi']
 ground_ghi = ground_data_hourly['ghi']
+ground_dni = satellite_data_aligned['dni']
 
 satellite_dhi = satellite_data_aligned['dhi']
 satellite_ghi = satellite_data_aligned['ghi']
+satellite_dni = satellite_data_aligned['dni']
 
 #%% Group by month
 
@@ -102,9 +104,9 @@ def weather_sort(weather_file, sort_by):
 
       return weather
 
-ground_weather_sorted = weather_sort(ground_data_hourly)
-satellite_weather_sorted = weather_sort(satellite_data)
-satellite_weather_sort = weather_sort(satellite_data_aware)
+ground_weather_sorted = weather_sort(ground_data_hourly, 'ghi')
+satellite_weather_sorted = weather_sort(satellite_data, 'ghi')
+satellite_weather_sort = weather_sort(satellite_data_aware, 'ghi')
 
 #%% pickle data for use elsewhere
 save_path = os.path.join(data_path, "ground_weather.p")
@@ -154,16 +156,17 @@ def weather_scatter(ground, satellite, fig_name):
 
     # Best fit line - edit changed to second order
     # m, b = np.polyfit(x, y, 1)
-    c2, c1, c0 = np.polyfit(x, y, 2)
-    correlation_matrix = np.corrcoef(x.values, y.values)
-    correlation_xy = correlation_matrix[0, 1]
-    r_squared = correlation_xy ** 2
+    if not x.empty:
+        c2, c1, c0 = np.polyfit(x, y, 2)
+        correlation_matrix = np.corrcoef(x.values, y.values)
+        correlation_xy = correlation_matrix[0, 1]
+        r_squared = correlation_xy ** 2
 
-    ax.plot(x, x * x * c2 + x * c1 + c0, linewidth=3, color='C1')
-    # ax.set_ylim(0,1.25)
-    # ax.set_xlim(0,1.25)
-    plot_text = 'R-squared = %.2f' % r_squared
-    plt.text(0.3, 0.3, plot_text, fontsize=25)
+        ax.plot(x, x * x * c2 + x * c1 + c0, linewidth=3, color='C1')
+        # ax.set_ylim(0,1.25)
+        # ax.set_xlim(0,1.25)
+        plot_text = 'R-squared = %.2f' % r_squared
+        plt.text(0.3, 0.3, plot_text, fontsize=25)
 
     # plt.show()
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
@@ -177,41 +180,51 @@ c0_init, c1_init, c2_init = weather_scatter(ground_ghi, satellite_ghi, 'Uncorrec
 #%% scatter plots for specific conditions
 
 # Define conditions of interest: Cloud types
-satellite_cloud0 = satellite_data_aligned.loc[satellite_data['cloud type'] == 0, ['ghi']]
-ground_cloud0 = ground_data_hourly.loc[satellite_data['cloud type'] == 0, ['ghi']]
+satellite_cloud0 = satellite_data_aligned.loc[satellite_data['cloud type'] == 0, ['ghi', 'dhi', 'dni']]
+ground_cloud0 = ground_data_hourly.loc[satellite_data['cloud type'] == 0, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud1 = satellite_data_aligned.loc[satellite_data['cloud type'] == 1, ['ghi']]
-ground_cloud1 = ground_data_hourly.loc[satellite_data['cloud type'] == 1, ['ghi']]
+satellite_cloud1 = satellite_data_aligned.loc[satellite_data['cloud type'] == 1, ['ghi', 'dhi', 'dni']]
+ground_cloud1 = ground_data_hourly.loc[satellite_data['cloud type'] == 1, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud2 = satellite_data_aligned.loc[satellite_data['cloud type'] == 2, ['ghi']]
-ground_cloud2 = ground_data_hourly.loc[satellite_data['cloud type'] == 2, ['ghi']]
+satellite_cloud2 = satellite_data_aligned.loc[satellite_data['cloud type'] == 2, ['ghi', 'dhi', 'dni']]
+ground_cloud2 = ground_data_hourly.loc[satellite_data['cloud type'] == 2, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud3 = satellite_data_aligned.loc[satellite_data['cloud type'] == 3, ['ghi']]
-ground_cloud3 = ground_data_hourly.loc[satellite_data['cloud type'] == 3, ['ghi']]
+satellite_cloud3 = satellite_data_aligned.loc[satellite_data['cloud type'] == 3, ['ghi', 'dhi', 'dni']]
+ground_cloud3 = ground_data_hourly.loc[satellite_data['cloud type'] == 3, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud4 = satellite_data_aligned.loc[satellite_data['cloud type'] == 4, ['ghi']]
-ground_cloud4 = ground_data_hourly.loc[satellite_data['cloud type'] == 4, ['ghi']]
+satellite_cloud4 = satellite_data_aligned.loc[satellite_data['cloud type'] == 4, ['ghi', 'dhi', 'dni']]
+ground_cloud4 = ground_data_hourly.loc[satellite_data['cloud type'] == 4, ['ghi', 'dhi', 'dni']]
 
 # satellite_cloud5 = satellite_data_aligned.loc[satellite_data['cloud type'] == 5, ['ghi']]
 # ground_cloud5 = ground_data_hourly.loc[satellite_data['cloud type'] == 5, ['ghi']]
 
-satellite_cloud6 = satellite_data_aligned.loc[satellite_data['cloud type'] == 6, ['ghi']]
-ground_cloud6 = ground_data_hourly.loc[satellite_data['cloud type'] == 6, ['ghi']]
+satellite_cloud6 = satellite_data_aligned.loc[satellite_data['cloud type'] == 6, ['ghi', 'dhi', 'dni']]
+ground_cloud6 = ground_data_hourly.loc[satellite_data['cloud type'] == 6, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud7 = satellite_data_aligned.loc[satellite_data['cloud type'] == 7, ['ghi']]
-ground_cloud7 = ground_data_hourly.loc[satellite_data['cloud type'] == 7, ['ghi']]
+satellite_cloud7 = satellite_data_aligned.loc[satellite_data['cloud type'] == 7, ['ghi', 'dhi', 'dni']]
+ground_cloud7 = ground_data_hourly.loc[satellite_data['cloud type'] == 7, ['ghi', 'dhi', 'dni']]
+
+cloud_list_satellite = [satellite_cloud0, satellite_cloud1, satellite_cloud2, satellite_cloud3, satellite_cloud4,
+              satellite_cloud6, satellite_cloud7]
+
+cloud_list_ground = [ground_cloud0, ground_cloud1, ground_cloud2, ground_cloud3, ground_cloud4,
+              ground_cloud6, ground_cloud7]
+
+cloud_zip = list(zip(cloud_list_satellite, cloud_list_ground))
 
 # scatter plot for uncorrected data with linear fit
-c0_cloud0, c1_cloud0, c2_cloud0 = weather_scatter(ground_cloud0['ghi'], satellite_cloud0['ghi'], 'Cloud 0')
-c0_cloud1, c1_cloud1, c2_cloud1 = weather_scatter(ground_cloud1['ghi'], satellite_cloud1['ghi'], 'Cloud 1')
-c0_cloud2, c1_cloud2, c2_cloud2 = weather_scatter(ground_cloud2['ghi'], satellite_cloud2['ghi'], 'Cloud 2')
-c0_cloud3, c1_cloud3, c2_cloud3 = weather_scatter(ground_cloud3['ghi'], satellite_cloud3['ghi'], 'Cloud 3')
-c0_cloud4, c1_cloud4, c2_cloud4 = weather_scatter(ground_cloud4['ghi'], satellite_cloud4['ghi'], 'Cloud 4')
-# c0_cloud5, c1_cloud5, c2_cloud5 = weather_scatter(ground_cloud5['ghi'], satellite_cloud5['ghi'], 'Cloud 5')
-c0_cloud6, c1_cloud6, c2_cloud6 = weather_scatter(ground_cloud6['ghi'], satellite_cloud6['ghi'], 'Cloud 6')
-c0_cloud7, c1_cloud7, c2_cloud7 = weather_scatter(ground_cloud7['ghi'], satellite_cloud7['ghi'], 'Cloud 7')
+for str in ['ghi', 'dhi', 'dni']:
+    c0_cloud0, c1_cloud0, c2_cloud0 = weather_scatter(ground_cloud0[str], satellite_cloud0[str], 'Cloud 0' + str)
+    c0_cloud1, c1_cloud1, c2_cloud1 = weather_scatter(ground_cloud1[str], satellite_cloud1[str], 'Cloud 1' + str)
+    c0_cloud2, c1_cloud2, c2_cloud2 = weather_scatter(ground_cloud2[str], satellite_cloud2[str], 'Cloud 2' + str)
+    c0_cloud3, c1_cloud3, c2_cloud3 = weather_scatter(ground_cloud3[str], satellite_cloud3[str], 'Cloud 3' + str)
+    c0_cloud4, c1_cloud4, c2_cloud4 = weather_scatter(ground_cloud4[str], satellite_cloud4[str], 'Cloud 4' + str)
+    # c0_cloud5, c1_cloud5, c2_cloud5 = weather_scatter(ground_cloud5['ghi'], satellite_cloud5['ghi'], 'Cloud 5')
+    c0_cloud6, c1_cloud6, c2_cloud6 = weather_scatter(ground_cloud6[str], satellite_cloud6[str], 'Cloud 6' + str)
+    c0_cloud7, c1_cloud7, c2_cloud7 = weather_scatter(ground_cloud7[str], satellite_cloud7[str], 'Cloud 7' + str)
 
-# split by clearness index
+#%%
+# split each cloud by clearness index
 satellite_cloud_high = satellite_data_aligned.loc[satellite_data['CI'] >= 0.7, ['ghi']]
 ground_cloud_high = ground_data_hourly.loc[satellite_data['CI'] >= 0.7, ['ghi']]
 satellite_cloud_med = satellite_data_aligned.loc[satellite_data['CI'].between(0.3, 0.7), ['ghi']]
@@ -222,6 +235,24 @@ ground_cloud_low = ground_data_hourly.loc[satellite_data['CI'] <= 0.3, ['ghi']]
 c0_cloud_high, c1_cloud_high, c2_cloud_high = weather_scatter(ground_cloud_high['ghi'], satellite_cloud_high['ghi'], 'CI High')
 c0_cloud_med, c1_cloud_med, c2_cloud_med = weather_scatter(ground_cloud_med['ghi'], satellite_cloud_med['ghi'], 'CI med')
 c0_cloud_low, c1_cloud_low, c2_cloud_low = weather_scatter(ground_cloud_low['ghi'], satellite_cloud_low['ghi'], 'Ci low')
+
+for satellite, ground in cloud_zip:
+    for str in ['ghi', 'dhi', 'dni']:
+        satellite_cloud_high = satellite.loc[satellite_data['CI'] >= 0.7, [str]]
+        ground_cloud_high = ground.loc[satellite_data['CI'] >= 0.7, [str]]
+        satellite_cloud_med = satellite.loc[satellite_data['CI'].between(0.3, 0.7), [str]]
+        ground_cloud_med = ground.loc[satellite_data['CI'].between(0.3, 0.7), [str]]
+        satellite_cloud_low = satellite.loc[satellite_data['CI'] <= 0.3, [str]]
+        ground_cloud_low = ground.loc[satellite_data['CI'] <= 0.3, [str]]
+
+        c0_cloud_high, c1_cloud_high, c2_cloud_high = weather_scatter(ground_cloud_high[str], satellite_cloud_high[str],
+                                                                  'CI High ' + str)
+        c0_cloud_med, c1_cloud_med, c2_cloud_med = weather_scatter(ground_cloud_med[str], satellite_cloud_med[str],
+                                                               'CI med ' + str)
+        c0_cloud_low, c1_cloud_low, c2_cloud_low = weather_scatter(ground_cloud_low[str], satellite_cloud_low[str],
+                                                               'Ci low ' + str)
+
+
 
 
 #%% Comparing and correcting satellite file
