@@ -165,11 +165,12 @@ def gen_mcts(ordered_dict, generation_list, start_date, end_date):
 
     months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
     mc_timeseries = pd.DataFrame()
+    dict_amended = ordered_dict[0:11]
 
     for single_date, num in generation_list:
         month_num = single_date.month
         month = months_list[month_num-1]
-        dict_month = dict_percentile(num, ordered_dict, month)
+        dict_month = dict_percentile(num, dict_amended, month)
         mc_timeseries = pd.concat([mc_timeseries, dict_month], axis=0)
 
     mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
