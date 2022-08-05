@@ -165,7 +165,7 @@ def gen_mcts(ordered_dict, generation_list, start_date, end_date):
 
     months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
     mc_timeseries = pd.DataFrame()
-    dict_amended = ordered_dict[0:11]
+    ordered_dict.pop('label', None)
 
     for single_date, num in generation_list:
         month_num = single_date.month
