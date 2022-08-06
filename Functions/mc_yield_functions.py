@@ -170,7 +170,7 @@ def gen_mcts(ordered_dict, generation_list, start_date, end_date):
     for single_date, num in generation_list:
         month_num = single_date.month
         month = months_list[month_num-1]
-        dict_month = dict_percentile(num, dict_amended, month)
+        dict_month = dict_percentile(num, ordered_dict, month)
         mc_timeseries = pd.concat([mc_timeseries, dict_month], axis=0)
 
     mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
