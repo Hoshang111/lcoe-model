@@ -111,7 +111,7 @@ else:
     # cost data tables from airtable
     data_tables = get_airtable(save_tables=True)
 
-# %%
+   # %%
 # Cycle through alternative analysis scenarios
 
 def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined):
@@ -246,7 +246,6 @@ results_list = [
 for results in results_list:
     yield_timeseries = mc_func.mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file)
     dc_ordered[results[0]] = mc_func.dict_sort(yield_timeseries, 'dc_out')
-    dc_ordered[results[0]]['label'] = results[0]
 
 # %% ===========================================================
 # Create data tables for yield parameters
@@ -261,17 +260,19 @@ random_timeseries = np.random.random((len(month_series), len(yield_datatables[0]
 output_dict = {}
 
 #%%
-for ordered_dict in dc_ordered:
+for key in dc_ordered:
+    ordered_dict = dc_ordered[key]
     dc_output = pd.DataFrame()
     for column in random_timeseries.T:
         generation_list=list(zip(month_series, column))
         dummy = mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date)
         dc_output = pd.concat([dummy, dc_output], axis=1)
-    output_dict[ordered_dict['label']] = dc_output
+    output_dict[key] = dc_output
 
 # since GHI was first of our scenarios
 # %% ===========================================================
 # Now apply losses
+
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
@@ -281,6 +282,7 @@ for ordered_dict in dc_ordered:
 # %% ==========================================================
 # Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
 # First generate a big table with index consisting of Iteration, Year, ScenarioID.
+
 
 # %%
 # Call Monte Carlo Cost analysis
