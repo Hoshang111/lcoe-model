@@ -329,12 +329,13 @@ def get_npv(yearly_costs,
             yearly_revenue,
             discount_rate=0.07):
     """
-    Function to determine the npv from a time series (yearly)
-    of costs and revenue
+
     :param yearly_costs:
     :param yearly_revenue:
+    :param discount_rate:
     :return:
     """
+
     net_cashflow = -yearly_costs+yearly_revenue.values
 
     year_offset = pd.Series(range(0, len(net_cashflow)))
