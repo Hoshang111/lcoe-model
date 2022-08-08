@@ -276,12 +276,21 @@ yearly_ghi = output_dict['ghi'].groupby(output_dict['ghi'].index.year).sum()
 yearly_ghi.columns = np.arange(len(yearly_ghi.columns))
 dummy = pd.DataFrame(0, index=np.arange(len(yearly_ghi)), columns=[1])
 dummy.index = yearly_ghi.index
+discounted_ghi = pd.DataFrame()
+
 for column in yearly_ghi:
-    discounted_ghi = get_npv(yearly_costs=dummy.T, yearly_revenue=yearly_ghi[column].T, discount_rate=discount_rate)
+    discounted_ghi[column] = mc_func.discount_ghi(yearly_ghi[column], discount_rate=discount_rate)
 
 # Now apply losses
+# calculate temperature loss factor, as a function of ghi (optionally could use wind here)
 
+# import default soiling tables and apply modifiers
 
+# bifaciality modifier - apply to bifacial gain only
+
+# degradation
+
+# calculate loss series for entire timeseries and then apply
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)

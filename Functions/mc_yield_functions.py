@@ -251,3 +251,15 @@ def discount_ghi(ghi_series, discount_rate):
     discounted_ghi = yearly_ghi.sum(axis=0)
 
     return discounted_ghi
+
+def apply_degradation(yield_series, first_year_degradation, degradation_rate):
+
+    timeseries = yield_series.index
+    delta_t = (timeseries-timeseries[0]).days
+    if delta_t < 365:
+        deg_factor = (1-delta_t*first_year_degradation/365)
+    else:
+        deg_factor = 1-delta_t*first_year_degradation-(delta_t-365)*degradation_rate/365
+    degraded_series = yield_series.mul(deg_factor, axis=0)
+
+    return degraded_series
