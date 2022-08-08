@@ -238,3 +238,16 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
 
     return dc_df
 
+def discount_ghi(ghi_series, discount_rate):
+
+    """"""
+
+    year_offset = pd.Series(range(0, len(ghi_series)))
+    year_offset.index = ghi_series.index
+
+    yearly_factor = 1 / (1 + discount_rate) ** year_offset
+    yearly_ghi = ghi_series.mul(yearly_factor, axis=0)
+
+    discounted_ghi = yearly_ghi.sum(axis=0)
+
+    return discounted_ghi

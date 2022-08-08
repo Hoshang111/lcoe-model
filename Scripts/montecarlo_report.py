@@ -46,7 +46,7 @@ import Functions.simulation_functions as func
 import Functions.mc_yield_functions as mc_func
 from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
-from Functions.sizing_functions import get_airtable
+from Functions.sizing_functions import get_airtable, get_npv
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
@@ -271,7 +271,16 @@ for key in dc_ordered:
 
 # since GHI was first of our scenarios
 # %% ===========================================================
+# calculate discounted ghi
+yearly_ghi = output_dict['ghi'].groupby(output_dict['ghi'].index.year).sum()
+yearly_ghi.columns = np.arange(len(yearly_ghi.columns))
+dummy = pd.DataFrame(0, index=np.arange(len(yearly_ghi)), columns=[1])
+dummy.index = yearly_ghi.index
+for column in yearly_ghi:
+    discounted_ghi = get_npv(yearly_costs=dummy.T, yearly_revenue=yearly_ghi[column].T, discount_rate=discount_rate)
+
 # Now apply losses
+
 
 
 # %% ===========================================================
