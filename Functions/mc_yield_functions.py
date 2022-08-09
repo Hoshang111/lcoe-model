@@ -264,6 +264,8 @@ def apply_degradation(yield_series, first_year_degradation, degradation_rate):
 
     return degraded_series
 
-def get_dcloss_df(loss_parameters, ghi):
+def get_dcloss(loss_parameters, ghi):
     """"""
+
+
 
