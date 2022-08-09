@@ -246,11 +246,11 @@ def discount_ghi(ghi_series, discount_rate):
     year_offset.index = ghi_series.index
 
     yearly_factor = 1 / (1 + discount_rate) ** year_offset
-    yearly_ghi = ghi_series.mul(yearly_factor, axis=0)
+    yearly_discounted = ghi_series.mul(yearly_factor, axis=0)
 
-    discounted_ghi = yearly_ghi.sum(axis=0)
+    ghi_discounted = yearly_discounted.sum(axis=0)
 
-    return discounted_ghi
+    return ghi_discounted
 
 def apply_degradation(yield_series, first_year_degradation, degradation_rate):
 
@@ -263,3 +263,7 @@ def apply_degradation(yield_series, first_year_degradation, degradation_rate):
     degraded_series = yield_series.mul(deg_factor, axis=0)
 
     return degraded_series
+
+def get_dcloss_df(loss_parameters, ghi):
+    """"""
+
