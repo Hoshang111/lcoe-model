@@ -258,29 +258,28 @@ yield_datatables = get_yield_datatables()
 random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
 
 output_dict = {}
-ghi_interim = {}
+ghi_interim = []
 
 #%%
 for column in random_timeseries.T:
     generation_list=list(zip(month_series, column))
-    ghi_interim[column] = mc_func.gen_mcts(ghi_dict, generation_list, start_date, end_date)
-mc_ghi = pd.DataFrame(ghi_interim)
+    ghi_interim.append(mc_func.gen_mcts(ghi_dict, generation_list, start_date, end_date))
+mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
 
 # need to check above for creation of dict and then combining into dataframe
 
 for key in dc_ordered:
     ordered_dict = dc_ordered[key]
-    dc_output = pd.DataFrame()
+    dc_output = []
     for column in random_timeseries.T:
         generation_list=list(zip(month_series, column))
-        dummy = mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date)
-        dc_output = pd.concat([dummy, dc_output], axis=1)
-    output_dict[key] = dc_output
+        dc_output.append(mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date))
+    output_dict[key] = pd.concat(dc_output, axis=1, ignore_index=False)
 
 # since GHI was first of our scenarios
 # %% ===========================================================
 # calculate discounted ghi
-yearly_ghi = output_dict['ghi'].groupby(output_dict['ghi'].index.year).sum()
+yearly_ghi = mc_ghi.groupby(mc_ghi.index.year).sum()
 yearly_ghi.columns = np.arange(len(yearly_ghi.columns))
 discounted_ghi = []
 
@@ -288,12 +287,12 @@ for column in yearly_ghi:
     ghi_sum = mc_func.discount_ghi(yearly_ghi[column], discount_rate=discount_rate)
     discounted_ghi.append(ghi_sum)
 
-ghi_discount = pd.DataFrame(data=discounted_ghi)
+ghi_discount = pd.DataFrame(discounted_ghi)
 
 # Now apply losses, all to be applied through header functions
-
-MAV_loss_df = mc_func.get_loss_df(yield_datatables[0], mc_ghi)
-SAT_loss_df = mc_func.get_loss_df(yield_datatables[1], mc_ghi)
+#%%
+MAV_loss_df = mc_func.get_dcloss(yield_datatables[0], mc_ghi)
+SAT_loss_df = mc_func.get_dcloss(yield_datatables[1], mc_ghi)
 
 
 
