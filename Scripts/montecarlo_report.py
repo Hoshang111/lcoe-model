@@ -234,7 +234,7 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 # create a dict of ordered dicts with dc output, including weather GHI as first column
 dc_ordered = {}
 ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
-dc_ordered['ghi'] = mc_func.dict_sort(ghi_timeseries, 'ghi')
+ghi_dict = mc_func.dict_sort(ghi_timeseries, 'ghi')
 
 results_list = [
     results_MAV_HJTa_2028,
@@ -258,8 +258,16 @@ yield_datatables = get_yield_datatables()
 random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
 
 output_dict = {}
+ghi_interim = {}
 
 #%%
+for column in random_timeseries.T:
+    generation_list=list(zip(month_series, column))
+    ghi_interim[column] = mc_func.gen_mcts(ghi_dict, generation_list, start_date, end_date)
+mc_ghi = pd.DataFrame(ghi_interim)
+
+# need to check above for creation of dict and then combining into dataframe
+
 for key in dc_ordered:
     ordered_dict = dc_ordered[key]
     dc_output = pd.DataFrame()
@@ -274,23 +282,20 @@ for key in dc_ordered:
 # calculate discounted ghi
 yearly_ghi = output_dict['ghi'].groupby(output_dict['ghi'].index.year).sum()
 yearly_ghi.columns = np.arange(len(yearly_ghi.columns))
-dummy = pd.DataFrame(0, index=np.arange(len(yearly_ghi)), columns=[1])
-dummy.index = yearly_ghi.index
-discounted_ghi = pd.DataFrame()
+discounted_ghi = []
 
 for column in yearly_ghi:
-    discounted_ghi[column] = mc_func.discount_ghi(yearly_ghi[column], discount_rate=discount_rate)
+    ghi_sum = mc_func.discount_ghi(yearly_ghi[column], discount_rate=discount_rate)
+    discounted_ghi.append(ghi_sum)
 
-# Now apply losses
-# calculate temperature loss factor, as a function of ghi (optionally could use wind here)
+ghi_discount = pd.DataFrame(data=discounted_ghi)
 
-# import default soiling tables and apply modifiers
+# Now apply losses, all to be applied through header functions
 
-# bifaciality modifier - apply to bifacial gain only
+MAV_loss_df = mc_func.get_loss_df(yield_datatables[0], mc_ghi)
+SAT_loss_df = mc_func.get_loss_df(yield_datatables[1], mc_ghi)
 
-# degradation
 
-# calculate loss series for entire timeseries and then apply
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
