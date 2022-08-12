@@ -265,6 +265,7 @@ for column in random_timeseries.T:
     generation_list=list(zip(month_series, column))
     ghi_interim.append(mc_func.gen_mcts(ghi_dict, generation_list, start_date, end_date))
 mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
+mc_ghi.columns = np.arange(len(mc_ghi.columns))
 
 # need to check above for creation of dict and then combining into dataframe
 
@@ -275,12 +276,12 @@ for key in dc_ordered:
         generation_list=list(zip(month_series, column))
         dc_output.append(mc_func.gen_mcts(ordered_dict, generation_list, start_date, end_date))
     output_dict[key] = pd.concat(dc_output, axis=1, ignore_index=False)
+    output_dict[key].columns = np.arange(len(output_dict[key].columns))
 
 # since GHI was first of our scenarios
 # %% ===========================================================
 # calculate discounted ghi
 yearly_ghi = mc_ghi.groupby(mc_ghi.index.year).sum()
-yearly_ghi.columns = np.arange(len(yearly_ghi.columns))
 discounted_ghi = []
 
 for column in yearly_ghi:
