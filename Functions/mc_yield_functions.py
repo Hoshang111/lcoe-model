@@ -277,7 +277,7 @@ def apply_soiling():
 
 def get_dcloss(loss_parameters, weather):
     """"""
-    deg_df = apply_degradation(ghi=weather['ghi'], first_year_degradation=loss_parameters['degr_yr1'],
+    deg_df = apply_degradation(ghi=weather[0], first_year_degradation=loss_parameters['degr_yr1'],
                                degradation_rate=loss_parameters['degr_annual'])
 
     # soiling_df = apply_soiling()
