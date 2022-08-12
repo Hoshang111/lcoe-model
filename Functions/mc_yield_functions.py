@@ -252,20 +252,34 @@ def discount_ghi(ghi_series, discount_rate):
 
     return ghi_discounted
 
-def apply_degradation(yield_series, first_year_degradation, degradation_rate):
+def apply_degradation(ghi, first_year_degradation, degradation_rate):
 
-    timeseries = yield_series.index
+    timeseries = ghi.index
     delta_t = (timeseries-timeseries[0]).days
     if delta_t < 365:
         deg_factor = (1-delta_t*first_year_degradation/365)
     else:
         deg_factor = 1-delta_t*first_year_degradation-(delta_t-365)*degradation_rate/365
-    degraded_series = yield_series.mul(deg_factor, axis=0)
 
-    return degraded_series
+    return deg_factor
 
-def get_dcloss(loss_parameters, ghi):
+def apply_soiling():
     """"""
+
+
+
+def get_dcloss(loss_parameters, weather):
+    """"""
+    deg_df = apply_degradation(ghi=weather['ghi'], first_year_degradation=loss_parameters['degr_yr1'],
+                               degradation_rate=loss_parameters['degr_annual'])
+
+    soiling_df = apply_soiling()
+
+    temp_df = apply_temp_loss()
+
+    loss_df = deg_df*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+
+
 
 
 
