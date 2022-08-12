@@ -253,6 +253,7 @@ def discount_ghi(ghi_series, discount_rate):
     return ghi_discounted
 
 def apply_degradation(ghi, first_year_degradation, degradation_rate):
+    """"""
 
     delta_index = (ghi.index - ghi.index[0]).days
     delta_t = delta_index.to_frame(index=False)
