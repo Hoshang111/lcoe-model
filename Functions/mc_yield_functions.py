@@ -261,12 +261,13 @@ def apply_degradation(ghi, first_year_degradation, degradation_rate):
     breakpoint()
     for deg_y1, deg_ann in list(zip(first_year_degradation, degradation_rate)):
 
-        deg_factor = delta_t
+        deg_factor = delta_t.copy(deep=True)
         deg_factor.loc[(deg_factor[0] <= 365)] = 1-deg_factor*deg_y1/3.65e4
         deg_factor.loc[(deg_factor[0] > 365)] = 1-deg_y1/100-deg_ann*deg_factor/3.65e4
         deg_list.append(deg_factor)
 
     deg_df = pd.concat(deg_list, axis=1, ignore_index=False)
+    deg_df.index = ghi.index
 
     return deg_df
 
