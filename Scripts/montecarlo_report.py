@@ -292,8 +292,10 @@ ghi_discount = pd.DataFrame(discounted_ghi)
 
 # Now apply losses, all to be applied through header functions
 #%%
-MAV_loss_df = mc_func.get_dcloss(yield_datatables[0], mc_ghi)
-SAT_loss_df = mc_func.get_dcloss(yield_datatables[1], mc_ghi)
+default_soiling = []
+temp_coefficient = []
+MAV_loss_df = mc_func.get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
+SAT_loss_df = mc_func.get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
 
 
 

@@ -270,21 +270,40 @@ def apply_degradation(ghi, first_year_degradation, degradation_rate):
 
     return deg_df
 
-def apply_soiling():
+def apply_soiling(soiling_var, weather, default_soiling):
     """"""
 
+    month_timeseries = weather.index.month
+    init_soiling = month_timeseries.to_frame(index=False)
+    init_soiling = default_soiling[init_soiling]
+    soiling_list = []
 
+    for soiling in soiling_var:
+        total_soiling = init_soiling*(1+soiling)
+        soiling_list.append(total_soiling)
 
-def get_dcloss(loss_parameters, weather):
+    soiling_df = pd.concat(soiling_list, axis=1, ignore_index=False)
+    soiling_df.index = weather.index
+
+    return soiling_df
+
+def apply_temp_loss(loss_parameters, ghi, coefficients):
     """"""
+
+def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
+    """"""
+
     deg_df = apply_degradation(ghi=weather[0], first_year_degradation=loss_parameters['degr_yr1'],
                                degradation_rate=loss_parameters['degr_annual'])
 
-    # soiling_df = apply_soiling()
+    soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
+                               weather=weather[0], default_soiling=default_soiling)
 
     # temp_df = apply_temp_loss()
 
-    loss_df = deg_df#*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = deg_df*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+
+    loss_df.columns =
 
     return loss_df
 
