@@ -258,7 +258,6 @@ def apply_degradation(ghi, first_year_degradation, degradation_rate):
     delta_index = (ghi.index - ghi.index[0]).days
     delta_t = delta_index.to_frame(index=False)
     deg_list = []
-    breakpoint()
     for deg_y1, deg_ann in list(zip(first_year_degradation, degradation_rate)):
 
         deg_factor = delta_t.copy(deep=True)
