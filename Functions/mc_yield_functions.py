@@ -282,7 +282,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
 
     soiling_list = []
     for soiling in soiling_var:
-        total_soiling = init_soiling*(1+soiling)
+        total_soiling = init_soiling*soiling
         soiling_list.append(total_soiling)
 
     soiling_df = pd.concat(soiling_list, axis=1, ignore_index=False)
