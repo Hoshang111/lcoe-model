@@ -290,9 +290,14 @@ def apply_soiling(soiling_var, weather, default_soiling):
 
     return soiling_df
 
-def apply_temp_loss(loss_parameters, ghi, coefficient):
+def apply_temp_loss(temp_var, ghi, coefficient):
     """"""
-    
+
+    temp_df = ghi.multiply(np.array(temp_var), axis='columns')
+    temp_df *= coefficient/1000
+    temp_loss = 1+temp_df
+
+    return temp_loss
 
 
 def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
@@ -304,9 +309,10 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
                                weather=weather[0], default_soiling=default_soiling)
 
-    #temp_df = apply_temp_loss()
+    temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather, coefficient=temp_coefficient)
 
-    loss_df = deg_df*soiling_df#*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    tol_mismatch = 1-loss_parameters['tol_mismatch']/100
+    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
 
     #loss_df.columns =
 
