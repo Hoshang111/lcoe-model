@@ -292,9 +292,10 @@ ghi_discount = pd.DataFrame(discounted_ghi)
 
 # Now apply losses, all to be applied through header functions
 #%%
+# TODO: check appropriate temperature coefficient of power
 default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                    (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
-temp_coefficient = []
+temp_coefficient = -0.01
 MAV_loss_df = mc_func.get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
 SAT_loss_df = mc_func.get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
 
