@@ -274,10 +274,13 @@ def apply_soiling(soiling_var, weather, default_soiling):
     """"""
 
     month_timeseries = weather.index.month
-    init_soiling = month_timeseries.to_frame(index=False)
-    init_soiling = default_soiling[init_soiling]
-    soiling_list = []
+    dummy = month_timeseries.to_frame(index=False)
+    init_soiling = dummy.astype('float64', copy=True)
+    for month, value in default_soiling:
+        init_soiling.loc[init_soiling['0'] == month, '0'] = value
 
+
+    soiling_list = []
     for soiling in soiling_var:
         total_soiling = init_soiling*(1+soiling)
         soiling_list.append(total_soiling)
@@ -287,8 +290,10 @@ def apply_soiling(soiling_var, weather, default_soiling):
 
     return soiling_df
 
-def apply_temp_loss(loss_parameters, ghi, coefficients):
+def apply_temp_loss(loss_parameters, ghi, coefficient):
     """"""
+    
+
 
 def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     """"""
@@ -299,11 +304,11 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
                                weather=weather[0], default_soiling=default_soiling)
 
-    # temp_df = apply_temp_loss()
+    #temp_df = apply_temp_loss()
 
-    loss_df = deg_df*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = deg_df*soiling_df#*temp_df*(1-loss_parameters['tol_mismatch']/100)
 
-    loss_df.columns =
+    #loss_df.columns =
 
     return loss_df
 
