@@ -267,6 +267,7 @@ def apply_degradation(ghi, first_year_degradation, degradation_rate):
 
     deg_df = pd.concat(deg_list, axis=1, ignore_index=False)
     deg_df.index = ghi.index
+    deg_df.columns = np.arange(len(deg_df.columns))
 
     return deg_df
 
@@ -287,6 +288,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
 
     soiling_df = pd.concat(soiling_list, axis=1, ignore_index=False)
     soiling_df.index = weather.index
+    soiling_df.columns = np.arange(len(soiling_df.columns))
 
     return soiling_df
 
@@ -313,11 +315,9 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     tol_mismatch = 1-loss_parameters['tol_mismatch']/100
 
-    # loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
 
-    #loss_df.columns =
-
-    return deg_df, soiling_df, temp_df, tol_mismatch
+    return loss_df
 
 
 
