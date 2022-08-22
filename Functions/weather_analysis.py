@@ -143,6 +143,24 @@ plt.clf()
 
 # scatter plot for uncorrected data with linear fit
 
+def weather_nofit(ground, satellite, fig_name):
+    """"""
+    x = satellite
+    y = ground
+    fig, ax = plt.subplots(figsize=(25, 20))
+    ax.scatter(x, y)
+    ax.set_xlabel('Satellite', **fontdict)
+    ax.set_ylabel('Ground', **fontdict)
+    ax.set_title(fig_name)
+
+    # plt.show()
+    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    return
+
+
 def weather_scatter(ground, satellite, fig_name):
     """"""
 
@@ -248,12 +266,12 @@ for satellite, ground in cloud_zip:
         satellite_cloud_low = satellite.loc[satellite_data['CI'] <= 0.3, [str]]
         ground_cloud_low = ground.loc[satellite_data['CI'] <= 0.3, [str]]
 
-        c0_cloud_high, c1_cloud_high, c2_cloud_high = weather_scatter(ground_cloud_high[str], satellite_cloud_high[str],
-                                                                  'CI High ' + str)
-        c0_cloud_med, c1_cloud_med, c2_cloud_med = weather_scatter(ground_cloud_med[str], satellite_cloud_med[str],
-                                                               'CI med ' + str)
-        c0_cloud_low, c1_cloud_low, c2_cloud_low = weather_scatter(ground_cloud_low[str], satellite_cloud_low[str],
-                                                               'Ci low ' + str)
+        weather_nofit(ground_cloud_high[str], satellite_cloud_high[str],
+                                                                  'CI High nofit ' + str)
+        weather_nofit(ground_cloud_med[str], satellite_cloud_med[str],
+                                                               'CI med nofit ' + str)
+        weather_nofit(ground_cloud_low[str], satellite_cloud_low[str],
+                                                               'Ci low nofit ' + str)
 
 
 
