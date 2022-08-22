@@ -52,7 +52,7 @@ dni_lookup[dni_lookup>30] = 30
 
 dni_simulated = (ground_data['ghi']-ground_data['dhi'])*dni_lookup
 
-dni_simulated.to_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated_full.csv'),
+dni_simulated.to_csv(os.path.join('../Data', 'WeatherData', 'dni_simulated_Feni.csv'),
                      header='Dni')
 
 #%% Generate precipitable water
