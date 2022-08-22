@@ -231,7 +231,9 @@ cloud_list_satellite = [satellite_cloud0, satellite_cloud1, satellite_cloud2, sa
 cloud_list_ground = [ground_cloud0, ground_cloud1, ground_cloud2, ground_cloud3, ground_cloud4,
               ground_cloud6, ground_cloud7]
 
-cloud_zip = list(zip(cloud_list_satellite, cloud_list_ground))
+labels = ['cloud0', 'cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud6', 'cloud7']
+
+cloud_zip = list(zip(cloud_list_satellite, cloud_list_ground, labels))
 
 # scatter plot for uncorrected data with linear fit
 for str in ['ghi', 'dhi', 'dni']:
@@ -257,7 +259,7 @@ c0_cloud_high, c1_cloud_high, c2_cloud_high = weather_scatter(ground_cloud_high[
 c0_cloud_med, c1_cloud_med, c2_cloud_med = weather_scatter(ground_cloud_med['ghi'], satellite_cloud_med['ghi'], 'CI med')
 c0_cloud_low, c1_cloud_low, c2_cloud_low = weather_scatter(ground_cloud_low['ghi'], satellite_cloud_low['ghi'], 'Ci low')
 
-for satellite, ground in cloud_zip:
+for satellite, ground, label in cloud_zip:
     for str in ['ghi', 'dhi', 'dni']:
         satellite_cloud_high = satellite.loc[satellite_data['CI'] >= 0.7, [str]]
         ground_cloud_high = ground.loc[satellite_data['CI'] >= 0.7, [str]]
@@ -267,11 +269,28 @@ for satellite, ground in cloud_zip:
         ground_cloud_low = ground.loc[satellite_data['CI'] <= 0.3, [str]]
 
         weather_nofit(ground_cloud_high[str], satellite_cloud_high[str],
-                                                                  'CI High nofit ' + str)
+                                                                  'CI High nofit ' + str + label)
         weather_nofit(ground_cloud_med[str], satellite_cloud_med[str],
-                                                               'CI med nofit ' + str)
+                                                               'CI med nofit ' + str + label)
         weather_nofit(ground_cloud_low[str], satellite_cloud_low[str],
-                                                               'Ci low nofit ' + str)
+                                                               'CI low nofit ' + str + label)
+
+
+for satellite, ground, label in cloud_zip:
+    for str in ['ghi', 'dhi', 'dni']:
+        satellite_cloud_high = satellite.loc[satellite_data['CI'] >= 0.7, [str]]
+        ground_cloud_high = ground.loc[satellite_data['CI'] >= 0.7, [str]]
+        satellite_cloud_med = satellite.loc[satellite_data['CI'].between(0.3, 0.7), [str]]
+        ground_cloud_med = ground.loc[satellite_data['CI'].between(0.3, 0.7), [str]]
+        satellite_cloud_low = satellite.loc[satellite_data['CI'] <= 0.3, [str]]
+        ground_cloud_low = ground.loc[satellite_data['CI'] <= 0.3, [str]]
+
+        weather_nofit(ground_cloud_high[str], satellite_cloud_high[str],
+                                                                  'CI High nofit ' + str + label)
+        weather_nofit(ground_cloud_med[str], satellite_cloud_med[str],
+                                                               'CI med nofit ' + str + label)
+        weather_nofit(ground_cloud_low[str], satellite_cloud_low[str],
+                                                               'CI low nofit ' + str + label)
 
 
 
