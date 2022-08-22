@@ -123,8 +123,8 @@ fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 #%% Line plot
 # Choose different dates for plotting
-date1 = '2018-7-15'
-date2 = '2018-7-22'
+date1 = '2018-12-15'
+date2 = '2018-12-22'
 month = pd.to_datetime(date1).month
 
 fig, ax = plt.subplots(figsize=(25, 20))
@@ -133,7 +133,7 @@ ax.plot(satellite_ghi[date1:date2], linewidth=3, linestyle='--', label='satellit
 ax.set_ylabel('GHI', **fontdict)
 ax.legend()
 # plt.show()
-fig_name = 'LinePlot-Feni_GHI'
+fig_name = 'LinePlot-Feni_GHI ' + date1
 
 save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -167,6 +167,9 @@ def weather_scatter(ground, satellite, fig_name):
         # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
         plt.text(0.3, 0.3, plot_text, fontsize=25)
+    else:
+        c2, c1, c0 = 0
+
 
     # plt.show()
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
