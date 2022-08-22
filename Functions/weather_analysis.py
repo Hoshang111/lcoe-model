@@ -299,6 +299,7 @@ for satellite, ground, label in cloud_zip:
 
 def weather_compare(ground_file, satellite_file):
       """"""
+
       satellite_file_aligned = satellite_file.reindex(ground_file.index)
       satellite_monthly = satellite_file_aligned.groupby(satellite_file_aligned.index.month)
       ground_monthly = ground_file.groupby(ground_file.index.month)
@@ -342,6 +343,21 @@ def weather_correction(ground, satellite, parameter_key, month):
 ground_dict, satellite_dict = weather_compare(ground_data_hourly, satellite_data)
 months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
+cloud_dict_ground = {}
+cloud_dict_satellite = {}
+ground_concat = {}
+satellite_concat = {}
+for satellite, ground, label in cloud_zip:
+    cloud_dict_ground[label], cloud_dict_satellite[label] = weather_compare(ground, satellite)
+    for month in months_list:
+        ground_concat_dummy = pd.concat(cloud_dict_ground[label][month], axis=0)
+        ground_concat[month] = ground_concat_dummy.droplevel(level=0)
+        satellite_concat_dummy = pd.concat(cloud_dict_satellite[label][month], axis=0)
+        satellite_concat[month] = satellite_concat_dummy.droplevel(level=0)
+        for str in ['ghi', 'dhi', 'dni']:
+            weather_nofit(ground_concat[month][str], satellite_concat[month][str], label + str + month)
+
+#%%
 ground_concat = {}
 satellite_concat = {}
 correction_factors = {}
