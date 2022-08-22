@@ -168,7 +168,7 @@ def weather_scatter(ground, satellite, fig_name):
         plot_text = 'R-squared = %.2f' % r_squared
         plt.text(0.3, 0.3, plot_text, fontsize=25)
     else:
-        c2, c1, c0 = 0
+        c2, c1, c0 = [0, 0, 0]
 
 
     # plt.show()
