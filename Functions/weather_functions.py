@@ -1,6 +1,15 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
+#%% Plot features
+font_size = 25
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+      'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
+# For label titles
+fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
+
 def weather_nofit(ground, satellite, fig_name):
     """"""
     x = satellite

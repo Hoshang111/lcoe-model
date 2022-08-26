@@ -33,6 +33,7 @@ measured_data_a = measured_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi'
                                                  'WindSpeed_Anemo1_ms_avg':'wind_speed',
                                                   'RH_ThHyg1_per100_avg':'relative_humidity'})
 measured_data = measured_data_a.tz_localize("UTC")
+measured_data.drop(labels=measured_data.index[0], axis=0, inplace=True)
 
 dni_comparison_path = os.path.join(data_path, "dni_simulated_Feni.csv")
 dni_comparison = pd.read_csv(dni_comparison_path, index_col=0, header=1)
