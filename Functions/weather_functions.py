@@ -1,3 +1,6 @@
+import matplotlib
+import matplotlib.pyplot as plt
+
 def weather_nofit(ground, satellite, fig_name):
     """"""
     x = satellite
