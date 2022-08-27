@@ -118,3 +118,4 @@ plt.close()
 qcrad_data = measured_data.mask(~qcrad_consistency_mask[0])
 
 #%% now plot updated distributions against initial and calculated data
+weather.weather_overlay(measured_data['dni'], qcrad_data['dni'], dni_comparison, 'qcrad_masked')
