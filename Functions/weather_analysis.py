@@ -10,15 +10,15 @@ import pytz
 #%% import ground and satellite data
 
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
-ground_path = os.path.join(data_path, "ground_measurements_feni.csv")
+ground_path = os.path.join(data_path, "qcrad_data.csv")
 ground_data_a = pd.read_csv(ground_path, index_col=0, header=1)
 ground_data_a.set_index(pd.to_datetime(ground_data_a.index), inplace=True)
-ground_data_a = ground_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
-                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
-                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
-                                                 'Temp_ThPyra1_degC_avg':'temp',
-                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
-                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
+# ground_data_a = ground_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
+#                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
+#                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
+#                                                 'Temp_ThPyra1_degC_avg':'temp',
+#                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
+#                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
 ground_data = ground_data_a.tz_localize("UTC")
 
 # satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
@@ -152,6 +152,7 @@ def weather_nofit(ground, satellite, fig_name):
     ax.set_xlabel('Satellite', **fontdict)
     ax.set_ylabel('Ground', **fontdict)
     ax.set_title(fig_name)
+    ax.axline((0, 0), slope=1, label='m=1', linewidth=3, color='orange')
 
     # plt.show()
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
