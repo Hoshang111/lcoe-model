@@ -115,7 +115,14 @@ plt.savefig(save_path, dpi=300, bbox_inches='tight')
 plt.close()
 
 #%% now apply masks to remove invalid data
-qcrad_data = measured_data.mask(~qcrad_consistency_mask[0])
+qcrad_data_ratio = measured_data.mask(~qcrad_consistency_mask[0])
+qcrad_data_diffuse = qcrad_data_ratio.mask(~qcrad_consistency_mask[1])
 
 #%% now plot updated distributions against initial and calculated data
-weather.weather_overlay(measured_data['dni'], qcrad_data['dni'], dni_comparison, 'qcrad_masked')
+weather.weather_overlay(measured_data['dni'], qcrad_data_ratio['dni'], dni_comparison, 'qcrad_ratio_masked')
+weather.weather_overlay(measured_data['dni'], qcrad_data_diffuse['dni'], dni_comparison, 'qcrad_diffuse_masked')
+
+#%% output masked file to csv for use in adaptation
+
+save_path = data_path + '\qcrad_data.csv'
+qcrad_data_diffuse.to_csv(save_path)
