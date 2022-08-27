@@ -20,7 +20,7 @@ def weather_nofit(ground, satellite, fig_name):
     ax.set_ylabel('Ground', **fontdict)
     ax.set_title(fig_name)
 
-    ax.axline((0,0), slope=1, colour='orange', label='m=1')
+    ax.axline((0,0), slope=1, label='m=1')
     # plt.show()
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
