@@ -36,8 +36,8 @@ def weather_overlay(initial_data, masked_data, calc_data, fig_name):
     z = masked_data
 
     fig, ax = plt.subplots(figsize=(25, 20))
-    ax.scatter(x, y, colour='blue', label='initial')
-    ax.scatter(x, z, colour='red', label='masked')
+    ax.scatter(x, y, color='blue', label='initial')
+    ax.scatter(x, z, color='red', label='masked')
     ax.set_xlabel('Calculated', **fontdict)
     ax.set_ylabel('Measured', **fontdict)
     ax.set_title(fig_name)
