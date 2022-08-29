@@ -73,3 +73,12 @@ SCOPTI (high-level sizing) -> Iterative Layout -> Yield + Costing -> LCOE Calc
 ** "Add Interpreter" (bottom right on pycharm)
 ** Conda Environment
 ** Find location of python.exe in C:\Users\<username>\anaconda3\envs
+
+#### Updating Poetry environment when using the windows version with Anaconda
+
+* Start the anaconda prompt
+* Select the environment with conda activate <env_name>
+* Change directory to the project directory.
+* Run poetry install
+** Note poetry update will install later versions of some packages, and will update the poetry.lock file. Do NOT do this. 
+** Note that I (Nathan) had a whole pile of errors to do with file access. I had to change the directory to not be read-only before this worked.
