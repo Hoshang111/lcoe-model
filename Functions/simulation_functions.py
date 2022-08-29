@@ -56,7 +56,7 @@ def weather(simulation_years,
                                       'WindSpeed10m': 'wind_speed', 'PrecipitableWater': 'precipitable_water',
                                                 'Ebh': 'bhi'})
 
-    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'bhi']].copy()[str(sy)]
+    dummy = [weather_data[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water', 'bhi']].copy().loc[str(sy)]
              for sy in simulation_years]  # get required PVlib weather variables for desired simulation years
     weather_simulation = pd.concat(dummy)
     weather_simulation['precipitable_water'] = weather_simulation['precipitable_water'] / 10  # formatting for PV-lib
