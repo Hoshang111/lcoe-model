@@ -11,15 +11,15 @@ import pytz
 
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
 ground_path = os.path.join(data_path, "qcrad_data.csv")
-ground_data_a = pd.read_csv(ground_path, index_col=0, header=1)
-ground_data_a.set_index(pd.to_datetime(ground_data_a.index), inplace=True)
+ground_data = pd.read_csv(ground_path, index_col=0, header=0)
+ground_data.set_index(pd.to_datetime(ground_data.index), inplace=True)
 # ground_data_a = ground_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
 #                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
 #                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
 #                                                 'Temp_ThPyra1_degC_avg':'temp',
 #                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
 #                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
-ground_data = ground_data_a.tz_localize("UTC")
+# ground_data = ground_data_a.tz_localize("UTC")
 
 # satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
 # satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
@@ -357,6 +357,17 @@ for satellite, ground, label in cloud_zip:
         satellite_concat[month] = satellite_concat_dummy.droplevel(level=0)
         for str in ['ghi', 'dhi', 'dni']:
             weather_nofit(ground_concat[month][str], satellite_concat[month][str], label + str + month)
+
+#%%
+
+for satellite, ground, label in cloud_zip:
+    for str in ['ghi', 'dhi']:
+        ratio_sg = satellite[str].divide(ground[str], axis=0)
+        mean = ratio_sg.mean()
+        stdev = ratio_sg.std()
+        mask = ratio_sg.loc[ratio_sg.loc ]
+
+
 
 #%%
 ground_concat = {}

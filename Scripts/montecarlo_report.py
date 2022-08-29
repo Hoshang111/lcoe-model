@@ -299,8 +299,6 @@ temp_coefficient = -0.01
 MAV_loss_df = mc_func.get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
 SAT_loss_df = mc_func.get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
 
-
-
 # %% ===========================================================
 # Now calculate AC output (currently not used)
 
