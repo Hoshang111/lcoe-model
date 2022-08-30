@@ -1,5 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 #%% Plot features
 font_size = 25
@@ -48,3 +49,53 @@ def weather_overlay(initial_data, masked_data, calc_data, fig_name):
     plt.close(fig)
 
     return
+
+def weather_scatter(ground, satellite, fig_name):
+    """"""
+
+    x = satellite
+    y = ground
+    fig, ax = plt.subplots(figsize=(25, 20))
+    ax.scatter(x, y)
+    ax.set_xlabel('Ground', **fontdict)
+    ax.set_ylabel('Satellite', **fontdict)
+    ax.set_title(fig_name)
+
+    # Best fit line - edit changed to second order
+    # m, b = np.polyfit(x, y, 1)
+    if not x.empty:
+        c2, c1, c0 = np.polyfit(x, y, 2)
+        correlation_matrix = np.corrcoef(x.values, y.values)
+        correlation_xy = correlation_matrix[0, 1]
+        r_squared = correlation_xy ** 2
+
+        ax.plot(x * x * c2 + x * c1 + c0, y, linewidth=3, color='C1')
+        # ax.set_ylim(0,1.25)
+        # ax.set_xlim(0,1.25)
+        plot_text = 'R-squared = %.2f' % r_squared
+        plt.text(0.3, 0.3, plot_text, fontsize=25)
+    else:
+        c2, c1, c0 = [0, 0, 0]
+
+
+    # plt.show()
+    save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    return c0, c1, c2
+
+def weather_correction(ground, satellite, label):
+    """"""
+
+    fig_name = 'Uncorrected_' + '_' + label
+    c0, c1, c2 = weather_scatter(ground, satellite, fig_name)
+
+    satellite_dummy = satellite ** 2 * c2 + satellite * c1 + c0
+    satellite_corr = satellite_dummy.clip(lower=0, upper=None)
+
+    # re-plot with corrected data
+    fig_name = 'Corrected_' + '_' + label
+    c0_a, c1_a, c2_a = weather_scatter(ground, satellite_corr, fig_name)
+
+    return c0, c1, c2, satellite_corr
