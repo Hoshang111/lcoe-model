@@ -5,7 +5,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import pickle
 import pytz
-import weather_functions as weather
+import Functions.weather_functions as weather
 
 
 #%% import ground and satellite data
