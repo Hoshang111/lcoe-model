@@ -85,9 +85,12 @@ def weather_scatter(ground, satellite, fig_name):
 
     return c0, c1, c2
 
-def weather_correction(ground, satellite, label):
+def weather_correction(ground0, satellite0, label):
     """"""
 
+    idx = np.isfinit(ground0) & np.isfinite(satellite0)
+    ground = ground0[idx]
+    satellite = satellite0[idx]
     fig_name = 'Uncorrected_' + '_' + label
     c0, c1, c2 = weather_scatter(ground, satellite, fig_name)
 
