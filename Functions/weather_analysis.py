@@ -374,11 +374,11 @@ for satellite, ground, label in cloud_zip:
         mask = (abs_var < ratio_stdev)
         masked_satellite = satellite[str].mask(~mask)
         masked_ground = ground[str].mask(~mask)
-        weather.weather_overlay(satellite[str], masked_satellite[str], ground[str],
-                                'fit_data_' + label)
+        weather.weather_overlay(ground[str], masked_ground, satellite[str],
+                                 'fit_data_' + str + label)
 
-        fit_satdict[label] = masked_satellite
-        fit_grounddict[label] = masked_ground
+        fit_satdict[str + label] = masked_satellite
+        fit_grounddict[str + label] = masked_ground
 
 
 
