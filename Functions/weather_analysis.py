@@ -5,6 +5,7 @@ import datetime as dt
 import matplotlib.pyplot as plt
 import pickle
 import pytz
+import weather_functions as weather
 
 
 #%% import ground and satellite data
@@ -359,13 +360,25 @@ for satellite, ground, label in cloud_zip:
             weather_nofit(ground_concat[month][str], satellite_concat[month][str], label + str + month)
 
 #%%
+fitting_dict = {}
+fit_satdict = {}
+fit_grounddict = {}
 
 for satellite, ground, label in cloud_zip:
     for str in ['ghi', 'dhi']:
         ratio_sg = satellite[str].divide(ground[str], axis=0)
-        mean = ratio_sg.mean()
-        stdev = ratio_sg.std()
-        mask = ratio_sg.loc[ratio_sg.loc ]
+        ratio_median = ratio_sg.median()
+        ratio_stdev = ratio_sg.std()
+        ratio_var = ratio_sg-ratio_median
+        abs_var = ratio_var.abs()
+        mask = (abs_var < ratio_stdev)
+        masked_satellite = satellite[str].mask(~mask)
+        masked_ground = ground[str].mask(~mask)
+        weather.weather_overlay(satellite[str], masked_satellite[str], ground[str],
+                                'fit_data_' + label)
+
+        fit_satdict[label] = masked_satellite
+        fit_grounddict[label] = masked_ground
 
 
 
