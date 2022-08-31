@@ -408,9 +408,9 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
 
     for key in yield_dict:
         revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
-        npv_outputs = sizing.get_npv(0, revenue[3], discount_rate)
-        mc_yield_outputs[key]['kWh'] = revenue[0]
-        mc_yield_outputs[key]['AUD'] = revenue[3]
+        discounted_kWh = sizing.get_npv_revenue(revenue[0], discount_rate)
+        dollar_outputs = sizing.get_npv_revenue(revenue[3], discount_rate)
+        mc_yield_outputs[key] = [discounted_kWh, dollar_outputs]
 
     return mc_yield_outputs
 
