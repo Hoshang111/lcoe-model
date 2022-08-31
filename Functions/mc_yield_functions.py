@@ -319,7 +319,83 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
+def run_yield_mc(results_dict, input_params, mc_weather_file):
+    """"""
 
+    # %% ===========================================
+    # first to get appropriate values from dataframe
+    temp_model = str(input_params['temp_model'].values[0])
+
+    # %% ===========================================
+    # create a dict of ordered dicts with dc output, including weather GHI as first column
+    dc_ordered = {}
+    ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
+    ghi_dict = dict_sort(ghi_timeseries, 'ghi')
+
+    for key in results_dict:
+        results = results_dict[key]
+        yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
+                                       temp_model, mc_weather_file)
+        ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
+        dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
+
+    for month in dc_ordered:
+        for key in dc_ordered[month]:
+            dc_ordered[month][key].drop('ghi', axis=1, inplace=True)
+
+    # %% ===========================================================
+    # Create data tables for yield parameters
+
+    start_date = '1/1/2029 00:00:00'
+    end_date = '31/12/2058 23:59:00'
+    month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
+    yield_datatables = get_yield_datatables()
+    # need to create a wrapper function to call for each set of random numbers
+    random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
+
+    output_dict = {}
+    ghi_interim = []
+
+    # %%
+    for column in random_timeseries.T:
+        generation_list = list(zip(month_series, column))
+        ghi_interim.append(gen_mcts(ghi_dict, generation_list, start_date, end_date))
+    mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
+    mc_ghi.columns = np.arange(len(mc_ghi.columns))
+
+    # need to check above for creation of dict and then combining into dataframe
+
+    for key in dc_ordered:
+        ordered_dict = dc_ordered[key]
+        dc_output = []
+        for column in random_timeseries.T:
+            generation_list = list(zip(month_series, column))
+            dc_output.append(gen_mcts(ordered_dict, generation_list, start_date, end_date))
+        output_dict[key] = pd.concat(dc_output, axis=1, ignore_index=False)
+        output_dict[key].columns = np.arange(len(output_dict[key].columns))
+
+    # since GHI was first of our scenarios
+    # %% ===========================================================
+    # calculate discounted ghi
+    yearly_ghi = mc_ghi.groupby(mc_ghi.index.year).sum()
+    discounted_ghi = []
+
+    for column in yearly_ghi:
+        ghi_sum = discount_ghi(yearly_ghi[column], discount_rate=input_params['discount_rate'])
+        discounted_ghi.append(ghi_sum)
+
+    ghi_discount = pd.DataFrame(discounted_ghi)
+
+    # Now apply losses, all to be applied through header functions
+    # %%
+    # TODO: check appropriate temperature coefficient of power
+    default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
+                       (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
+    temp_coefficient = -0.01
+    MAV_loss_df = get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
+    SAT_loss_df = get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
+
+return mc_yield_outputs
 
 
 
