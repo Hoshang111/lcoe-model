@@ -97,10 +97,14 @@ parent_path = os.path.dirname(current_path)
 file_name = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
 input_df.to_csv(file_name, index=False, header=False)
 
+yield_datatables = get_yield_datatables()
+MAV_loss_params = yield_datatables[0].iloc[0]
+SAT_loss_params = yield_datatables[1].iloc[0]
+
    # %%
 # Cycle through alternative analysis scenarios
 
-def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined):
+def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params):
     module_type = MODULE_TYPE
     install_year = INSTALL_YEAR
     rack_type = RACK_TYPE
@@ -110,7 +114,7 @@ def optimize (RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tab
                                                                    install_year, DCTotal, num_of_zones, zone_area,
                                                                    rack_interval_ratio, temp_model, export_lim,
                                                                    storage_capacity, scheduled_price, data_tables,
-                                                                   discount_rate, fig_title=SCENARIO_LABEL)
+                                                                   discount_rate, loss_params, fig_title=SCENARIO_LABEL)
 
     scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
