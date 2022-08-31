@@ -48,13 +48,14 @@ import Functions.simulation_functions as func
 import Functions.sizing_functions as sizing
 import Functions.plotting_functions as plot_func
 import Functions.testing as testing
+import Functions.mc_yield_functions as mc_func
 
 # mpl.use('Qt5Agg')
 
 def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate, fig_title=None):
+                     data_tables, discount_rate, loss_params, fig_title=None):
 
     # %% ======================================
     # Rack_module
@@ -68,9 +69,17 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     # %% ========================================
     # DC yield
 
-    dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
+    dc_results, dc_initial, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
                                                rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
 
+    # %% =========================================
+    # Apply losses to dc timeseries
+
+    default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
+                       (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
+    temp_coefficient = -0.01
+    loss_factor = mc_func.get_dcloss(loss_params, weather_simulation, default_soiling, temp_coefficient)
+    dc_df = dc_initial.mul(loss_factor, axis=0)
 
     #%% ==========================================
     # Revenue and storage behaviour
