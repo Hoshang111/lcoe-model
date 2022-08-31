@@ -1,5 +1,8 @@
-scenario,racks,W_zone
-SAT PERCa 2028,226.0,11698144.2
-MAV PERCa 2028,309.0,21325820.400000002
-SAT HJTa 2028,213.0,11420910.899999999
-MAV HJTa 2028,295.0,21090258.0
+,0,1
+0,temp_model,pvsyst
+1,storage_capacity,50000000.0
+2,schedule_price,0.00015
+3,export_lim,4444444.444444444
+4,discount_rate,0.07
+5,zone_area,140000.0
+6,num_of_zones,720
