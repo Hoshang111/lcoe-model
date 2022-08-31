@@ -4,6 +4,7 @@ import os
 from Functions.cost_functions import get_airtable, generate_iterations
 import Functions.simulation_functions as func
 import pytz
+import Functions.sizing_functions as sizing
 
 def weather_sort(weather_file):
     """
@@ -319,12 +320,18 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
-def run_yield_mc(results_dict, input_params, mc_weather_file):
+def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     """"""
 
     # %% ===========================================
     # first to get appropriate values from dataframe
     temp_model = str(input_params['temp_model'].values[0])
+    storage_capacity = input_params['storage_capacity'].values[0]
+    scheduled_price = input_params['scheduled_price'].values[0]
+    export_lim = input_params['export_lim'].values[0]
+    discount_rate = input_params['discount_rate'].values[0]
+    zone_area = input_params['zone_area'].values[0]
+    num_of_zones = input_params['num_of_zones'].values[0]
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
@@ -339,9 +346,10 @@ def run_yield_mc(results_dict, input_params, mc_weather_file):
         ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
         dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
 
-    for month in dc_ordered:
-        for key in dc_ordered[month]:
-            dc_ordered[month][key].drop('ghi', axis=1, inplace=True)
+    for key in dc_ordered:
+        for month in dc_ordered[key]:
+            for df in dc_ordered[key][month].values():
+                df.drop('ghi', axis=1, inplace=True)
 
     # %% ===========================================================
     # Create data tables for yield parameters
@@ -349,7 +357,6 @@ def run_yield_mc(results_dict, input_params, mc_weather_file):
     start_date = '1/1/2029 00:00:00'
     end_date = '31/12/2058 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
-    yield_datatables = get_yield_datatables()
     # need to create a wrapper function to call for each set of random numbers
     random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
 
@@ -395,7 +402,17 @@ def run_yield_mc(results_dict, input_params, mc_weather_file):
     MAV_loss_df = get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
     SAT_loss_df = get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
 
-return mc_yield_outputs
+ # %% ==========================================================
+    #calculate revenue from yield dictionary
+    mc_yield_outputs = {}
+
+    for key in yield_dict:
+        revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
+        npv_outputs = sizing.get_npv(0, revenue[3], discount_rate)
+        mc_yield_outputs[key]['kWh'] = revenue[0]
+        mc_yield_outputs[key]['AUD'] = revenue[3]
+
+    return mc_yield_outputs
 
 
 

@@ -295,6 +295,26 @@ def get_npv(yearly_costs,
 
     return npv, yearly_npv, npv_costs, npv_revenue, yearly_npv_revenue, yearly_npv_costs
 
+def get_npv_revenue(yearly_values,
+            discount_rate=0.07):
+    """
+
+    :param yearly_costs:
+    :param yearly_revenue:
+    :param discount_rate:
+    :return:
+    """
+
+    year_offset = pd.Series(range(0, len(yearly_values)))
+    year_offset.index = yearly_values.index
+
+    yearly_factor = 1 / (1 + discount_rate) ** year_offset
+    yearly_npv = yearly_values.mul(yearly_factor, axis=0)
+
+    npv = yearly_npv.sum(axis=0)
+
+    return npv, yearly_npv
+
 def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
 
     """

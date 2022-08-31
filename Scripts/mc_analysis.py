@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-# import Functions.simulation_functions as func
+import Functions.simulation_functions as func
 import Functions.mc_yield_functions as mc_func
 from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
@@ -19,7 +19,7 @@ from Functions.sizing_functions import get_airtable, get_npv
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
      generate_parameters, calculate_variance_contributions, import_excel_data
 import warnings
-# from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
+from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
@@ -52,12 +52,13 @@ input_params = pd.read_csv(csv_path, header=0)
 
 input_params['temp_model'] = input_params['temp_model'].astype('string')
 input_params['storage_capacity'] = pd.to_numeric(input_params['storage_capacity'])
-input_params['schedule_price'] = pd.to_numeric(input_params['schedule_price'])
+input_params['scheduled_price'] = pd.to_numeric(input_params['scheduled_price'])
 input_params['export_lim'] = pd.to_numeric(input_params['export_lim'])
 input_params['discount_rate'] = pd.to_numeric(input_params['discount_rate'])
 input_params['zone_area'] = pd.to_numeric(input_params['zone_area'])
 input_params['num_of_zones'] = pd.to_numeric(input_params['num_of_zones'])
 
+yield_datatables = get_yield_datatables()
 
  # %% ===========================================================
 # Monte Carlo for yield parameters
@@ -72,7 +73,7 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 mc_yield_dict = {}
 for key in scenarios:
     results_dict = scenario_dict[key]
-    mc_yield_dict[key] = mc_func.run_yield_mc(results_dict, input_params, mc_weather_file)
+    mc_yield_dict[key] = mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables)
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
