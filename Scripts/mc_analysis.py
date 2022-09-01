@@ -47,6 +47,9 @@ for key in scenarios:
 csv_path = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
 input_params = pd.read_csv(csv_path, header=0)
 
+# Import airtable data previously saved
+data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
+
  # %% ===========================================================
  # convert dtypes in input_params, want to keep saving as csv so human readable but does not preserve dtypes
 
@@ -57,6 +60,8 @@ input_params['export_lim'] = pd.to_numeric(input_params['export_lim'])
 input_params['discount_rate'] = pd.to_numeric(input_params['discount_rate'])
 input_params['zone_area'] = pd.to_numeric(input_params['zone_area'])
 input_params['num_of_zones'] = pd.to_numeric(input_params['num_of_zones'])
+
+discount_rate = input_params['discount_rate'].values[0]
 
 yield_datatables = get_yield_datatables()
 
@@ -88,24 +93,48 @@ for key in scenarios:
 # %%
 # Call Monte Carlo Cost analysis
 
-for analysis_year in [
-    # 2024,
-    # 2026,
-    2028
-                      ]:
+# Do be deleted later - import occurs above.
+data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
 
 
-    if analysis_year == 2024:
-        scenario_tables = scenario_tables_2024
-    elif analysis_year == 2026:
-        scenario_tables = scenario_tables_2026
-    elif analysis_year == 2028:
-        scenario_tables = scenario_tables_2028
+# %%
+def extract_scenario_tables(scenario_dict, analysis_year):
+    mydata = scenario_dict[analysis_year]
+    # print(mydata)
+    output_list = []
+    for item in mydata:
+        # print(item)
+
+        label = mydata[item][0]
+
+        data = mydata[item][1]
+        output_tuple = (data, label)
+        output_list.append(output_tuple)
+
+    return output_list
+
+def extract_results_tables(scenario_dict, analysis_year):
+    mydata = scenario_dict[analysis_year]
+    output_list = []
+    for item in mydata:
+        output_tuple = (mydata[item][0], mydata[item][1], mydata[item][2], mydata[item][3], mydata[item][4])
+        output_list.append(output_tuple)
+
+    return output_list
+
+
+
+# %%
+for year in scenarios:
+    analysis_year = int(year)
+    scenario_tables = extract_scenario_tables(scenario_dict,year)
+
+
     # First generate data tables with the ScenarioID changed to something more intuitive
     new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
     # Create iteration data
-    data_tables_iter = create_iteration_tables(new_data_tables, 5000, iteration_start=0)
+    data_tables_iter = create_iteration_tables(new_data_tables, 100, iteration_start=0)
 
     # Calculate cost result
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, analyse_years=30)
@@ -116,58 +145,7 @@ for analysis_year in [
     # First generate a big table with index consisting of Iteration, Year, ScenarioID.
     combined_scenario_data = pd.DataFrame()
 
-    if analysis_year == 2024:
-        install_year = 2024
-        results_list = [[results_SAT_PERC_2024,
-                   results_MAV_PERC_2024,
-                   results_SAT_HJT_2024,
-                   results_MAV_HJT_2024,
-                   results_SAT_TOP_2024,
-                   results_MAV_TOP_2024],
-                   [results_SAT_PERCa_2024,
-                   results_MAV_PERCa_2024,
-                   results_SAT_HJTa_2024,
-                   results_MAV_HJTa_2024,
-                   results_SAT_TOPa_2024,
-                   results_MAV_TOPa_2024,
-                   ]]
-
-    elif analysis_year == 2026:
-        install_year = 2026
-        results_list = [[results_SAT_PERC_2026,
-                   results_MAV_PERC_2026,
-                   results_SAT_HJT_2026,
-                   results_MAV_HJT_2026,
-                   results_SAT_TOP_2026,
-                   results_MAV_TOP_2026],
-                   [results_SAT_PERCa_2026,
-                   results_MAV_PERCa_2026,
-                   results_SAT_HJTa_2026,
-                   results_MAV_HJTa_2026,
-                   results_SAT_TOPa_2026,
-                   results_MAV_TOPa_2026,
-                   ]]
-
-
-    elif analysis_year == 2028:
-        install_year = 2028
-        results_list = [
-                  # [results_SAT_PERC_2028,
-                  # results_MAV_PERC_2028,
-                  # results_SAT_HJT_2028,
-                  # results_MAV_HJT_2028,
-                  # results_SAT_TOP_2028,
-                  #results_MAV_TOP_2028],
-                   [results_SAT_PERCa_2028,
-                   results_MAV_PERCa_2028,
-                   results_SAT_HJTa_2028,
-                   results_MAV_HJTa_2028,
-                   results_SAT_TOPa_2028,
-                   results_MAV_TOPa_2028,
-                   ]]
-
-    else:
-        print('Error!')
+    results_list = extract_results_tables(scenario_dict, year)
 
 
 
@@ -181,41 +159,45 @@ for analysis_year in [
     fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
     for results in results_list:
-        for (scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output) in results:
+        print('Length of results tuple is: ', len(results))
+        scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output = results
 
-            kWh_export_data.name = 'kWh'
-            revenue_data.name = 'revenue'
 
-            if len(cash_flow_by_year_iter[scenario_id])>0:
-                scenario_data = cash_flow_by_year_iter[scenario_id]
-                scenario_data.name = 'cost'
 
-                scenario_data = scenario_data.reset_index().merge(
-                    kWh_export_data.reset_index(), how='left', on='Year').merge(
-                    revenue_data.reset_index(), how='left', on='Year')
-                scenario_data['ScenarioID'] = scenario_id
 
-                combined_scenario_data = pd.concat([combined_scenario_data, scenario_data])
+        kWh_export_data.name = 'kWh'
+        revenue_data.name = 'revenue'
 
-                # Now discount the costs, etc
-                for col_name in ['cost', 'kWh', 'revenue']:
-                    combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** \
-                                                                 (combined_scenario_data['Year'] - install_year)
+        if len(cash_flow_by_year_iter[scenario_id])>0:
+            scenario_data = cash_flow_by_year_iter[scenario_id]
+            scenario_data.name = 'cost'
 
-                # Create a new table that removes the year, adding all the discounted flows
-                discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc',
-                                                                                                                   'cost_disc',
-                                                                                                                   'revenue_disc'])
+            scenario_data = scenario_data.reset_index().merge(
+                kWh_export_data.reset_index(), how='left', on='Year').merge(
+                revenue_data.reset_index(), how='left', on='Year')
+            scenario_data['ScenarioID'] = scenario_id
 
-                # Now calculate LCOE and NPV
+            combined_scenario_data = pd.concat([combined_scenario_data, scenario_data])
 
-                discounted_sum['LCOE'] = discounted_sum['cost_disc'] / discounted_sum['kWh_disc']
-                discounted_sum['NPV'] = discounted_sum['revenue_disc'] - discounted_sum['cost_disc']
+            # Now discount the costs, etc
+            for col_name in ['cost', 'kWh', 'revenue']:
+                combined_scenario_data[col_name + '_disc'] = combined_scenario_data[col_name] / (1 + discount_rate) ** \
+                                                             (combined_scenario_data['Year'] - install_year)
 
-                print(discounted_sum)
+            # Create a new table that removes the year, adding all the discounted flows
+            discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'], values=['kWh_disc',
+                                                                                                               'cost_disc',
+                                                                                                               'revenue_disc'])
+
+            # Now calculate LCOE and NPV
+
+            discounted_sum['LCOE'] = discounted_sum['cost_disc'] / discounted_sum['kWh_disc']
+            discounted_sum['NPV'] = discounted_sum['revenue_disc'] - discounted_sum['cost_disc']
+
+            print(discounted_sum)
 
                 # Plot the LCOE and NPV distributions. For each figure, show each scenario as its own distribution.
-
+        print('up to 194')
         for parameter in ['LCOE', 'NPV']:
             data = discounted_sum[parameter].reset_index()
             print(data)
@@ -521,6 +503,12 @@ for analysis_year in [
 
 graph_data = pd.DataFrame(columns=['Year','NPV','Label'], index=[*range(0,1)])
 i = 0
+
+for results in results_list:
+    scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output = results
+
+
+
 for (year, label, results) in [
 #    (2024, 'MAV PERC', results_MAV_PERC_2024),
 #    (2026, 'MAV PERC', results_MAV_PERC_2026),
@@ -586,5 +574,6 @@ for year in [2028]:
     file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
     plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
     plt.close()
+
 
 

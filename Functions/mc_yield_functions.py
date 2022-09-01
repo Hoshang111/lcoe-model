@@ -405,6 +405,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
  # %% ==========================================================
     #calculate revenue from yield dictionary
     mc_yield_outputs = {}
+    yield_dict = output_dict
+
 
     for key in yield_dict:
         revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
