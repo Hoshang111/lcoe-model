@@ -78,7 +78,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                        (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
     temp_coefficient = -0.01
-    loss_factor = mc_func.get_dcloss(loss_params, weather_simulation['ghi'], default_soiling, temp_coefficient)
+    loss_factor = mc_func.get_dcloss(loss_params, weather_simulation, default_soiling, temp_coefficient)
     dc_df = dc_initial.mul(loss_factor, axis=0)
 
     #%% ==========================================
