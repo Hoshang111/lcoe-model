@@ -932,20 +932,21 @@ def mc_dc(DCTotal,
     # dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
     return dc_results, dc_df, dc_size
 
-def apply_degradation(ghi, deg_y1, deg_ann):
+def apply_degradation(ghi, first_year_degradation, degradation_rate):
     """"""
 
     delta_index = (ghi.index - ghi.index[0]).days
     delta_t = delta_index.to_frame(index=False)
+    deg_y1 = first_year_degradation/3.65e4
+    deg_ann = degradation_rate/3.65e4
 
-    deg_factor = delta_t.copy(deep=True)
-    deg_factor.loc[(deg_factor[0] <= 365)] = 1-deg_factor*deg_y1/3.65e4
-    deg_factor.loc[(deg_factor[0] > 365)] = 1-deg_y1/100-deg_ann*deg_factor/3.65e4
+    delta_t.loc[(delta_t[0] <= 365)] = 1-delta_t*deg_y1/3.65e4
+    delta_t.loc[(delta_t[0] > 365)] = 1-deg_y1/100-deg_ann*delta_t/3.65e4
 
-    deg_factor.index = ghi.index
-    deg_factor.columns = np.arange(len(deg_factor.columns))
+    delta_t.index = ghi.index
+    delta_t.columns = np.arange(len(delta_t.columns))
 
-    return deg_factor
+    return delta_t
 
 def apply_soiling(soiling_var, weather, default_soiling):
     """"""
@@ -953,6 +954,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
     month_timeseries = weather.index.month
     dummy = month_timeseries.to_frame(index=False)
     init_soiling = dummy.astype('float64', copy=True)
+    init_soiling.columns = np.arange(len(init_soiling.columns))
     for month, value in default_soiling:
         init_soiling.loc[init_soiling[0] == month, 0] = value
 
@@ -975,9 +977,6 @@ def apply_temp_loss(temp_var, ghi, coefficient):
 def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     """"""
 
-    deg_df = apply_degradation(ghi=weather['ghi'], deg_y1=loss_parameters['degr_yr1'],
-                               deg_ann=loss_parameters['degr_annual'])
-
     soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
                                weather=weather['ghi'], default_soiling=default_soiling)
 
@@ -985,7 +984,7 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     tol_mismatch = 1-loss_parameters['tol_mismatch']/100
 
-    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = soiling_df.multiply(np.array(tol_mismatch))*temp_df*(1-loss_parameters['tol_mismatch']/100)
 
     return loss_df
 
