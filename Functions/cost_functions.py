@@ -440,7 +440,7 @@ def calculate_scenarios_iterations(iteration_input_tables, year_start, analyse_y
 
     # Reset usage to zero for all time first
     component_usage_by_year_iter['TotalUsageY'] = 0
-
+    component_usage_by_year_iter.to_csv('component_usage_by_year_iter.csv')
     # Any "Installation" cost components only have a cost in the year of installation
     component_usage_by_year_iter['TotalUsageY'] = np.where(((component_usage_by_year_iter[
                                                                  'Timing'] == 'Installation') & (
