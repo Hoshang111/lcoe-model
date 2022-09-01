@@ -971,6 +971,8 @@ def apply_temp_loss(temp_var, ghi, coefficient):
     temp_df *= coefficient/1000
     temp_loss = 1+temp_df
 
+    temp_loss.index = ghi.index
+
     return temp_loss
 
 
