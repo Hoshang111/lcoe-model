@@ -13,7 +13,6 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import Functions.simulation_functions as func
-import Functions.mc_yield_functions as mc_func
 from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable, get_npv
