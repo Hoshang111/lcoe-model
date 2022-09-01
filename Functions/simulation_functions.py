@@ -932,4 +932,60 @@ def mc_dc(DCTotal,
     # dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
     return dc_results, dc_df, dc_size
 
+def apply_degradation(ghi, deg_y1, deg_ann):
+    """"""
+
+    delta_index = (ghi.index - ghi.index[0]).days
+    delta_t = delta_index.to_frame(index=False)
+
+    deg_factor = delta_t.copy(deep=True)
+    deg_factor.loc[(deg_factor[0] <= 365)] = 1-deg_factor*deg_y1/3.65e4
+    deg_factor.loc[(deg_factor[0] > 365)] = 1-deg_y1/100-deg_ann*deg_factor/3.65e4
+
+    deg_factor.index = ghi.index
+    deg_factor.columns = np.arange(len(deg_factor.columns))
+
+    return deg_factor
+
+def apply_soiling(soiling_var, weather, default_soiling):
+    """"""
+
+    month_timeseries = weather.index.month
+    dummy = month_timeseries.to_frame(index=False)
+    init_soiling = dummy.astype('float64', copy=True)
+    for month, value in default_soiling:
+        init_soiling.loc[init_soiling[0] == month, 0] = value
+
+    total_soiling = 1-init_soiling*soiling_var
+
+    total_soiling.index = weather.index
+
+    return total_soiling
+
+def apply_temp_loss(temp_var, ghi, coefficient):
+    """"""
+
+    temp_df = ghi.multiply(np.array(temp_var), axis='columns')
+    temp_df *= coefficient/1000
+    temp_loss = 1+temp_df
+
+    return temp_loss
+
+
+def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
+    """"""
+
+    deg_df = apply_degradation(ghi=weather['ghi'], first_year_degradation=loss_parameters['degr_yr1'],
+                               degradation_rate=loss_parameters['degr_annual'])
+
+    soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
+                               weather=weather['ghi'], default_soiling=default_soiling)
+
+    temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather, coefficient=temp_coefficient)
+
+    tol_mismatch = 1-loss_parameters['tol_mismatch']/100
+
+    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+
+    return loss_df
 
