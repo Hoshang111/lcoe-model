@@ -985,7 +985,7 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     tol_mismatch = 1-loss_parameters['tol_mismatch']/100
 
-    loss_df = soiling_df.multiply(np.array(tol_mismatch))*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = soiling_df*temp_df*tol_mismatch
 
     return loss_df
 
