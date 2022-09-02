@@ -129,9 +129,11 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                                                                                        module_params, rack_params, zone_area,
                                                                                        new_interval_ratio)
         rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
-        dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
+        dc_results, dc_initial, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
                                                    rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
                                                    num_of_zones)
+        loss_factor = func.get_dcloss(loss_params, weather_simulation, default_soiling, temp_coefficient)
+        dc_df = dc_initial.mul(loss_factor, axis=0)
         kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
         cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
         component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
