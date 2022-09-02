@@ -981,7 +981,7 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
                                weather=weather['ghi'], default_soiling=default_soiling)
 
-    temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather, coefficient=temp_coefficient)
+    temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather['ghi'], coefficient=temp_coefficient)
 
     tol_mismatch = 1-loss_parameters['tol_mismatch']/100
 
