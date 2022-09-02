@@ -79,6 +79,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     temp_coefficient = -0.01
     loss_factor = func.get_dcloss(loss_params, weather_simulation, default_soiling, temp_coefficient)
     dc_df = dc_initial.mul(loss_factor, axis=0)
+    print(loss_factor)
 
     #%% ==========================================
     # Revenue and storage behaviour
