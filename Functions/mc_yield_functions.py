@@ -359,6 +359,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers
     random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
+    random_timeseries[:, 0][:, None] = 0.5
 
     output_dict = {}
     ghi_interim = []
@@ -405,7 +406,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
  # %% ==========================================================
     #calculate revenue from yield dictionary
     mc_yield_outputs = {}
-    yield_dict = output_dict
+    weather_mc_dict = output_dict
+    loss_mc_dict =
 
 
     for key in yield_dict:
