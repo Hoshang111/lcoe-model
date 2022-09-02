@@ -347,10 +347,12 @@ def combine_variance(weather_dict, MAV_loss_df, SAT_loss_df):
             raise ValueError('System does not contain rack identifier (SAT or MAV)')
 
         weather_mc_dict[key] = weather_dict[key].mul(loss_df[0], axis=0)
-        loss_mc_dict[key] = loss_df.mul(weather_dict[key][0])
-        combined_mc_dict[key] = loss_df.mul(weather_dict[key])
+        loss_mc_dict[key] = loss_df.mul(weather_dict[key][0], axis=0)
+        combined_mc_dict[key] = loss_df.mul(weather_dict[key], axis=0)
 
     return weather_mc_dict, loss_mc_dict, combined_mc_dict
+
+ # %% ===================================================
 
 def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     """"""
