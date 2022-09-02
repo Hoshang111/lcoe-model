@@ -306,11 +306,11 @@ def apply_temp_loss(temp_var, ghi, coefficient):
 def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
     """"""
 
-    deg_df = apply_degradation(ghi=weather['ghi'], first_year_degradation=loss_parameters['degr_yr1'],
+    deg_df = apply_degradation(ghi=weather[0], first_year_degradation=loss_parameters['degr_yr1'],
                                degradation_rate=loss_parameters['degr_annual'])
 
     soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
-                               weather=weather['ghi'], default_soiling=default_soiling)
+                               weather=weather[0], default_soiling=default_soiling)
 
     temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather, coefficient=temp_coefficient)
 
