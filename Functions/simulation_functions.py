@@ -952,11 +952,9 @@ def apply_soiling(soiling_var, weather, default_soiling):
     """"""
 
     month_timeseries = weather.index.month
-    dummy = month_timeseries.to_frame(index=False)
-    init_soiling = dummy.astype('float64', copy=True)
-    init_soiling.columns = np.arange(len(init_soiling.columns))
+    init_soiling = month_timeseries.astype('float64', copy=True)
     for month, value in default_soiling:
-        init_soiling.loc[init_soiling[0] == month, 0] = value
+        init_soiling.loc[init_soiling == month, 0] = value
 
     total_soiling = 1-init_soiling*soiling_var
 
@@ -967,7 +965,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
 def apply_temp_loss(temp_var, ghi, coefficient):
     """"""
 
-    temp_df = ghi.multiply(np.array(temp_var), axis='columns')
+    temp_df = ghi*temp_var
     temp_df *= coefficient/1000
     temp_loss = 1+temp_df
 
