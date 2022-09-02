@@ -75,10 +75,13 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 
 # %%
 
-mc_yield_dict = {}
+weather_mc_dict = {}
+loss_mc_dict = {}
+combined_mc_dict = {}
 for key in scenarios:
     results_dict = scenario_dict[key]
-    mc_yield_dict[key] = mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables)
+    weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key] = \
+        mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables)
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)

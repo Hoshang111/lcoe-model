@@ -320,6 +320,38 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
+def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, discount_rate):
+    """"""
+    mc_yield_outputs = {}
+
+    for key in yield_dict:
+        revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
+        discounted_kWh = sizing.get_npv_revenue(revenue[0], discount_rate)
+        dollar_outputs = sizing.get_npv_revenue(revenue[3], discount_rate)
+        mc_yield_outputs[key] = [discounted_kWh, dollar_outputs]
+
+    return mc_yield_outputs
+
+def combine_variance(weather_dict, MAV_loss_df, SAT_loss_df):
+    """"""
+
+    weather_mc_dict = {}
+    loss_mc_dict = {}
+    combined_mc_dict = {}
+    for key in weather_dict:
+        if 'MAV' in key:
+            loss_df = MAV_loss_df
+        elif 'SAT' in key:
+            loss_df = SAT_loss_df
+        else:
+            raise ValueError('System does not contain rack identifier (SAT or MAV)')
+
+        weather_mc_dict[key] = weather_dict[key].mul(loss_df[0], axis=0)
+        loss_mc_dict[key] = loss_df.mul(weather_dict[key][0])
+        combined_mc_dict[key] = loss_df.mul(weather_dict[key])
+
+    return weather_mc_dict, loss_mc_dict, combined_mc_dict
+
 def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     """"""
 
@@ -403,20 +435,19 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     MAV_loss_df = get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
     SAT_loss_df = get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
 
- # %% ==========================================================
-    #calculate revenue from yield dictionary
-    mc_yield_outputs = {}
-    weather_mc_dict = output_dict
-    loss_mc_dict =
+    # %% =========================================================
+    # creating three different datatables
 
+    weather_mc_dict, loss_mc_dict, combined_mc_dict = combine_variance(output_dict, MAV_loss_df, SAT_loss_df)
 
-    for key in yield_dict:
-        revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
-        discounted_kWh = sizing.get_npv_revenue(revenue[0], discount_rate)
-        dollar_outputs = sizing.get_npv_revenue(revenue[3], discount_rate)
-        mc_yield_outputs[key] = [discounted_kWh, dollar_outputs]
+    # %% ==========================================================
+    # calculate revenue from yield dictionary
 
-    return mc_yield_outputs
+    weather_mc_outputs = gen_revenue(weather_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+
+    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs
 
 
 
