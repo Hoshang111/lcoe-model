@@ -955,7 +955,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
     dummy = month_timeseries.to_series()
     init_soiling = dummy.astype('float64', copy=True)
     for month, value in default_soiling:
-        init_soiling.loc[init_soiling == month, 0] = value
+        init_soiling.loc[init_soiling == month] = value
 
     total_soiling = 1-init_soiling*soiling_var
 
