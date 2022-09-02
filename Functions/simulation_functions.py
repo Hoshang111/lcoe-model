@@ -952,7 +952,7 @@ def apply_soiling(soiling_var, weather, default_soiling):
     """"""
 
     month_timeseries = weather.index.month
-    dummy = month_timeseries.to_index
+    dummy = month_timeseries.to_series
     init_soiling = dummy.astype('float64', copy=True)
     for month, value in default_soiling:
         init_soiling.loc[init_soiling == month, 0] = value
