@@ -82,7 +82,7 @@ combined_mc_dict = {}
 for key in scenarios:
     results_dict = scenario_dict[key]
     weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
-        mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables)
+        mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables)
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
@@ -129,6 +129,8 @@ def extract_results_tables(scenario_dict, analysis_year):
 
 
 # %%
+cost_mc_dict = {}
+
 for year in scenarios:
     analysis_year = int(year)
     scenario_tables = extract_scenario_tables(scenario_dict, year)
@@ -140,33 +142,11 @@ for year in scenarios:
     data_tables_iter = create_iteration_tables(new_data_tables, 100, iteration_start=0)
 
     # Calculate cost result
-    outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, analyse_years=30)
+    outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2058)
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-    #  ==========================================================
-    # Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
-    # First generate a big table with index consisting of Iteration, Year, ScenarioID.
-    combined_scenario_data = pd.DataFrame()
+    cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate)
+    cost_mc_dict[year] = cost_dict
 
-    results_list = extract_results_tables(scenario_dict, year)
-
-    for results in results_list:
-        print('Length of results tuple is: ', len(results))
-        scenario_id, scenario_tables_optimum, revenue_data, kWh_export_data, npv_output = results
-
-        if len(cash_flow_by_year_iter[scenario_id])>0:
-            scenario_data = cash_flow_by_year_iter[scenario_id]
-            scenario_data.name = 'cost'
-
-            scenario_data['ScenarioID'] = scenario_id
-
-            combined_scenario_data = pd.concat([combined_scenario_data, scenario_data])
-
-            # Now discount the costs, etc
-
-            combined_scenario_data['cost_disc'] = combined_scenario_data['cost'] / (1 + discount_rate) ** \
-                                                             (combined_scenario_data['Year'] - year)
-
-            # Create a new table that removes the year, adding all the discounted flows
-            discounted_sum = pd.pivot_table(combined_scenario_data, index=['Iteration', 'ScenarioID'],
-                                            values=['cost_disc'])
+# %% ==================================================
+# Export relevant data
