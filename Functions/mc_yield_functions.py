@@ -395,7 +395,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     end_date = '31/12/2058 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers
-    random_timeseries = np.random.random((len(month_series), len(yield_datatables[0])))
+    random_timeseries = np.random.random((len(month_series), len(yield_datatables['MAV'])))
     random_timeseries[:, 0][:, None] = 0.5
 
     output_dict = {}
