@@ -145,7 +145,7 @@ for year in scenarios:
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2058)
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-    cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate)
+    cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, year)
     cost_mc_dict[year] = cost_dict
 
 # %% ==================================================

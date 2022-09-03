@@ -459,20 +459,20 @@ def get_cost_dict(cash_flow, discount_rate, install_year):
 
     cost_dict = {}
     for column in cash_flow:
-        key = column.name
-        column.name = 'cost'
-        column.reset_index(inplace=True)
-        discounted_cost = column['cost'] / (1 + discount_rate) ** \
-                                                     (column['Year'] - install_year)
-        column = pd.concat([column, discounted_cost])
+        dummy = cash_flow[column]
+        dummy.columns = ['cost']
+        dummy.reset_index(inplace=True)
+        discounted_cost = dummy['cost'] / (1 + discount_rate) ** \
+                                                     (dummy['Year'] - install_year)
+        dummy = pd.concat([dummy, discounted_cost])
         cost_total_list = []
         discounted_cost_total_list = []
         cost_list = []
         discounted_cost_list = []
         sub_dict = {}
 
-        for iteration in column['Iteration']:
-            cost_iteration = column[column['Iteration'] == iteration]
+        for iteration in dummy['Iteration']:
+            cost_iteration = dummy[dummy['Iteration'] == iteration]
             cost_iteration.index = cost_iteration['Year']
             cost_total = cost_iteration['cost'].sum()
             discounted_cost_total = cost_iteration['discounted_cost'].sum()
@@ -486,7 +486,7 @@ def get_cost_dict(cash_flow, discount_rate, install_year):
         sub_dict['discounted_cost_total'] = pd.Series(discounted_cost_total_list)
         sub_dict['cost_total'] = pd.Series(cost_total_list)
 
-        cost_dict[key] = sub_dict
+        cost_dict[column] = sub_dict
 
     return cost_dict
 
