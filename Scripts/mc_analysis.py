@@ -63,7 +63,8 @@ input_params['num_of_zones'] = pd.to_numeric(input_params['num_of_zones'])
 
 discount_rate = input_params['discount_rate'].values[0]
 
-yield_datatables = get_yield_datatables()
+loss_datatables = {}
+loss_datatables['MAV'], loss_datatables['SAT'] = get_yield_datatables()
 
  # %% ===========================================================
 # Monte Carlo for yield parameters
@@ -80,7 +81,7 @@ loss_mc_dict = {}
 combined_mc_dict = {}
 for key in scenarios:
     results_dict = scenario_dict[key]
-    weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key] = \
+    weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
         mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables)
 
 # %% ===========================================================
