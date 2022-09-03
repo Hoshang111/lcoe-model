@@ -325,10 +325,11 @@ def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, disco
     mc_yield_outputs = {}
 
     for key in yield_dict:
+        NPV_outputs = {}
         revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
-        discounted_kWh = sizing.get_npv_revenue(revenue[0], discount_rate)
-        dollar_outputs = sizing.get_npv_revenue(revenue[3], discount_rate)
-        mc_yield_outputs[key] = [discounted_kWh, dollar_outputs]
+        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
+        NPV_outputs['NPV_revenue'], NPV_outputs['NPV_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        mc_yield_outputs[key] = NPV_outputs
 
     return mc_yield_outputs
 
@@ -449,7 +450,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
     combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
 
-    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs
+    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount
 
 
 
