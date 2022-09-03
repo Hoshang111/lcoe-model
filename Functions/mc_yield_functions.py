@@ -459,9 +459,9 @@ def get_cost_dict(cash_flow, discount_rate, install_year):
 
     cost_dict = {}
     for column in cash_flow:
-        dummy = cash_flow[column]
-        dummy.columns = ['cost']
-        dummy.reset_index(inplace=True)
+        dummy_a = cash_flow[column]
+        dummy_a.columns = ['cost']
+        dummy = dummy_a.reset_index(inplace=True)
         discounted_cost = dummy['cost'] / (1 + discount_rate) ** \
                                                      (dummy['Year'] - install_year)
         dummy = pd.concat([dummy, discounted_cost])
