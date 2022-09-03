@@ -327,8 +327,10 @@ def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, disco
     for key in yield_dict:
         NPV_outputs = {}
         revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
+        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(revenue[0], discount_rate=0)
         NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
-        NPV_outputs['NPV_revenue'], NPV_outputs['NPV_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0)
+        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
         mc_yield_outputs[key] = NPV_outputs
 
     return mc_yield_outputs
@@ -435,8 +437,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                        (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
     temp_coefficient = -0.01
-    MAV_loss_df = get_dcloss(yield_datatables[0], mc_ghi, default_soiling, temp_coefficient)
-    SAT_loss_df = get_dcloss(yield_datatables[1], mc_ghi, default_soiling, temp_coefficient)
+    MAV_loss_df = get_dcloss(yield_datatables['MAV'], mc_ghi, default_soiling, temp_coefficient)
+    SAT_loss_df = get_dcloss(yield_datatables['SAT'], mc_ghi, default_soiling, temp_coefficient)
 
     # %% =========================================================
     # creating three different datatables
@@ -450,7 +452,43 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
     combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
 
-    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount
+    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount,
+
+def get_cost_dict(cash_flow, discount_rate, install_year):
+    """"""
+
+    cost_dict = {}
+    for column in cash_flow:
+        key = column.name
+        column.name = 'cost'
+        column.reset_index(inplace=True)
+        discounted_cost = column['cost'] / (1 + discount_rate) ** \
+                                                     (column['Year'] - install_year)
+        column = pd.concat([column, discounted_cost])
+        cost_total_list = []
+        discounted_cost_total_list = []
+        cost_list = []
+        discounted_cost_list = []
+        sub_dict = {}
+
+        for iteration in column['Iteration']:
+            cost_iteration = column[column['Iteration'] == iteration]
+            cost_iteration.index = cost_iteration['Year']
+            cost_total = cost_iteration['cost'].sum()
+            discounted_cost_total = cost_iteration['discounted_cost'].sum()
+            cost_list.append(cost_iteration['cost'])
+            discounted_cost_list.append(cost_iteration['discounted_cost'])
+            cost_total_list.append(cost_total)
+            discounted_cost_total_list.append(discounted_cost_total)
+
+        sub_dict['cost'] = pd.DataFrame(cost_list)
+        sub_dict['discounted_cost'] = pd.DataFrame(discounted_cost_list)
+        sub_dict['discounted_cost_total'] = pd.Series(discounted_cost_total_list)
+        sub_dict['cost_total'] = pd.Series(cost_total_list)
+
+        cost_dict[key] = sub_dict
+
+    return cost_dict
 
 
 
