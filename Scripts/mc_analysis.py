@@ -130,6 +130,8 @@ def extract_results_tables(scenario_dict, analysis_year):
 
 # %%
 cost_mc_dict = {}
+data_iter_dict = {}
+output_iter_dict ={}
 
 for year in scenarios:
     analysis_year = int(year)
@@ -148,5 +150,17 @@ for year in scenarios:
     cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, year)
     cost_mc_dict[year] = cost_dict
 
+    data_iter_dict[year] = data_tables_iter
+    output_iter_dict[year] = outputs_iter
+
 # %% ==================================================
 # Export relevant data
+
+analysis_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
+                 'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_mc_dict,
+                 'discounted_ghi':ghi_df, 'loss_parameters': loss_datatables,
+                 'data_tables': data_iter_dict, 'output_tables': output_iter_dict}
+
+
+pickle_path = os.path.join(parent_path, 'OutputFigures', 'analysis_dictionary.p')
+cpickle.dump(analysis_dict, open(pickle_path, "wb"))
