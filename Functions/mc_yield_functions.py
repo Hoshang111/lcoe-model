@@ -454,24 +454,25 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
 
     return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount,
 
-def get_cost_dict(cash_flow, discount_rate, install_year):
+def get_cost_dict(cash_flow, discount_rate, year):
     """"""
 
+    install_year = int(year)
     cost_dict = {}
     for column in cash_flow:
         dummy_a = cash_flow[column]
-        dummy_a.columns = ['cost']
         dummy = dummy_a.reset_index()
         discounted_cost = dummy['cost'] / (1 + discount_rate) ** \
                                                      (dummy['Year'] - install_year)
-        dummy = pd.concat([dummy, discounted_cost])
+        dummy = pd.concat([dummy, discounted_cost], axis=1, ignore_index=True)
+        dummy.columns = ['Iteration', 'Year', 'cost', 'discounted_cost']
         cost_total_list = []
         discounted_cost_total_list = []
         cost_list = []
         discounted_cost_list = []
         sub_dict = {}
-
-        for iteration in dummy['Iteration']:
+        iteration_array = dummy['Iteration'].unique()
+        for iteration in iteration_array:
             cost_iteration = dummy[dummy['Iteration'] == iteration]
             cost_iteration.index = cost_iteration['Year']
             cost_total = cost_iteration['cost'].sum()
@@ -481,8 +482,14 @@ def get_cost_dict(cash_flow, discount_rate, install_year):
             cost_total_list.append(cost_total)
             discounted_cost_total_list.append(discounted_cost_total)
 
-        sub_dict['cost'] = pd.DataFrame(cost_list)
-        sub_dict['discounted_cost'] = pd.DataFrame(discounted_cost_list)
+        cost_df = pd.DataFrame(cost_list)
+        cost_df.reset_index(inplace=True)
+        cost_df.drop(columns=['index'], inplace=True)
+        sub_dict['cost'] = cost_df.T
+        discounted_cost_df = pd.DataFrame(discounted_cost_list)
+        discounted_cost_df.reset_index(inplace=True)
+        discounted_cost_df.drop(columns=['index'], inplace=True)
+        sub_dict['discounted_cost'] = discounted_cost_df.T
         sub_dict['discounted_cost_total'] = pd.Series(discounted_cost_total_list)
         sub_dict['cost_total'] = pd.Series(cost_total_list)
 
