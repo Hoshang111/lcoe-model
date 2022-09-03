@@ -218,5 +218,5 @@ optimised_tables.to_csv(file_name)
 # %% ========================================
 # save results tables to pickl
 
-pickle_path = file_name = os.path.join(parent_path, 'OutputFigures', 'scenario_tables_2028.p')
+pickle_path = os.path.join(parent_path, 'OutputFigures', 'scenario_tables_2028.p')
 cpickle.dump(output_dict, open(pickle_path, "wb"))
