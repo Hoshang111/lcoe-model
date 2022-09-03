@@ -21,6 +21,17 @@ import _pickle as cpickle
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
+# %% ===========================================================
+# import data from pickle
+
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+
+pickle_path = os.path.join(parent_path, 'OutputFigures', 'analysis_dictionary.p')
+Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
+
+
+
 # %%
 for year in scenarios:
     analysis_year = int(year)
