@@ -33,6 +33,8 @@ scenarios = [#'2024',
             #'2026',
             '2028']
 
+iter_num = 500
+
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
 
@@ -64,7 +66,7 @@ input_params['num_of_zones'] = pd.to_numeric(input_params['num_of_zones'])
 discount_rate = input_params['discount_rate'].values[0]
 
 loss_datatables = {}
-loss_datatables['MAV'], loss_datatables['SAT'] = get_yield_datatables()
+loss_datatables['MAV'], loss_datatables['SAT'] = get_yield_datatables(iter_num)
 
  # %% ===========================================================
 # Monte Carlo for yield parameters
@@ -141,7 +143,7 @@ for year in scenarios:
     new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
     # Create iteration data
-    data_tables_iter = create_iteration_tables(new_data_tables, 100, iteration_start=0)
+    data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
 
     # Calculate cost result
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2058)

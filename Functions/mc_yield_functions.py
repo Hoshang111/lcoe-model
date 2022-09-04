@@ -66,7 +66,7 @@ def generate_mc_timeseries(weather_dict, start_date, end_date, random_list):
 
     return mc_timeseries
 
-def get_yield_datatables():
+def get_yield_datatables(iter_num):
     # First get data from Airtable
     api_key = 'keyJSMV11pbBTdswc'
     base_id = 'appjQftPtMrQK04Aw'
@@ -76,7 +76,7 @@ def get_yield_datatables():
 
     # Now generate iteration data. Note that all variables are assumed flat distribution in this case (unless specified otherwise in the airtable database).
     yield_variables_iter = generate_iterations(yield_variables, index_name='YieldID',
-                                        index_description='YieldName', num_iterations=100,
+                                        index_description='YieldName', num_iterations=iter_num,
                                         iteration_start=0, default_dist_type = 'flat')
 
 

@@ -186,8 +186,8 @@ results_SAT_PERCa_2028 = optimize (SAT, PERC2031, 2028, 'SAT_PERCa_2028', scenar
 results_MAV_PERCa_2028 = optimize (MAV, PERC2031, 2028, 'MAV_PERCa_2028', scenario_tables_2028, MAV_loss_params)
 results_SAT_HJTa_2028 = optimize (SAT, HJT2031, 2028, 'SAT_HJTa_2028', scenario_tables_2028, SAT_loss_params)
 results_MAV_HJTa_2028 = optimize (MAV, HJT2031, 2028, 'MAV_HJTa_2028', scenario_tables_2028, MAV_loss_params)
-# results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
-# results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
+results_SAT_TOPa_2028 = optimize (SAT, TOP2031, 2028, 'SAT TOPa 2028',scenario_tables_2028)
+results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV TOPa 2028',scenario_tables_2028)
 
 # %% Save and download optimized layouts, needs to be updated
 
