@@ -31,6 +31,7 @@ weather.drop(columns=['Year', 'Month', 'Day', 'Hour', 'Minute'], inplace=True)
 # %% ======================================
 # Get headline numbers
 
+
 # %% ======================================
 # Rack_module
 rack_type = '5B_MAV'  # Choose rack_type from 5B_MAV or SAT_1 for maverick or single axis tracking respectively

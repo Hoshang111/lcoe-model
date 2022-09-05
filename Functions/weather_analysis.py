@@ -176,8 +176,9 @@ def weather_scatter(ground, satellite, fig_name):
 
     # Best fit line - edit changed to second order
     # m, b = np.polyfit(x, y, 1)
-    if not x.empty:
-        c2, c1, c0 = np.polyfit(x, y, 2)
+    if len(x) > 2:
+        idx = np.isfinite(satellite) & np.isfinite(ground)
+        c2, c1, c0 = np.polyfit(x[idx], y[idx], 2)
         correlation_matrix = np.corrcoef(x.values, y.values)
         correlation_xy = correlation_matrix[0, 1]
         r_squared = correlation_xy ** 2
