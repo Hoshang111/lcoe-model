@@ -504,10 +504,14 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
     show_regression=True 
     show_r=True
     show_r2=False
-                                     
-    # This removes first any input factors with no variation
-    filtered_factors = input_factors.loc[:, (input_factors.std() > 0)]
 
+    # Remove any columns that are not numeric
+    filtered_factors = input_factors.select_dtypes(exclude=['object'])
+
+    # This removes first any input factors with no variation
+    filtered_factors = filtered_factors.loc[:, (filtered_factors.std() > 0)]
+
+    filtered_factors.to_csv('filtered_factors.csv')
     correlation_table = filtered_factors.corr()
 
     correlation_table['variance'] = round(
