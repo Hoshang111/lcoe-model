@@ -68,15 +68,12 @@ def weather_scatter(ground, satellite, fig_name):
         correlation_matrix = np.corrcoef(x.values, y.values)
         correlation_xy = correlation_matrix[0, 1]
         r_squared = correlation_xy ** 2
-
-        ax.plot(x * x * c2 + x * c1 + c0, y, linewidth=3, color='C1')
-        # ax.set_ylim(0,1.25)
-        # ax.set_xlim(0,1.25)
         plot_text = 'R-squared = %.2f' % r_squared
         plt.text(0.3, 0.3, plot_text, fontsize=25)
     else:
         c2, c1, c0 = [0, 0, 0]
 
+    ax.axline((0, 0), slope=1, label='m=1', linewidth=3, color='orange')
 
     # plt.show()
     save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/" + fig_name
