@@ -33,7 +33,7 @@ scenarios = [#'2024',
             #'2026',
             '2028']
 
-iter_num = 500
+iter_num = 100
 
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv

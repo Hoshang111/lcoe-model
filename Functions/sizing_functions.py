@@ -212,7 +212,7 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
          component_list, currency_list, costcategory_list
 
     # Running the cost calculations
-    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, analyse_years=30)
+    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, year_end =2058)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
     if return_table_outputs:
@@ -315,7 +315,7 @@ def get_npv_revenue(yearly_values,
 
     return npv, yearly_npv
 
-def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, install_year=2025):
+def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, install_year=2025, end_year=2058):
 
     """
     Function to return monte-carlo generated set of cost outputs and data
@@ -371,7 +371,7 @@ def get_mcanalysis(num_of_racks, rack_params, module_params, data_tables, instal
     data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
 
     outputs_iter = calculate_scenarios_iterations(data_tables_iter,\
-         year_start=install_year, analyse_years=30)
+         year_start=install_year, year_end = end_year)
 
     component_usage_y_iter, component_cost_y_iter, total_cost_y_iter,\
          cash_flow_by_year_iter = outputs_iter

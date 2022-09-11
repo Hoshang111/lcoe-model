@@ -396,14 +396,14 @@ def generate_log_normal_apply(self, nom, low, hi):
     return generate_log_normal(nom, low, hi)
 
 
-def calculate_scenarios(input_tables, year_start, analyse_years):
+def calculate_scenarios(input_tables, year_start, year_end):
 
 
     data_tables_iter = create_iteration_tables(input_tables, 1, iteration_start=0)
     # scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter = data_tables_iter
 
 
-    component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter = calculate_scenarios_iterations(data_tables_iter, year_start, analyse_years)
+    component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter = calculate_scenarios_iterations(data_tables_iter, year_start, year_end)
 
 
     component_usage_by_year = component_usage_by_year_iter.drop(columns='Iteration')
