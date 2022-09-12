@@ -335,23 +335,12 @@ def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, disco
 
     return mc_yield_outputs
 
-def combine_variance(weather_dict, MAV_loss_df, SAT_loss_df):
+def combine_variance(weather_dict, loss_df):
     """"""
 
-    weather_mc_dict = {}
-    loss_mc_dict = {}
-    combined_mc_dict = {}
-    for key in weather_dict:
-        if 'MAV' in key:
-            loss_df = MAV_loss_df
-        elif 'SAT' in key:
-            loss_df = SAT_loss_df
-        else:
-            raise ValueError('System does not contain rack identifier (SAT or MAV)')
-
-        weather_mc_dict[key] = weather_dict[key].mul(loss_df[0], axis=0)
-        loss_mc_dict[key] = loss_df.mul(weather_dict[key][0], axis=0)
-        combined_mc_dict[key] = loss_df.mul(weather_dict[key], axis=0)
+    weather_mc_dict = weather_dict.mul(loss_df[0], axis=0)
+    loss_mc_dict = loss_df.mul(weather_dict[0], axis=0)
+    combined_mc_dict = loss_df.mul(weather_dict, axis=0)
 
     return weather_mc_dict, loss_mc_dict, combined_mc_dict
 
@@ -442,8 +431,19 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
 
     # %% =========================================================
     # creating three different datatables
+    # due to memory issues this is now looped per scenario
+    weather_mc_dict = {}
+    loss_mc_dict ={}
+    combined_mc_dict ={}
+    for key in dc_ordered:
+        if 'MAV' in key:
+            loss_df = MAV_loss_df
+        elif 'SAT' in key:
+            loss_df = SAT_loss_df
+        else:
+            raise ValueError('System does not contain rack identifier (SAT or MAV)')
 
-    weather_mc_dict, loss_mc_dict, combined_mc_dict = combine_variance(output_dict, MAV_loss_df, SAT_loss_df)
+        weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key] = combine_variance(output_dict[key], loss_df)
 
     # %% ==========================================================
     # calculate revenue from yield dictionary

@@ -27,13 +27,26 @@ warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
  # %% ===========================================================
+def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
+     """"""
+
+     dump_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
+                      'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_mc_dict,
+                      'discounted_ghi': ghi_df, 'loss_parameters': loss_datatables,
+                      'data_tables': data_iter_dict, 'output_tables': output_iter_dict}
+     file_name = "analysis_dict" + '_' +str(scenario_id) + "_" + str(repeat_num) + '.p'
+     pickle_path = os.path.join(parent_path, 'OutputFigures', file_name)
+     cpickle.dump(analysis_dict, open(pickle_path, "wb"))
+
+ # %% ===========================================================
  # define scenarios
 
 scenarios = [#'2024',
             #'2026',
             '2028']
 
-iter_num = 100
+iter_num = 200
+iter_limit = 50
 
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
@@ -81,10 +94,20 @@ mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 weather_mc_dict = {}
 loss_mc_dict = {}
 combined_mc_dict = {}
-for key in scenarios:
-    results_dict = scenario_dict[key]
-    weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
-        mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables)
+if iter_num > iter_limit:
+    repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
+    for i in range(repeats):
+        loss_datatables_split = loss_datatables[i*iter_limit:(i+1)*iter_limit]
+        for key in scenarios:
+            results_dict = scenario_dict[key]
+            weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
+                mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables_split)
+            dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, key)
+else:
+    for key in scenarios:
+        results_dict = scenario_dict[key]
+        weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
+            mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables)
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
