@@ -81,15 +81,6 @@ for year in scenarios:
     scenario_tables = extract_scenario_data(Analysis_dict,year)
 
 
-# %%
-
-# print(scenario_tables)
-
-calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
-                                                          savename=None)
-
-calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_kWh_total_discounted',
-                                                          savename=None)
 
 
 # %%
@@ -131,8 +122,8 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
     correlation_table['90th percentile'] = input_factor_range['90%']
 
     print('Total Variance sum (should be 2.0) = ', total_variance)
-
-    print(correlation_table.sort_values(
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print(correlation_table.sort_values(
         by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table))
     correlation_table.to_csv('correlation_table.csv')
     # Graph scatterplot:
@@ -191,6 +182,86 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
                                          savename + parameter)
                 plt.savefig(file_name)
             plt.show()
+
+# %%
+
+# import matplotlib.pylab as pylab
+# params = {
+#     # 'legend.fontsize': 'x-large',
+#     #       'figure.figsize': (15, 5),
+#          'axes.labelsize': 'small',
+#          'axes.titlesize':'small',
+#       'xtick.labelsize':'small',
+#       'ytick.labelsize':'small'
+# }
+# pylab.rcParams.update(params)
+import matplotlib
+
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+
+# %%
+
+# print(scenario_tables)
+
+calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
+                                                          savename=None)
+
+calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_kWh_total_discounted',
+                                                          savename=None)
+# %%
+def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
+               title=None, xlabel=None, ylabel=None, zlabel=None):
+    x = input_data[parameter_x]
+    y = input_data[parameter_y]
+    z = input_data[parameter_z]
+
+    fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+
+    scatterplot = ax0.scatter(x, y, c=z, cmap=None, s=None)
+    plt.colorbar(scatterplot, cax=ax1)
+
+    if title is not None:
+        ax0.set_title(title)
+
+    if xlabel is not None:
+        ax0.set_xlabel(xlabel)
+    else:
+        ax0.set_xlabel(parameter_x)
+    if ylabel is not None:
+        ax0.set_ylabel(ylabel)
+    else:
+        ax0.set_ylabel(parameter_y)
+    if zlabel is not None:
+        ax1.set_title(zlabel)
+
+    # fig_title = "Delta LCOE - " + savename
+    # current_path = os.getcwd()
+    # parent_path = os.path.dirname(current_path)
+    # file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+    # plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.show()
+    plt.close()
+# %%
+
+graph_scatter_2d(scenario_tables,
+                 parameter_x='MAV_ave_temp_increase',
+                 parameter_y = 'MAV_degr_annual',
+                 parameter_z = 'MAV_PERCa_2028_kWh_total_discounted',
+                 xlabel = 'MAV ave temp increase',
+                 ylabel = 'MAV annual degradation',
+                 zlabel = 'Disc kWh',
+                 title = 'Key factors affecting MAV generation')
+
+# %%
+
+graph_scatter_2d(scenario_tables,
+                 parameter_x='SAT_degr_annual',
+                 parameter_y = 'SAT_bifaciality_modifier',
+                 parameter_z = 'SAT_HJTa_2028_kWh_total_discounted',
+                 xlabel = 'SAT annual degradation',
+                 ylabel = 'SAT bifaciality modifier',
+                 zlabel = 'Disc kWh',
+                 title = 'Key factors affecting SAT generation')
 
 
 # %%
