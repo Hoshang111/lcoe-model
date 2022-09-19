@@ -33,7 +33,7 @@ Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 # %% ==============================
 # Function to extract data tables from the analysis_dict
 
-def extract_scenario_data(df, year_str):
+def extract_parameter_data(df, year_str):
     cost_mc = df['cost_mc'][year_str]
     weather_mc = df['weather_mc'][year_str]
     loss_mc = df['loss_mc'][year_str]
@@ -41,36 +41,68 @@ def extract_scenario_data(df, year_str):
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
+    data_tables = df['data_tables'][year_str]
 
-    all_parameters = pd.DataFrame(index=discounted_ghi.index)
 
+
+
+    # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
+    output_parameters = pd.DataFrame(index=discounted_ghi.index)
+
+    # Get results for cost monte carlo
+    for item in cost_mc:
+        cost_mc_flat = cost_mc[item]['discounted_cost_total'].rename('d_cost').to_frame()
+        cost_mc_flat = cost_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(cost_mc_flat)
+
+    # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
+    for item in loss_mc:
+        loss_mc_flat = loss_mc[item]['npv_revenue'].rename('d_revenue_loss').to_frame()
+        loss_mc_flat = loss_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(loss_mc_flat)
+
+    # Get results for weather only Monte Carlo
+    for item in weather_mc:
+        weather_mc_flat = weather_mc[item]['npv_revenue'].rename('d_revenue_weather').to_frame()
+        weather_mc_flat = weather_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(weather_mc_flat)
+
+
+    # Get results for combined_yield
+    for item in combined_yield_mc:
+        combined_yield_mc_flat = combined_yield_mc[item]['npv_revenue'].rename('d_revenue_combined').to_frame()
+        combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(combined_yield_mc_flat)
+
+    output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
+
+    # Now generate a list of all input parameters
+    input_parameters = pd.DataFrame(index=discounted_ghi.index)
+    # Get input parameters from cost monte carlo
+    cost_parameters = generate_parameters(data_tables)
+    cost_parameters_flat = cost_parameters.copy()
+    cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
+                                    cost_parameters_flat.columns.values]
+
+    input_parameters = input_parameters.join(cost_parameters_flat)
 
     # Grab the loss parameters for MAV and SAT
     for item in loss_parameters:
         label = item
         loss_parameters_flat = loss_parameters[item]
         loss_parameters_flat = loss_parameters_flat.add_prefix(item + '_')
-        all_parameters = all_parameters.join(loss_parameters_flat)
+        input_parameters = input_parameters.join(loss_parameters_flat)
 
-    # grab discounted kWh from loss_mc (which varies the loss parameters)
-    for item in loss_mc:
-        label = item
-        loss_mc_flat = loss_mc[item]['kWh_total_discounted'].rename('kWh_total_discounted').to_frame()
-        print(loss_mc_flat.head())
-        loss_mc_flat = loss_mc_flat.add_prefix(item + '_')
-        all_parameters = all_parameters.join(loss_mc_flat)
+    # Grab gdi parameters
+    discounted_ghi_flat = discounted_ghi.copy()
+    discounted_ghi_flat.columns = ['discounted_ghi']
+    input_parameters = input_parameters.join(discounted_ghi_flat)
 
 
-    all_parameters = all_parameters.apply(pd.to_numeric, errors='ignore')
-    return all_parameters
-    #
-    #
-    #
-    # # We assume that every table has the same scenarios, so we can cycle through the items in cost_mc
-    # for item in cost_mc:
-    #     label = item
-    #     print(label)
-    #     print(loss_parameters[item]['cost'])
+
+    input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
+    return input_parameters, output_parameters
+
 
 
 
@@ -78,7 +110,7 @@ def extract_scenario_data(df, year_str):
 scenarios = ['2028']
 for year in scenarios:
     analysis_year = int(year)
-    scenario_tables = extract_scenario_data(Analysis_dict,year)
+    input_parameters, output_parameters = extract_parameter_data(Analysis_dict,year)
 
 
 
@@ -201,13 +233,86 @@ matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 # %%
 
+def graph_variance_contributions(output_parameters, input_parameters, scenario_name, cost_mc =True , revenue_type = 'loss'):
+    df = output_parameters.copy()
+
+    if (revenue_type == 'loss') or (revenue_type == 'weather') or (revenue_type == 'combined'):
+        print('here')
+        revenue_column = scenario_name + '_d_revenue_' + revenue_type
+
+    elif revenue_type == 'fixed':
+        print('here')
+        revenue_column = scenario_name + '_d_revenue_' + revenue_type
+        df[revenue_column] = df[scenario_name + '_d_revenue_loss'][0]
+    else:
+        print('Error! Revenue type does not exist!')
+
+    cost_column = scenario_name + '_d_cost'
+    if cost_mc == True:
+        cost_column = scenario_name + '_d_cost'
+    else:
+        cost_column = scenario_name + '_d_cost_fixed'
+        df[cost_column] = df[scenario_name + '_d_cost'][0]
+
+    print('heren!')
+    output_name = scenario_name + '_NPV'
+    df[output_name] = df[cost_column] / df[revenue_column]
+
+    all_parameters = input_parameters.join(df[output_name])
+
+    calculate_variance_contributions(all_parameters, output_name,
+                                     savename=None)
+
+graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='fixed')
+
+graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='loss')
+
+graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='weather')
+
+graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='combined')
+
+graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='combined')
+
+
+
+
+
+
+
+# %%
 # print(scenario_tables)
 
+# all graphs in NPV. No graphs with LCOE.
 calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
-                                                          savename=None)
+                                                              savename=None)
+# Analysis 1 - some graphs with cost_mc and 'data_tables'
 
-calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_kWh_total_discounted',
-                                                          savename=None)
+# Analysis 2 - some graphs with loss_mc and loss_parameters
+
+# Analysis 3 - some graphs with weather_mc and discounted_ghi
+
+# Analysis 4 (combined) - some graphs with cost_mc / combined_yield_mc (ie LCOE) and (data_tables, loss_parameters, discounted_ghi)
+
+# For each analysis, set up ability to do histogram, histogram of difference, 1D and 2D factors on difference.
+
+variance_kWh = False
+variance_LCOE = False
+delta_LCOE = True
+
+if variance_kWh:
+    calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
+                                                              savename=None)
+    calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_kWh_total_discounted',
+                                                              savename=None)
+if variance_LCOE:
+    calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_LCOE',
+                                                              savename=None)
+    calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_LCOE',
+                                                              savename=None)
+if delta_LCOE:
+    scenario_tables['MAVvSAT_PERCa_2028_LCOE'] = scenario_tables['MAV_PERCa_2028_LCOE'] - scenario_tables['SAT_PERCa_2028_LCOE']
+    calculate_variance_contributions(scenario_tables, 'MAVvSAT_PERCa_2028_LCOE',
+                                                              savename=None)
 # %%
 def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
                title=None, xlabel=None, ylabel=None, zlabel=None):
