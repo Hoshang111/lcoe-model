@@ -233,6 +233,7 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     dc_results, dc_df = func.mc_dc(rack, module, temp_model, mc_weather_file,
                                                racks_per_zone, gcr,
                                                )
+    breakpoint()
     dc_df.rename(columns={0: "dc_out"}, inplace=True)
     dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
