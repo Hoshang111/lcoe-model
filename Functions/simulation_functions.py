@@ -1,4 +1,6 @@
 """ Functions for finding the DC output of the MAV or SAT system """
+# %%
+
 # import pydantic
 # import pytest
 from platform import python_branch
@@ -19,6 +21,7 @@ import ast
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
+# %%
 
 def weather(simulation_years,
             weather_file,
@@ -707,14 +710,12 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     return dc_results_total, mc, mount
 
-def mc_dc(DCTotal,
-             rack_params,
+def mc_dc( rack_params,
              module_params,
              temp_model,
              weather_simulation,
              racks_per_zone,
              gcr,
-             num_of_zones,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
              num_of_module_per_string=30,
@@ -842,20 +843,15 @@ def mc_dc(DCTotal,
         # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 
         mc.run_model(weather_simulation)
-        total_module_number = round(DCTotal/(module_params['STC'] / 1e6))
+
         # Find the total DC output for the given DC size/total module number
         # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
-        multiplication_coeff = total_module_number/num_of_mod_per_inverter
-        dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
+        multiplication_coeff = modules_per_zone/num_of_mod_per_inverter
+        dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         # dc_results is the DC yield of the total solar farm
 
-        dc_size = modules_per_zone * module_params['STC'] / 1e6 * num_of_zones  # dc_size in MW
-
         # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
-        dc_results = [dc_results_total.values/total_module_number * modules_per_zone]
         dc_df = pd.DataFrame(dc_results).T
-        # dc_df.columns = racks_per_zone
-        dc_df.index = dc_results_total.index
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -899,7 +895,6 @@ def mc_dc(DCTotal,
             mc.run_model_bifacial(weather_simulation)
             multiplication_coeff = modules_per_zone / num_of_mod_per_inverter
             dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
-            dc_size = (modules_per_zone * num_of_zones * module_params['STC'] / 1e6)
 
         else:
             mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
@@ -919,7 +914,7 @@ def mc_dc(DCTotal,
             dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
 
         # Todo: we can try different back-tracking algorithms for SAT as well
-        dc_df = pd.DataFrame(dc_results).T
+        dc_df = pd.DataFrame(dc_results)
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
