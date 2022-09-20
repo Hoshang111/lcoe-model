@@ -230,13 +230,13 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     racks_per_zone = install_dummy3[0]
     module_per_zone = racks_per_zone * rack['Modules_per_rack']
     gcr = (module_per_zone*module['A_c']) / zone_area
-    dc_results, dc_df = func.mc_dc(rack, module, temp_model, mc_weather_file,
+    dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
                                                racks_per_zone, gcr,
                                                )
-    dc_df.rename(columns={0: "dc_out"}, inplace=True)
-    dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
+    # dc_df.rename(columns={0: "dc_out"}, inplace=True)
+    # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
-    return dc_df
+    return dc_results
 
 def discount_ghi(ghi_series, discount_rate):
 

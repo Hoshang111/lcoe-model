@@ -851,7 +851,7 @@ def mc_dc( rack_params,
         # dc_results is the DC yield of the total solar farm
 
         # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
-        dc_df = pd.DataFrame(dc_results).T
+        # dc_df = pd.DataFrame(dc_results).T
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -914,11 +914,12 @@ def mc_dc( rack_params,
             dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
 
         # Todo: we can try different back-tracking algorithms for SAT as well
-        dc_df = pd.DataFrame(dc_results)
+        # dc_df = pd.DataFrame(dc_results)
+
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-    return dc_results, dc_df,
+    return dc_results
 
 def apply_degradation(ghi, first_year_degradation, degradation_rate):
     """"""
