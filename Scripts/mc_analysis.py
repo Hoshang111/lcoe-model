@@ -97,8 +97,8 @@ if iter_num > iter_limit:
     repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
     for i in range(repeats):
         loss_datatables_split = {}
-        loss_datatables_split['MAV'] = loss_datatables['MAV'][i*iter_limit:(i+1)*iter_limit]
-        loss_datatables_split['SAT'] = loss_datatables['SAT'][i * iter_limit:(i + 1) * iter_limit]
+        loss_datatables_split['MAV'] = loss_datatables['MAV'][i * iter_limit:(i+1) * iter_limit]
+        loss_datatables_split['SAT'] = loss_datatables['SAT'][i * iter_limit:(i+1) * iter_limit]
         for key in scenarios:
             results_dict = scenario_dict[key]
             weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
