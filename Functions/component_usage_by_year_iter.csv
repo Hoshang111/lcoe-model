@@ -1,0 +1,211 @@
+,Iteration,InstallNumber,ScenarioSystemID,InstallDate,SystemID,ScenarioID,UsageBaselineYear,Timing,SystemComponentID,Config_Name (from Config_link),ComponentID,CostCategoryID,UsageAnnualMultiplier,Usage,CostCategory_ShortName,CostCategory_Name,Year,TotalUsageY
+0,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2028,0
+1,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2029,0
+2,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2030,0
+3,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2031,0
+4,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2032,0
+5,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2033,0
+6,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2034,0
+7,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2035,0
+8,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2036,0
+9,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2037,0
+10,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2038,0
+11,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2039,0
+12,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2040,0
+13,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2041,0
+14,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2042,0
+15,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2043,0
+16,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2044,0
+17,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2045,0
+18,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2046,0
+19,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2047,0
+20,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2048,0
+21,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2049,0
+22,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2050,0
+23,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2051,0
+24,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2052,0
+25,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2053,0
+26,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2054,0
+27,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2055,0
+28,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2056,0
+29,0,324.0,0,2028,25,324,2024,Installation,163,MAV Rack - Area,46,11,0.9,3806.18,Mount Hardware,Mounting Hardware,2057,0
+30,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2028,0
+31,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2029,0
+32,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2030,0
+33,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2031,0
+34,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2032,0
+35,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2033,0
+36,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2034,0
+37,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2035,0
+38,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2036,0
+39,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2037,0
+40,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2038,0
+41,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2039,0
+42,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2040,0
+43,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2041,0
+44,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2042,0
+45,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2043,0
+46,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2044,0
+47,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2045,0
+48,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2046,0
+49,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2047,0
+50,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2048,0
+51,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2049,0
+52,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2050,0
+53,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2051,0
+54,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2052,0
+55,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2053,0
+56,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2054,0
+57,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2055,0
+58,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2056,0
+59,0,324.0,0,2028,25,324,2024,Installation,164,MAV Rack - Area,45,12,0.9,1350.36,Mount Install,Mounting Installation,2057,0
+60,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2028,0
+61,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2029,0
+62,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2030,0
+63,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2031,0
+64,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2032,0
+65,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2033,0
+66,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2034,0
+67,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2035,0
+68,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2036,0
+69,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2037,0
+70,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2038,0
+71,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2039,0
+72,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2040,0
+73,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2041,0
+74,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2042,0
+75,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2043,0
+76,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2044,0
+77,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2045,0
+78,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2046,0
+79,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2047,0
+80,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2048,0
+81,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2049,0
+82,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2050,0
+83,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2051,0
+84,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2052,0
+85,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2053,0
+86,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2054,0
+87,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2055,0
+88,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2056,0
+89,0,1.0,1,2028,29,324,2024,Installation,170,MAV site costs - per zone,40,15,0.99,1.0,Site Other,Site Other,2057,0
+90,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2028,0
+91,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2029,0
+92,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2030,0
+93,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2031,0
+94,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2032,0
+95,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2033,0
+96,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2034,0
+97,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2035,0
+98,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2036,0
+99,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2037,0
+100,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2038,0
+101,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2039,0
+102,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2040,0
+103,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2041,0
+104,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2042,0
+105,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2043,0
+106,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2044,0
+107,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2045,0
+108,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2046,0
+109,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2047,0
+110,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2048,0
+111,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2049,0
+112,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2050,0
+113,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2051,0
+114,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2052,0
+115,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2053,0
+116,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2054,0
+117,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2055,0
+118,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2056,0
+119,0,23.068670400000002,2,2028,26,324,2024,Installation,165,MAV Rack - Power (MW),41,14,0.99,1000.0,Elec Install,Elec Install,2057,0
+120,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2028,0
+121,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2029,0
+122,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2030,0
+123,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2031,0
+124,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2032,0
+125,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2033,0
+126,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2034,0
+127,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2035,0
+128,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2036,0
+129,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2037,0
+130,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2038,0
+131,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2039,0
+132,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2040,0
+133,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2041,0
+134,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2042,0
+135,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2043,0
+136,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2044,0
+137,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2045,0
+138,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2046,0
+139,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2047,0
+140,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2048,0
+141,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2049,0
+142,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2050,0
+143,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2051,0
+144,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2052,0
+145,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2053,0
+146,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2054,0
+147,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2055,0
+148,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2056,0
+149,0,23.068670400000002,2,2028,26,324,2024,Installation,166,MAV Rack - Power (MW),42,13,0.99,1000.0,Elec Hardware,Elec Hardware,2057,0
+150,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2028,0
+151,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2029,0
+152,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2030,0
+153,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2031,0
+154,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2032,0
+155,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2033,0
+156,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2034,0
+157,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2035,0
+158,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2036,0
+159,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2037,0
+160,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2038,0
+161,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2039,0
+162,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2040,0
+163,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2041,0
+164,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2042,0
+165,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2043,0
+166,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2044,0
+167,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2045,0
+168,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2046,0
+169,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2047,0
+170,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2048,0
+171,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2049,0
+172,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2050,0
+173,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2051,0
+174,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2052,0
+175,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2053,0
+176,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2054,0
+177,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2055,0
+178,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2056,0
+179,0,23068670.400000002,3,2028,33,324,2024,Installation,174,TOPCon Module cost - per W,33,1,1.0,1.0,Modules,Modules,2057,0
+180,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2028,0
+181,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2029,0
+182,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2030,0
+183,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2031,0
+184,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2032,0
+185,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2033,0
+186,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2034,0
+187,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2035,0
+188,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2036,0
+189,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2037,0
+190,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2038,0
+191,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2039,0
+192,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2040,0
+193,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2041,0
+194,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2042,0
+195,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2043,0
+196,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2044,0
+197,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2045,0
+198,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2046,0
+199,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2047,0
+200,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2048,0
+201,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2049,0
+202,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2050,0
+203,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2051,0
+204,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2052,0
+205,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2053,0
+206,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2054,0
+207,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2055,0
+208,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2056,0
+209,0,23068670.400000002,3,2028,33,324,2024,Installation,178,TOPCon Module cost - per W,34,1,1.0,1.0,Modules,Modules,2057,0
