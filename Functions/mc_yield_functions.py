@@ -424,7 +424,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     # TODO: check appropriate temperature coefficient of power
     default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                        (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
-    temp_coefficient = -0.01
+    temp_coefficient = -0.002
     MAV_loss_df = get_dcloss(yield_datatables['MAV'], mc_ghi, default_soiling, temp_coefficient)
     SAT_loss_df = get_dcloss(yield_datatables['SAT'], mc_ghi, default_soiling, temp_coefficient)
 
