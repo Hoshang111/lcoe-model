@@ -16,8 +16,8 @@ corrections = cpickle.load(open(file_path, 'rb'))
 def get_dni(location, ghi, dhi):
     dt_lookup = pd.date_range(start=ghi.index[0],
                               end=ghi.index[-1], freq='T', tz=pytz.UTC)
-    solpos_lookup = location.get_solarposition(ghi.index)
-    clearsky_lookup = location.get_clearsky(ghi.index)
+    solpos_lookup = location.get_solarposition(dt_lookup)
+    clearsky_lookup = location.get_clearsky(dt_lookup)
     zenith_to_rad = np.radians(solpos_lookup)
     cos_lookup = np.cos(zenith_to_rad)
     cos_lookup[cos_lookup > 30] = 30
@@ -25,14 +25,18 @@ def get_dni(location, ghi, dhi):
     horizontal_dni_lookup = cos_lookup['apparent_zenith'] * clearsky_lookup['dni']
     horizontal_dni_lookup[horizontal_dni_lookup < 0] = 0
     hz_dni_lookup = horizontal_dni_lookup
-    hz_dni_lookup.index = horizontal_dni_lookup.index.tz_convert('Australia/Darwin')
+ #   hz_dni_lookup.index = horizontal_dni_lookup.index.tz_convert('Asia/Dhaka')
+    hz_dni_lookup.index = hz_dni_lookup.index.shift(periods=30)
     hourly_lookup = hz_dni_lookup.resample('H').mean()
     clearsky_dni_lookup = clearsky_lookup['dni']
-    clearsky_dni_lookup.index = clearsky_lookup.index.tz_convert('Australia/Darwin')
+ #   clearsky_dni_lookup.index = clearsky_lookup.index.tz_convert('Asia/Dhaka')
+    clearsky_dni_lookup.index = clearsky_dni_lookup.index.shift(periods=30)
     hourly_dni_lookup = clearsky_dni_lookup.resample('H').mean()
     dni_lookup = hourly_dni_lookup / hourly_lookup
     dni_lookup[dni_lookup > 30] = 30
+    dni_lookup.index = dni_lookup.index.shift(periods=-30, freq='T')
     dni_simulated = (ghi-dhi)*dni_lookup
+    dni_simulated.rename('dni', inplace=True)
 
     return dni_simulated
 
@@ -41,12 +45,13 @@ def get_dni(location, ghi, dhi):
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data\TMY\Patuakhali"
 satellite_path = os.path.join(data_path, "pat_TMY_2020.csv")
 satellite_init = pd.read_csv(satellite_path,  header=2)
+satellite_init['Year'] = 2020
 dummy = pd.DataFrame([satellite_init['Year'], satellite_init['Month'], satellite_init['Day'],
                           satellite_init['Hour'], satellite_init['Minute']])
 dt_index = pd.to_datetime(dummy.T)
 satellite_init.index = dt_index
-satellite_data_aware = satellite_init.tz_localize("Asia/Dhaka")
-satellite_data = satellite_data_aware.tz_convert("UTC")
+satellite_data = satellite_init.tz_localize("UTC")
+# satellite_data = satellite_data_aware.tz_convert("UTC")
 satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'DHI':'dhi',
                                                 'DNI':'dni',
@@ -54,14 +59,6 @@ satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'Wind Speed':'wind_speed',
                                                 'Clearsky GHI':'clearsky ghi',
                                                 'Cloud Type':'cloud type'})
-satellite_data_aware = satellite_data_aware.rename(columns={'GHI':'ghi',
-                                                'DHI':'dhi',
-                                                'DNI':'dni',
-                                                'Temperature':'temp',
-                                                'Wind Speed':'wind_speed',
-                                                'Clearsky GHI':'clearsky ghi',
-                                                'Cloud Type':'cloud type'})
-
 
 
 # %% ===========================================================
@@ -92,12 +89,14 @@ satellite_cloud6 = satellite_data.loc[satellite_data['cloud type'] == 6, ['ghi',
 
 satellite_cloud7 = satellite_data.loc[satellite_data['cloud type'] == 7, ['ghi', 'dhi', 'dni']]
 
-satellite_cloud8 = satellite_data.loc[satellite_data['cloud type'] == 8, ['ghi', 'dhi', 'dhi']]
+satellite_cloud8 = satellite_data.loc[satellite_data['cloud type'] == 8, ['ghi', 'dhi', 'dni']]
+
+satellite_cloud9 = satellite_data.loc[satellite_data['cloud type'] == 9, ['ghi', 'dhi', 'dni']]
 
 cloud_list_satellite = [satellite_cloud0, satellite_cloud1, satellite_cloud2, satellite_cloud3, satellite_cloud4,
-              satellite_cloud5, satellite_cloud6, satellite_cloud7, satellite_cloud8]
+              satellite_cloud5, satellite_cloud6, satellite_cloud7, satellite_cloud8, satellite_cloud9]
 
-labels = ['cloud0', 'cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6', 'cloud7', 'cloud8']
+labels = ['cloud0', 'cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6', 'cloud7', 'cloud8', 'cloud9']
 
 cloud_zip = list(zip(cloud_list_satellite, labels))
 
