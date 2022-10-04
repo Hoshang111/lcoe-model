@@ -192,7 +192,8 @@ results_MAV_TOPa_2028 = optimize (MAV, TOP2031, 2028, 'MAV_TOPa_2028',scenario_t
 output_data = []
 output_dict = {}
 
-for scenario_tables in [scenario_tables_2028]:
+for year in ['2024', '2026', '2028']:
+    scenario_tables = globals()['scenario_tables_' + year]
     for results in scenario_tables:
         index = results[1]
         install_dummy = results[0][1]['InstallNumber']
@@ -204,7 +205,7 @@ for scenario_tables in [scenario_tables_2028]:
         # Total_GW = MW_per_zone*num_of_zones/1000
         output_data.append([index, Racks, W_zone])
         results_string = 'results_' + index
-        output_dict[index] = globals()[results_string]
+        output_dict[year][index] = globals()[results_string]
 
 optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
 optimised_tables.set_index('scenario', inplace=True)
@@ -219,4 +220,4 @@ optimised_tables.to_csv(file_name)
 for year in ['2024', '2026', '2028']:
     file_tag = 'scenario_tables_' + year + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-    cpickle.dump(output_dict, open(pickle_path, "wb"))
+    cpickle.dump(output_dict[year], open(pickle_path, "wb"))

@@ -44,8 +44,8 @@ scenarios = ['2024',
             '2026',
             '2028']
 
-iter_num = 500
-iter_limit = 50
+iter_num = 50
+iter_limit = 20
 
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
@@ -174,24 +174,25 @@ for year in scenarios:
 
 # %% ==================================================
 # Assemble pickled data
-
-weather_mc_iter = {}
-loss_mc_iter = {}
-combined_mc_iter = {}
+iter_dict = {}
 
 for year in scenarios:
-    weather_mc_iter[year] = {}
-    loss_mc_iter[year] = {}
-    combined_mc_iter[year] = {}
     i =0
     test=True
     while test:
-        tag = 'analysis_dict' + '-' + year + '-' + str(i)
+        tag = 'analysis_dict' + '_' + year + '_' + str(i) + '.p'
         iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
         if os.path.isfile(iter_path):
-            iter_dict = cpickle.load(open(iter_path, 'rb'))
-            weather_mc_iter[year] =
-        i = i + 1
+            iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
+            i = i + 1
+        else:
+            test=False
+
+
+# %% ==================================================
+cost_mc_dict = {}
+weather_mc_dict = {}
+loss_mc_dict = {}
 
 
 # %% ==================================================
