@@ -174,7 +174,7 @@ for year in scenarios:
 
 # %% ==================================================
 # Assemble pickled data
-iter_dict = {}
+yield_iter_dict = {}
 
 for year in scenarios:
     i =0
@@ -183,7 +183,7 @@ for year in scenarios:
         tag = 'analysis_dict' + '_' + year + '_' + str(i) + '.p'
         iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
         if os.path.isfile(iter_path):
-            iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
+            yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
             i = i + 1
         else:
             test=False

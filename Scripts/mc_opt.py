@@ -194,6 +194,7 @@ output_dict = {}
 
 for year in ['2024', '2026', '2028']:
     scenario_tables = globals()['scenario_tables_' + year]
+    output_dict[year] = {}
     for results in scenario_tables:
         index = results[1]
         install_dummy = results[0][1]['InstallNumber']
