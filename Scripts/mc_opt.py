@@ -146,12 +146,12 @@ HJT2031 = 'HJT_2031_M10'
 # 2028 - assume modules PERC_2031_M10, etc
 
 scenario_tables_2024 = []
-results_SAT_PERC_2024 = optimize (SAT, PERC2023, 2024, 'SAT PERC 2024', scenario_tables_2024, SAT_loss_params)
-results_MAV_PERC_2024 = optimize (MAV, PERC2023, 2024, 'MAV PERC 2024', scenario_tables_2024, MAV_loss_params)
-results_SAT_HJT_2024 = optimize (SAT, HJT2023, 2024, 'SAT HJT 2024', scenario_tables_2024, SAT_loss_params)
-results_MAV_HJT_2024 = optimize (MAV, HJT2023, 2024, 'MAV HJT 2024', scenario_tables_2024, MAV_loss_params)
-results_SAT_TOP_2024 = optimize (SAT, TOP2023, 2024, 'SAT TOP 2024', scenario_tables_2024, SAT_loss_params)
-results_MAV_TOP_2024 = optimize (MAV, TOP2023, 2024, 'MAV TOP 2024', scenario_tables_2024, MAV_loss_params)
+# results_SAT_PERC_2024 = optimize (SAT, PERC2023, 2024, 'SAT PERC 2024', scenario_tables_2024, SAT_loss_params)
+# results_MAV_PERC_2024 = optimize (MAV, PERC2023, 2024, 'MAV PERC 2024', scenario_tables_2024, MAV_loss_params)
+# results_SAT_HJT_2024 = optimize (SAT, HJT2023, 2024, 'SAT HJT 2024', scenario_tables_2024, SAT_loss_params)
+# results_MAV_HJT_2024 = optimize (MAV, HJT2023, 2024, 'MAV HJT 2024', scenario_tables_2024, MAV_loss_params)
+# results_SAT_TOP_2024 = optimize (SAT, TOP2023, 2024, 'SAT TOP 2024', scenario_tables_2024, SAT_loss_params)
+# results_MAV_TOP_2024 = optimize (MAV, TOP2023, 2024, 'MAV TOP 2024', scenario_tables_2024, MAV_loss_params)
 results_SAT_PERCa_2024 = optimize(SAT, PERC2025, 2024, 'SAT PERCa 2024', scenario_tables_2024, SAT_loss_params)
 results_MAV_PERCa_2024 = optimize(MAV, PERC2025, 2024, 'MAV PERCa 2024', scenario_tables_2024, MAV_loss_params)
 results_SAT_HJTa_2024 = optimize (SAT, HJT2025, 2024, 'SAT HJTa 2024', scenario_tables_2024, SAT_loss_params)
@@ -160,12 +160,12 @@ results_SAT_TOPa_2024 = optimize (SAT, TOP2025, 2024, 'SAT TOPa 2024', scenario_
 results_MAV_TOPa_2024 = optimize (MAV, TOP2025, 2024, 'MAV TOPa 2024', scenario_tables_2024, MAV_loss_params)
 
 scenario_tables_2026 = []
-results_SAT_PERC_2026 = optimize (SAT, PERC2025, 2026, 'SAT PERC 2026',scenario_tables_2026, SAT_loss_params)
-results_MAV_PERC_2026 = optimize (MAV, PERC2025, 2026, 'MAV PERC 2026',scenario_tables_2026, MAV_loss_params)
-results_SAT_HJT_2026 = optimize (SAT, HJT2025, 2026, 'SAT HJT 2026',scenario_tables_2026, SAT_loss_params)
-results_MAV_HJT_2026 = optimize (MAV, HJT2025, 2026, 'MAV HJT 2026',scenario_tables_2026, MAV_loss_params)
-results_SAT_TOP_2026 = optimize (SAT, TOP2025, 2026, 'SAT TOP 2026',scenario_tables_2026, SAT_loss_params)
-results_MAV_TOP_2026 = optimize (MAV, TOP2025, 2026, 'MAV TOP 2026',scenario_tables_2026, MAV_loss_params)
+# results_SAT_PERC_2026 = optimize (SAT, PERC2025, 2026, 'SAT PERC 2026',scenario_tables_2026, SAT_loss_params)
+# results_MAV_PERC_2026 = optimize (MAV, PERC2025, 2026, 'MAV PERC 2026',scenario_tables_2026, MAV_loss_params)
+# results_SAT_HJT_2026 = optimize (SAT, HJT2025, 2026, 'SAT HJT 2026',scenario_tables_2026, SAT_loss_params)
+# results_MAV_HJT_2026 = optimize (MAV, HJT2025, 2026, 'MAV HJT 2026',scenario_tables_2026, MAV_loss_params)
+# results_SAT_TOP_2026 = optimize (SAT, TOP2025, 2026, 'SAT TOP 2026',scenario_tables_2026, SAT_loss_params)
+# results_MAV_TOP_2026 = optimize (MAV, TOP2025, 2026, 'MAV TOP 2026',scenario_tables_2026, MAV_loss_params)
 results_SAT_PERCa_2026 = optimize (SAT, PERC2028, 2026, 'SAT PERCa 2026',scenario_tables_2026, SAT_loss_params)
 results_MAV_PERCa_2026 = optimize (MAV, PERC2028, 2026, 'MAV PERCa 2026',scenario_tables_2026, MAV_loss_params)
 results_SAT_HJTa_2026 = optimize (SAT, HJT2028, 2026, 'SAT HJTa 2026',scenario_tables_2026, SAT_loss_params)
@@ -173,15 +173,13 @@ results_MAV_HJTa_2026 = optimize (MAV, HJT2028, 2026, 'MAV HJTa 2026',scenario_t
 results_SAT_TOPa_2026 = optimize (SAT, TOP2028, 2026, 'SAT TOPa 2026',scenario_tables_2026, SAT_loss_params)
 results_MAV_TOPa_2026 = optimize (MAV, TOP2028, 2026, 'MAV TOPa 2026',scenario_tables_2026, MAV_loss_params)
 
-
-
 scenario_tables_2028 = []
-results_SAT_PERC_2028 = optimize (SAT, PERC2028, 2028, 'SAT_PERC_2028',scenario_tables_2028, SAT_loss_params)
-results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV_PERC_2028',scenario_tables_2028, MAV_loss_params)
-results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT_HJT_2028',scenario_tables_2028, SAT_loss_params)
-results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV_HJT_2028',scenario_tables_2028, MAV_loss_params)
-results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT_TOP_2028',scenario_tables_2028, SAT_loss_params)
-results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV_TOP_2028',scenario_tables_2028, MAV_loss_params)
+# results_SAT_PERC_2028 = optimize (SAT, PERC2028, 2028, 'SAT_PERC_2028',scenario_tables_2028, SAT_loss_params)
+# results_MAV_PERC_2028 = optimize (MAV, PERC2028, 2028, 'MAV_PERC_2028',scenario_tables_2028, MAV_loss_params)
+# results_SAT_HJT_2028 = optimize (SAT, HJT2028, 2028, 'SAT_HJT_2028',scenario_tables_2028, SAT_loss_params)
+# results_MAV_HJT_2028 = optimize (MAV, HJT2028, 2028, 'MAV_HJT_2028',scenario_tables_2028, MAV_loss_params)
+# results_SAT_TOP_2028 = optimize (SAT, TOP2028, 2028, 'SAT_TOP_2028',scenario_tables_2028, SAT_loss_params)
+# results_MAV_TOP_2028 = optimize (MAV, TOP2028, 2028, 'MAV_TOP_2028',scenario_tables_2028, MAV_loss_params)
 results_SAT_PERCa_2028 = optimize (SAT, PERC2031, 2028, 'SAT_PERCa_2028', scenario_tables_2028, SAT_loss_params)
 results_MAV_PERCa_2028 = optimize (MAV, PERC2031, 2028, 'MAV_PERCa_2028', scenario_tables_2028, MAV_loss_params)
 results_SAT_HJTa_2028 = optimize (SAT, HJT2031, 2028, 'SAT_HJTa_2028', scenario_tables_2028, SAT_loss_params)
@@ -218,5 +216,7 @@ optimised_tables.to_csv(file_name)
 # %% ========================================
 # save results tables to pickl
 
-pickle_path = os.path.join(parent_path, 'OutputFigures', 'scenario_tables_2028.p')
-cpickle.dump(output_dict, open(pickle_path, "wb"))
+for year in ['2024', '2026', '2028']:
+    file_tag = 'scenario_tables_' + year + '.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
+    cpickle.dump(output_dict, open(pickle_path, "wb"))

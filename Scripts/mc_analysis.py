@@ -34,18 +34,18 @@ def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, loss_datatables, 
                       'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_mc_dict,
                       'discounted_ghi': ghi_df, 'loss_parameters': loss_datatables}
      file_name = "analysis_dict" + '_' +str(scenario_id) + "_" + str(repeat_num) + '.p'
-     pickle_path = os.path.join(parent_path, 'OutputFigures', file_name)
+     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
      cpickle.dump(dump_dict, open(pickle_path, "wb"))
 
  # %% ===========================================================
  # define scenarios
 
-scenarios = [#'2024',
-            #'2026',
+scenarios = ['2024',
+            '2026',
             '2028']
 
-iter_num = 50
-iter_limit = 20
+iter_num = 500
+iter_limit = 50
 
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
@@ -55,7 +55,7 @@ parent_path = os.path.dirname(current_path)
 scenario_dict = {}
 
 for key in scenarios:
-    pickle_path = os.path.join(parent_path, 'OutputFigures', 'scenario_tables_' + key + '.p')
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'scenario_tables_' + key + '.p')
     scenario_dict[key] = cpickle.load(open(pickle_path, 'rb'))
 
 csv_path = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
@@ -112,13 +112,6 @@ else:
 
 # %% ===========================================================
 # Now calculate AC output (currently not used)
-
-
-
-# %% ==========================================================
-# Calculate LCOE and/or NPV for each iteration, and plot these for each optimum scenario.
-# First generate a big table with index consisting of Iteration, Year, ScenarioID.
-
 
 # %%
 # Call Monte Carlo Cost analysis
@@ -178,6 +171,28 @@ for year in scenarios:
 
     data_iter_dict[year] = data_tables_iter
     output_iter_dict[year] = outputs_iter
+
+# %% ==================================================
+# Assemble pickled data
+
+weather_mc_iter = {}
+loss_mc_iter = {}
+combined_mc_iter = {}
+
+for year in scenarios:
+    weather_mc_iter[year] = {}
+    loss_mc_iter[year] = {}
+    combined_mc_iter[year] = {}
+    i =0
+    test=True
+    while test:
+        tag = 'analysis_dict' + '-' + year + '-' + str(i)
+        iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
+        if os.path.isfile(iter_path):
+            iter_dict = cpickle.load(open(iter_path, 'rb'))
+            weather_mc_iter[year] =
+        i = i + 1
+
 
 # %% ==================================================
 # Export relevant data
