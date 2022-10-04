@@ -42,8 +42,8 @@ def get_dni(location, ghi, dhi):
 
 #%% ====================================================
 # import satellite data
-data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data\TMY\Patuakhali"
-satellite_path = os.path.join(data_path, "pat_TMY_2020.csv")
+data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data\TMY\Sumitomo"
+satellite_path = os.path.join(data_path, "sumitomo_TMY_2020.csv")
 satellite_init = pd.read_csv(satellite_path,  header=2)
 satellite_init['Year'] = 2020
 dummy = pd.DataFrame([satellite_init['Year'], satellite_init['Month'], satellite_init['Day'],
@@ -140,3 +140,6 @@ df_dni_corrected = get_dni(location=site, ghi=df_ghi_corrected, dhi=df_dhi_corre
 
 TMY_dummy = satellite_data.drop(['ghi', 'dhi', 'dni'], axis=1)
 new_TMY = pd.concat([TMY_dummy, df_ghi_corrected, df_dhi_corrected, df_dni_corrected], axis =1)
+
+save_path = os.path.join(data_path, 'corrected_sumi_TMY.csv')
+new_TMY.to_csv(save_path)
