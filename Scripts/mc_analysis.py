@@ -44,9 +44,8 @@ scenarios = ['2024',
             '2026',
             '2028']
 
-iter_num = 50
-iter_limit = 20
-
+iter_num = 500
+iter_limit = 50
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
 
@@ -211,7 +210,8 @@ for iteration in yield_iter_dict:
 for iteration in yield_iter_dict:
     for key in yield_iter_dict[iteration]:
         if key == 'discounted_ghi':
-            discounted_ghi_full = pd.concat([discounted_ghi_full, yield_iter_dict[iteration][key]], axis=1)
+            discounted_ghi_full = pd.concat([discounted_ghi_full, yield_iter_dict[iteration][key]], axis=0,
+                                            ignore_index=True)
         else:
             for year in yield_iter_dict[iteration][key]:
                 dict_name = key + '_dict'
@@ -227,8 +227,8 @@ for iteration in yield_iter_dict:
 # Export relevant data
 
 analysis_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
-                 'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_mc_dict,
-                 'discounted_ghi':ghi_df, 'loss_parameters': loss_datatables,
+                 'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_yield_mc_dict,
+                 'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
                  'data_tables': data_iter_dict, 'output_tables': output_iter_dict}
 
 
