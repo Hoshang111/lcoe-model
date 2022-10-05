@@ -27,12 +27,12 @@ warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
  # %% ===========================================================
-def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, loss_datatables, repeat_num, scenario_id):
+def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
      """"""
 
      dump_dict = {'weather_mc': weather_mc_dict,
                       'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_mc_dict,
-                      'discounted_ghi': ghi_df, 'loss_parameters': loss_datatables}
+                      'discounted_ghi': ghi_df}
      file_name = "analysis_dict" + '_' +str(scenario_id) + "_" + str(repeat_num) + '.p'
      pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
      cpickle.dump(dump_dict, open(pickle_path, "wb"))
@@ -103,7 +103,7 @@ if iter_num > iter_limit:
             results_dict = scenario_dict[key]
             weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
                 mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables_split)
-            dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, loss_datatables_split, i, key)
+            dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, key)
 else:
     for key in scenarios:
         results_dict = scenario_dict[key]
@@ -190,9 +190,37 @@ for year in scenarios:
 
 
 # %% ==================================================
-cost_mc_dict = {}
 weather_mc_dict = {}
 loss_mc_dict = {}
+combined_yield_mc_dict ={}
+discounted_ghi_full = pd.DataFrame()
+
+for iteration in yield_iter_dict:
+    for key in yield_iter_dict[iteration]:
+        if key == 'discounted_ghi':
+            pass
+        else:
+            for year in yield_iter_dict[iteration][key]:
+                dict_name = key + '_dict'
+                globals()[dict_name][year] = {}
+                for scenario in yield_iter_dict[iteration][key][year]:
+                    globals()[dict_name][year][scenario] = {}
+                    for parameter in yield_iter_dict[iteration][key][year][scenario]:
+                        globals()[dict_name][year][scenario][parameter] = pd.DataFrame()
+
+for iteration in yield_iter_dict:
+    for key in yield_iter_dict[iteration]:
+        if key == 'discounted_ghi':
+            discounted_ghi_full = pd.concat([discounted_ghi_full, yield_iter_dict[iteration][key]], axis=1)
+        else:
+            for year in yield_iter_dict[iteration][key]:
+                dict_name = key + '_dict'
+                for scenario in yield_iter_dict[iteration][key][year]:
+                    for parameter in yield_iter_dict[iteration][key][year][scenario]:
+                        globals()[dict_name][year][scenario][parameter] = \
+                            pd.concat([globals()[dict_name][year][scenario][parameter],
+                                yield_iter_dict[iteration][key][year][scenario][parameter]],
+                                axis=0, ignore_index=True)
 
 
 # %% ==================================================

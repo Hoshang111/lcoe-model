@@ -330,6 +330,10 @@ def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, disco
         NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
         NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0)
         NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
+        NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
+        NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
+        NPV_outputs['npv_yearly'] = NPV_outputs['npv_yearly'].T
         mc_yield_outputs[key] = NPV_outputs
 
     return mc_yield_outputs
