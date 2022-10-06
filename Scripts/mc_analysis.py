@@ -229,8 +229,8 @@ for iteration in yield_iter_dict:
 analysis_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
                  'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_yield_mc_dict,
                  'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
-                 'data_tables': data_iter_dict, 'output_tables': output_iter_dict}
+                 'data_tables': data_iter_dict}
 
 
-pickle_path = os.path.join(parent_path, 'OutputFigures', 'analysis_dictionary.p')
+pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
 cpickle.dump(analysis_dict, open(pickle_path, "wb"))
