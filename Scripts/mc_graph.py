@@ -27,7 +27,7 @@ warnings.filterwarnings(action='ignore',
 current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
 
-pickle_path = os.path.join(parent_path, 'OutputFigures', 'analysis_dictionary.p')
+pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 # %% ==============================
@@ -57,20 +57,23 @@ def extract_parameter_data(df, year_str):
 
     # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
     for item in loss_mc:
-        loss_mc_flat = loss_mc[item]['npv_revenue'].rename('d_revenue_loss').to_frame()
+        loss_mc_flat = loss_mc[item]['npv_revenue']
+        loss_mc_flat.columns = ['d_revenue_loss']
         loss_mc_flat = loss_mc_flat.add_prefix(item + '_')
         output_parameters = output_parameters.join(loss_mc_flat)
 
     # Get results for weather only Monte Carlo
     for item in weather_mc:
-        weather_mc_flat = weather_mc[item]['npv_revenue'].rename('d_revenue_weather').to_frame()
+        weather_mc_flat = weather_mc[item]['npv_revenue']
+        weather_mc_flat.columns = ['d_revenue_weather']
         weather_mc_flat = weather_mc_flat.add_prefix(item + '_')
         output_parameters = output_parameters.join(weather_mc_flat)
 
 
     # Get results for combined_yield
     for item in combined_yield_mc:
-        combined_yield_mc_flat = combined_yield_mc[item]['npv_revenue'].rename('d_revenue_combined').to_frame()
+        combined_yield_mc_flat = combined_yield_mc[item]['npv_revenue']
+        combined_yield_mc_flat.columns = ['d_revenue_combined']
         combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(item + '_')
         output_parameters = output_parameters.join(combined_yield_mc_flat)
 
@@ -110,7 +113,7 @@ def extract_parameter_data(df, year_str):
 scenarios = ['2028']
 for year in scenarios:
     analysis_year = int(year)
-    input_parameters, output_parameters = extract_parameter_data(Analysis_dict,year)
+    input_parameters, output_parameters = extract_parameter_data(Analysis_dict, year)
 
 
 

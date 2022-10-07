@@ -149,7 +149,7 @@ def extract_results_tables(scenario_dict, analysis_year):
 # %%
 cost_mc_dict = {}
 data_iter_dict = {}
-output_iter_dict ={}
+# output_iter_dict ={}
 
 for year in scenarios:
     analysis_year = int(year)
@@ -169,7 +169,7 @@ for year in scenarios:
     cost_mc_dict[year] = cost_dict
 
     data_iter_dict[year] = data_tables_iter
-    output_iter_dict[year] = outputs_iter
+    # output_iter_dict[year] = outputs_iter
 
 # %% ==================================================
 # Assemble pickled data
