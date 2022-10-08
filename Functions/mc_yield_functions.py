@@ -4,6 +4,7 @@ import os
 from Functions.cost_functions import get_airtable, generate_iterations
 import Functions.simulation_functions as func
 import pytz
+import Functions.sizing_functions as sizing
 
 def weather_sort(weather_file):
     """
@@ -65,7 +66,7 @@ def generate_mc_timeseries(weather_dict, start_date, end_date, random_list):
 
     return mc_timeseries
 
-def get_yield_datatables():
+def get_yield_datatables(iter_num):
     # First get data from Airtable
     api_key = 'keyJSMV11pbBTdswc'
     base_id = 'appjQftPtMrQK04Aw'
@@ -75,7 +76,7 @@ def get_yield_datatables():
 
     # Now generate iteration data. Note that all variables are assumed flat distribution in this case (unless specified otherwise in the airtable database).
     yield_variables_iter = generate_iterations(yield_variables, index_name='YieldID',
-                                        index_description='YieldName', num_iterations=100,
+                                        index_description='YieldName', num_iterations=iter_num,
                                         iteration_start=0, default_dist_type = 'flat')
 
 
@@ -226,17 +227,16 @@ def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
     install_dummy = results[1][1]['InstallNumber']
     install_dummy2 = install_dummy.reset_index()
     install_dummy3 = install_dummy2['InstallNumber']
-    rack_per_zone = install_dummy3[0]
-    DCTotal = install_dummy3[3]*num_of_zones/1e6
-    module_per_zone = rack_per_zone * rack['Modules_per_rack']
-    gcr = zone_area/(module_per_zone*module['A_c'])
-    dc_results, dc_df, dc_size = func.mc_dc(DCTotal, rack, module, temp_model, mc_weather_file,
-                                               rack_per_zone, module_per_zone, gcr,
-                                               num_of_zones)
-    dc_df.rename(columns={0: "dc_out"}, inplace=True)
-    dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
+    racks_per_zone = install_dummy3[0]
+    module_per_zone = racks_per_zone * rack['Modules_per_rack']
+    gcr = (module_per_zone*module['A_c']) / zone_area
+    dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
+                                               racks_per_zone, gcr,
+                                               )
+    # dc_df.rename(columns={0: "dc_out"}, inplace=True)
+    # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
-    return dc_df
+    return dc_results
 
 def discount_ghi(ghi_series, discount_rate):
 
@@ -315,11 +315,191 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     tol_mismatch = 1-loss_parameters['tol_mismatch']/100
 
-    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df*(1-loss_parameters['tol_mismatch']/100)
+    loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df
 
     return loss_df
 
+def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, discount_rate):
+    """"""
+    mc_yield_outputs = {}
 
+    for key in yield_dict:
+        NPV_outputs = {}
+        revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
+        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(revenue[0], discount_rate=0)
+        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
+        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0)
+        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
+        NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
+        NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
+        NPV_outputs['npv_yearly'] = NPV_outputs['npv_yearly'].T
+        mc_yield_outputs[key] = NPV_outputs
+
+    return mc_yield_outputs
+
+def combine_variance(weather_dict, loss_df):
+    """"""
+
+    weather_mc_dict = weather_dict.mul(loss_df[0], axis=0)
+    loss_mc_dict = loss_df.mul(weather_dict[0], axis=0)
+    combined_mc_dict = loss_df.mul(weather_dict, axis=0)
+
+    return weather_mc_dict, loss_mc_dict, combined_mc_dict
+
+ # %% ===================================================
+
+def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
+    """"""
+
+    # %% ===========================================
+    # first to get appropriate values from dataframe
+    temp_model = str(input_params['temp_model'].values[0])
+    storage_capacity = input_params['storage_capacity'].values[0]
+    scheduled_price = input_params['scheduled_price'].values[0]
+    export_lim = input_params['export_lim'].values[0]
+    discount_rate = input_params['discount_rate'].values[0]
+    zone_area = input_params['zone_area'].values[0]
+    num_of_zones = input_params['num_of_zones'].values[0]
+
+    # %% ===========================================
+    # create a dict of ordered dicts with dc output, including weather GHI as first column
+    dc_ordered = {}
+    ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
+    ghi_dict = dict_sort(ghi_timeseries, 'ghi')
+
+    for key in results_dict:
+        results = results_dict[key]
+        yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
+                                       temp_model, mc_weather_file)
+        ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
+        dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
+
+    for key in dc_ordered:
+        for month in dc_ordered[key]:
+            for df in dc_ordered[key][month].values():
+                df.drop('ghi', axis=1, inplace=True)
+
+    # %% ===========================================================
+    # Create data tables for yield parameters
+
+    start_date = '1/1/2029 00:00:00'
+    end_date = '31/12/2058 23:59:00'
+    month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
+    # need to create a wrapper function to call for each set of random numbers
+    random_timeseries = np.random.random((len(month_series), len(yield_datatables['MAV'])))
+    random_timeseries[:, 0][:, None] = 0.5
+
+    output_dict = {}
+    ghi_interim = []
+
+    # %%
+    for column in random_timeseries.T:
+        generation_list = list(zip(month_series, column))
+        ghi_interim.append(gen_mcts(ghi_dict, generation_list, start_date, end_date))
+    mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
+    mc_ghi.columns = np.arange(len(mc_ghi.columns))
+
+    # need to check above for creation of dict and then combining into dataframe
+
+    for key in dc_ordered:
+        ordered_dict = dc_ordered[key]
+        dc_output = []
+        for column in random_timeseries.T:
+            generation_list = list(zip(month_series, column))
+            dc_output.append(gen_mcts(ordered_dict, generation_list, start_date, end_date))
+        output_dict[key] = pd.concat(dc_output, axis=1, ignore_index=False)
+        output_dict[key].columns = np.arange(len(output_dict[key].columns))
+
+    # since GHI was first of our scenarios
+    # %% ===========================================================
+    # calculate discounted ghi
+    yearly_ghi = mc_ghi.groupby(mc_ghi.index.year).sum()
+    discounted_ghi = []
+
+    for column in yearly_ghi:
+        ghi_sum = discount_ghi(yearly_ghi[column], discount_rate=input_params['discount_rate'])
+        discounted_ghi.append(ghi_sum)
+
+    ghi_discount = pd.DataFrame(discounted_ghi)
+
+    # Now apply losses, all to be applied through header functions
+    # %%
+    # TODO: check appropriate temperature coefficient of power
+    default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
+                       (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
+    temp_coefficient = -0.0025
+    MAV_loss_df = get_dcloss(yield_datatables['MAV'], mc_ghi, default_soiling, temp_coefficient)
+    SAT_loss_df = get_dcloss(yield_datatables['SAT'], mc_ghi, default_soiling, temp_coefficient)
+
+    # %% =========================================================
+    # creating three different datatables
+    # due to memory issues this is now looped per scenario
+    weather_mc_dict = {}
+    loss_mc_dict ={}
+    combined_mc_dict ={}
+    for key in dc_ordered:
+        if 'MAV' in key:
+            loss_df = MAV_loss_df
+        elif 'SAT' in key:
+            loss_df = SAT_loss_df
+        else:
+            raise ValueError('System does not contain rack identifier (SAT or MAV)')
+
+        weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key] = combine_variance(output_dict[key], loss_df)
+
+    # %% ==========================================================
+    # calculate revenue from yield dictionary
+
+    weather_mc_outputs = gen_revenue(weather_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+
+    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount,
+
+def get_cost_dict(cash_flow, discount_rate, year):
+    """"""
+
+    install_year = int(year)
+    cost_dict = {}
+    for column in cash_flow:
+        dummy_a = cash_flow[column]
+        dummy = dummy_a.reset_index()
+        dummy.columns = ['Iteration', 'Year', 'cost']
+        discounted_cost = dummy['cost'] / (1 + discount_rate) ** \
+                                                     (dummy['Year'] - install_year)
+        dummy = pd.concat([dummy, discounted_cost], axis=1, ignore_index=True)
+        dummy.columns = ['Iteration', 'Year', 'cost', 'discounted_cost']
+        cost_total_list = []
+        discounted_cost_total_list = []
+        cost_list = []
+        discounted_cost_list = []
+        sub_dict = {}
+        iteration_array = dummy['Iteration'].unique()
+        for iteration in iteration_array:
+            cost_iteration = dummy[dummy['Iteration'] == iteration]
+            cost_iteration.index = cost_iteration['Year']
+            cost_total = cost_iteration['cost'].sum()
+            discounted_cost_total = cost_iteration['discounted_cost'].sum()
+            cost_list.append(cost_iteration['cost'])
+            discounted_cost_list.append(cost_iteration['discounted_cost'])
+            cost_total_list.append(cost_total)
+            discounted_cost_total_list.append(discounted_cost_total)
+
+        cost_df = pd.DataFrame(cost_list)
+        cost_df.reset_index(inplace=True)
+        cost_df.drop(columns=['index'], inplace=True)
+        sub_dict['cost'] = cost_df.T
+        discounted_cost_df = pd.DataFrame(discounted_cost_list)
+        discounted_cost_df.reset_index(inplace=True)
+        discounted_cost_df.drop(columns=['index'], inplace=True)
+        sub_dict['discounted_cost'] = discounted_cost_df.T
+        sub_dict['discounted_cost_total'] = pd.Series(discounted_cost_total_list)
+        sub_dict['cost_total'] = pd.Series(cost_total_list)
+
+        cost_dict[column] = sub_dict
+
+    return cost_dict
 
 
 

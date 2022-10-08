@@ -1,4 +1,6 @@
 """ Functions for finding the DC output of the MAV or SAT system """
+# %%
+
 # import pydantic
 # import pytest
 from platform import python_branch
@@ -19,6 +21,7 @@ import ast
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
+# %%
 
 def weather(simulation_years,
             weather_file,
@@ -289,8 +292,6 @@ def dc_yield(DCTotal,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
              num_of_module_per_string=30,
-             num_of_strings_per_mav=4,
-             num_of_strings_per_sat=4
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -350,9 +351,11 @@ def dc_yield(DCTotal,
             dc rated power (MW) of the solar farm according to range of number of racks per zone
 
     """
-    coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
+    coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
+    num_of_strings_per_mav = rack_params['Modules_per_rack']/num_of_module_per_string
+    num_of_strings_per_sat = rack_params['Modules_per_rack']/num_of_module_per_string
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
     if temp_model == 'sapm':
@@ -514,7 +517,7 @@ def dc_yield_benchmarking_mav(DCTotal,
                            num_of_inv_per_zone=2,
                            num_of_module_per_string=26):
 
-    coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
+    coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
 
@@ -592,7 +595,7 @@ def dc_yield_benchmarking_sat(DCTotal,
                            num_of_zones=167,
                            num_of_inv_per_zone=2,
                            num_of_module_per_string=26):
-    coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
+    coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
 
@@ -707,20 +710,15 @@ def dc_yield_benchmarking_sat(DCTotal,
 
     return dc_results_total, mc, mount
 
-def mc_dc(DCTotal,
-             rack_params,
+def mc_dc( rack_params,
              module_params,
              temp_model,
              weather_simulation,
              racks_per_zone,
-             modules_per_zone,
              gcr,
-             num_of_zones,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
              num_of_module_per_string=30,
-             num_of_strings_per_mav=4,
-             num_of_strings_per_sat=4
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -780,9 +778,12 @@ def mc_dc(DCTotal,
             dc rated power (MW) of the solar farm according to range of number of racks per zone
 
     """
-    coordinates = [(-18.7692, 133.1659, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
+    coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
+    num_of_strings_per_mav = rack_params['Modules_per_rack'] / num_of_module_per_string
+    num_of_strings_per_sat = rack_params['Modules_per_rack'] / num_of_module_per_string
+    modules_per_zone = racks_per_zone * rack_params['Modules_per_rack']
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
     if temp_model == 'sapm':
@@ -842,20 +843,15 @@ def mc_dc(DCTotal,
         # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
 
         mc.run_model(weather_simulation)
-        total_module_number = round(DCTotal/(module_params['STC'] / 1e6))
+
         # Find the total DC output for the given DC size/total module number
         # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
-        multiplication_coeff = total_module_number/num_of_mod_per_inverter
-        dc_results_total = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
+        multiplication_coeff = modules_per_zone/num_of_mod_per_inverter
+        dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
         # dc_results is the DC yield of the total solar farm
 
-        dc_size = modules_per_zone * module_params['STC'] / 1e6 * num_of_zones  # dc_size in MW
-
         # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
-        dc_results = [dc_results_total.values/total_module_number * modules_per_zone]
-        dc_df = pd.DataFrame(dc_results).T
-        # dc_df.columns = racks_per_zone
-        dc_df.index = dc_results_total.index
+        # dc_df = pd.DataFrame(dc_results).T
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -880,9 +876,6 @@ def mc_dc(DCTotal,
         else:
             inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
 
-        dc_results = []
-        dc_size = []
-
         if module_params['Bifacial'] > 0:
             mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
                                                             backtrack=True,
@@ -901,8 +894,7 @@ def mc_dc(DCTotal,
             mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
             mc.run_model_bifacial(weather_simulation)
             multiplication_coeff = modules_per_zone / num_of_mod_per_inverter
-            dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
-            dc_size.append(modules_per_zone * num_of_zones * module_params['STC'] / 1e6)
+            dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
 
         else:
             mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
@@ -919,17 +911,70 @@ def mc_dc(DCTotal,
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
             multiplication_coeff = modules_per_zone / num_of_mod_per_inverter
-            dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
-            dc_size.append(modules_per_zone * num_of_zones * module_params['STC'] / 1e6)
+            dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
 
         # Todo: we can try different back-tracking algorithms for SAT as well
-        dc_df = pd.DataFrame(dc_results).T
-        # dc_df.columns = racks_per_zone
+        # dc_df = pd.DataFrame(dc_results)
+
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
-    # Change the time-stamp from UTC to Australia/Darwin
-    # dc_df.index = dc_df.index.tz_convert('Australia/Darwin')
-    return dc_results, dc_df, dc_size
+    return dc_results
 
+def apply_degradation(ghi, first_year_degradation, degradation_rate):
+    """"""
+
+    delta_index = (ghi.index - ghi.index[0]).days
+    delta_t = delta_index.to_frame(index=False)
+    deg_y1 = first_year_degradation/3.65e4
+    deg_ann = degradation_rate/3.65e4
+
+    delta_t.loc[(delta_t[0] <= 365)] = 1-delta_t*deg_y1/3.65e4
+    delta_t.loc[(delta_t[0] > 365)] = 1-deg_y1/100-deg_ann*delta_t/3.65e4
+
+    delta_t.index = ghi.index
+    delta_t.columns = np.arange(len(delta_t.columns))
+
+    return delta_t
+
+def apply_soiling(soiling_var, weather, default_soiling):
+    """"""
+
+    month_timeseries = weather.index.month
+    dummy = month_timeseries.to_series()
+    init_soiling = dummy.astype('float64', copy=True)
+    for month, value in default_soiling:
+        init_soiling.loc[init_soiling == month] = value
+
+    total_soiling = 1-init_soiling*soiling_var
+
+    total_soiling.index = weather.index
+
+    return total_soiling
+
+def apply_temp_loss(temp_var, ghi, coefficient):
+    """"""
+
+    temp_df = ghi*temp_var
+    temp_df *= coefficient/1000
+    temp_loss = 1+temp_df
+
+    temp_loss.index = ghi.index
+
+    return temp_loss
+
+
+def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
+    """"""
+
+    soiling_df = apply_soiling(soiling_var=loss_parameters['soiling_modifier'],
+                               weather=weather['ghi'], default_soiling=default_soiling)
+
+    temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather['ghi'], coefficient=temp_coefficient)
+
+    tol_mismatch = 1-loss_parameters['tol_mismatch']/100
+
+    loss_df = soiling_df*temp_df*tol_mismatch
+
+    return loss_df
 
