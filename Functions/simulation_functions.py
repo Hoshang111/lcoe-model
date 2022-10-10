@@ -791,7 +791,7 @@ def mc_dc( rack_params,
 
     weather_simulation.index = weather_simulation.index.shift(periods=30, freq='T')
 
-    num_of_modules_per_string = modules_per_inverter/strings_per_inverter
+    num_of_modules_per_string = 30
 
     if rack_params == 'fixed':
 
