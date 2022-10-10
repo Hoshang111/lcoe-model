@@ -827,7 +827,7 @@ def mc_dc( rack_params,
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            dc_results = [mc.results.dc['p_mp'], mc.results.dc['v_mp']]
+            dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
             dc_results.index = dc_results.index.shift(periods=-30, freq='T')
 
     else:
