@@ -714,11 +714,11 @@ def mc_dc( rack_params,
              module_params,
              temp_model,
              weather_simulation,
-             modules_per_zone,
+             modules_per_inverter,
+             strings_per_inverter,
              gcr,
              site,
              inverter,
-             num_of_module_per_string=30
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -789,6 +789,10 @@ def mc_dc( rack_params,
 
     location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
 
+    weather_simulation.index = weather_simulation.index.shift(periods=30, freq='T')
+
+    num_of_modules_per_string = modules_per_inverter/strings_per_inverter
+
     if rack_params['rack_type'] == 'fixed':
 
         if module_params['Bifacial'] > 0:
@@ -799,8 +803,8 @@ def mc_dc( rack_params,
             bifacial_array = bifacial_pvsystem.Array(mount=mount,
                                                      module_parameters=module_params,
                                                      temperature_model_parameters=temperature_model_parameters,
-                                                     modules_per_string=num_of_module_per_string,
-                                                     strings= inverter['strings'])
+                                                     modules_per_string=num_of_modules_per_string,
+                                                     strings= strings_per_inverter)
 
             inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
                                                          inverter_parameters=inverter)
@@ -816,14 +820,15 @@ def mc_dc( rack_params,
             bifacial_array = pvsys.Array(mount=mount,
                                          module_parameters=module_params,
                                          temperature_model_parameters=temperature_model_parameters,
-                                         modules_per_string=num_of_module_per_string,
-                                         strings= inverter['strings'])
+                                         modules_per_string=num_of_modules_per_string,
+                                         strings= strings_per_inverter)
 
             inverter_sat_system = pvsys.PVSystem(arrays=[bifacial_array], inverter_parameters=inverter)
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
             dc_results = [mc.results.dc['p_mp'], mc.results.dc['v_mp']]
+            dc_results.index = dc_results.index.shift(periods=-30, freq='T')
 
     else:
         raise ValueError("Please choose racking as one of these options: fixed")

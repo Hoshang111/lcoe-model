@@ -10,34 +10,27 @@ import Functions.weather_functions as weather
 
 #%% import ground and satellite data
 
-data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
-ground_path = os.path.join(data_path, "qcrad_data.csv")
-ground_data = pd.read_csv(ground_path, index_col=0, header=0)
-ground_data.set_index(pd.to_datetime(ground_data.index), inplace=True)
-# ground_data_a = ground_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
-#                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
-#                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
-#                                                 'Temp_ThPyra1_degC_avg':'temp',
-#                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
-#                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
-# ground_data = ground_data_a.tz_localize("UTC")
+data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 
-# satellite_path = os.path.join(data_path, "PVGIS_2017_2020.csv")
-# satellite_data = pd.read_csv(satellite_path, index_col=0, header=0)
-# satellite_data.set_index(pd.to_datetime(satellite_data.index, format='%Y%m%d:%H%M'), inplace=True)
+satellite_data_2016_path = os.path.join(data_path, "sing_2016.csv")
+satellite_data_2017_path = os.path.join(data_path, "sing_2017.csv")
+satellite_data_2018_path = os.path.join(data_path, "sing_2018.csv")
+satellite_data_2019_path = os.path.join(data_path, "sing_2019.csv")
+satellite_data_2020_path = os.path.join(data_path, "sing_2020.csv")
 
-satellite_data_2017_path = os.path.join(data_path, "Feni_Himawari_2017.csv")
-satellite_data_2018_path = os.path.join(data_path, "Feni_Himawari_2018.csv")
-satellite_data_2019_path = os.path.join(data_path, "Feni_Himawari_2019.csv")
+satellite_data_2016 = pd.read_csv(satellite_data_2016_path, header=2)
 satellite_data_2017 = pd.read_csv(satellite_data_2017_path, header=2)
 satellite_data_2018 = pd.read_csv(satellite_data_2018_path, header=2)
 satellite_data_2019 = pd.read_csv(satellite_data_2019_path, header=2)
+satellite_data_2020 = pd.read_csv(satellite_data_2020_path, header=2)
+
+satellite_data_2016.set_index(pd.to_datetime(satellite_data_2016[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
 satellite_data_2017.set_index(pd.to_datetime(satellite_data_2017[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
 satellite_data_2018.set_index(pd.to_datetime(satellite_data_2018[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
 satellite_data_2019.set_index(pd.to_datetime(satellite_data_2019[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
-satellite_data_localtz = pd.concat([satellite_data_2017, satellite_data_2018, satellite_data_2019], axis=0)
-satellite_data_aware = satellite_data_localtz.tz_localize("Asia/Dhaka")
-satellite_data = satellite_data_aware.tz_convert("UTC")
+satellite_data_2020.set_index(pd.to_datetime(satellite_data_2020[["Year", "Month", "Day", "Hour", "Minute"]]), inplace=True)
+
+satellite_data = pd.concat([satellite_data_2016, satellite_data_2017, satellite_data_2018, satellite_data_2019, satellite_data_2020], axis=0)
 satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'DHI':'dhi',
                                                 'DNI':'dni',
@@ -45,13 +38,10 @@ satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'Wind Speed':'wind_speed',
                                                 'Clearsky GHI':'clearsky ghi',
                                                 'Cloud Type':'cloud type'})
-satellite_data_aware = satellite_data_aware.rename(columns={'GHI':'ghi',
-                                                'DHI':'dhi',
-                                                'DNI':'dni',
-                                                'Temperature':'temp',
-                                                'Wind Speed':'wind_speed',
-                                                'Clearsky GHI':'clearsky ghi',
-                                                'Cloud Type':'cloud type'})
+
+file_name = 'sing_joined.csv'
+file_path = os.path.join(data_path, file_name)
+satellite_data.to_csv(file_path)
 
 #%% determine clearness index for comparisons
 

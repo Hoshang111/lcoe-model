@@ -6,6 +6,7 @@ import Functions.simulation_functions as func
 import pytz
 import Functions.sizing_functions as sizing
 
+# %% ===================================================
 def weather_sort(weather_file):
     """
 
@@ -222,13 +223,14 @@ def mc_weather_import(weather_file):
 def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location):
     """"""
 
-    module = results[5]
-    rack = results[6]
-    module_per_zone = results[?]
-    gcr = (module_per_zone*module['A_c']) / zone_area
+    module = results['module']
+    rack = results['rack']
+    module_per_inverter = results['modules_per_inverter']
+    gcr = (module_per_inverter*module['A_c']) / zone_area
     dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
-                                               module_per_zone, gcr,
-                                               location)
+                            module_per_inverter,
+                            results['strings_per_inverter'],
+                            gcr, location, results['inverter'])
     # dc_df.rename(columns={0: "dc_out"}, inplace=True)
     # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
@@ -392,21 +394,19 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
-    dc_ordered = {}
+
     ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
     ghi_dict = dict_sort(ghi_timeseries, 'ghi')
 
-    for key in results_dict:
-        results = results_dict[key]
-        yield_timeseries = mc_dc_yield(results, zone_area,
-                                       temp_model, mc_weather_file, location)
-        ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
-        dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
+    yield_timeseries = mc_dc_yield(results_dict, zone_area,
+                                    temp_model, mc_weather_file, location)
+    ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
+    dc_ordered = dict_sort(ghi_sort, 'ghi')
 
-    for key in dc_ordered:
-        for month in dc_ordered[key]:
-            for df in dc_ordered[key][month].values():
-                df.drop('ghi', axis=1, inplace=True)
+
+    for month in dc_ordered:
+        for df in dc_ordered[month].values():
+            df.drop('ghi', axis=1, inplace=True)
 
     # %% ===========================================================
     # Create data tables for yield parameters
@@ -430,14 +430,13 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
 
     # need to check above for creation of dict and then combining into dataframe
 
-    for key in dc_ordered:
-        ordered_dict = dc_ordered[key]
-        dc_output = []
-        for column in random_timeseries.T:
-            generation_list = list(zip(month_series, column))
-            dc_output.append(gen_mcts(ordered_dict, generation_list, start_date, end_date))
-        output_dict[key] = pd.concat(dc_output, axis=1, ignore_index=False)
-        output_dict[key].columns = np.arange(len(output_dict[key].columns))
+
+    dc_output = []
+    for column in random_timeseries.T:
+        generation_list = list(zip(month_series, column))
+        dc_output.append(gen_mcts(dc_ordered, generation_list, start_date, end_date))
+    output_dict = pd.concat(dc_output, axis=1, ignore_index=False)
+    output_dict.columns = np.arange(len(output_dict.columns))
 
     # since GHI was first of our scenarios
     # %% ===========================================================
@@ -461,9 +460,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
 
     # %% =========================================================
     # creating three different datatables
-    combined_mc_dict = {}
-    for key in results_dict:
-        combined_mc_dict[key] = combine_variance(output_dict[key], loss_df, results_dict[key])
+
+    combined_mc_dict = combine_variance(output_dict, loss_df, results_dict)
 
     # %% ==========================================================
     # calculate revenue from yield dictionary
