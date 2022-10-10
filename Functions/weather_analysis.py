@@ -37,7 +37,8 @@ satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'Temperature':'temp',
                                                 'Wind Speed':'wind_speed',
                                                 'Clearsky GHI':'clearsky ghi',
-                                                'Cloud Type':'cloud type'})
+                                                'Cloud Type':'cloud type',
+                                                'Precipitable Water':'precipitable_water'})
 
 file_name = 'sing_joined.csv'
 file_path = os.path.join(data_path, file_name)

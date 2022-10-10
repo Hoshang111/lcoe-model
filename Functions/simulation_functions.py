@@ -833,6 +833,8 @@ def mc_dc( rack_params,
     else:
         raise ValueError("Please choose racking as one of these options: fixed")
 
+    weather_simulation.index = weather_simulation.index.shift(periods=-30, freq='T')
+
     return dc_results
 
 def apply_degradation(ghi, first_year_degradation, degradation_rate):

@@ -375,7 +375,7 @@ def combine_variance(weather_dict, loss_df, results_dict):
     """"""
 
     combined_dc = loss_df.mul(weather_dict, axis=0)
-    AC_outputs = run_AC(combined_dc, results_dict['Inverter'])
+    AC_outputs = run_AC(combined_dc, results_dict['inverter'])
     combined_mc_dict = pd.concat([combined_dc, AC_outputs], axis=1)
 
     return combined_mc_dict
@@ -400,7 +400,11 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
 
     yield_timeseries = mc_dc_yield(results_dict, zone_area,
                                     temp_model, mc_weather_file, location)
-    ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
+
+    p_out = yield_timeseries[0]*4704/720
+    v_dc = yield_timeseries[1]
+
+    ghi_sort = pd.concat([p_out, ghi_timeseries], axis=1, ignore_index=False )
     dc_ordered = dict_sort(ghi_sort, 'ghi')
 
 

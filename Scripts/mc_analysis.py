@@ -56,11 +56,11 @@ def get_dni(location, ghi, dhi):
     horizontal_dni_lookup[horizontal_dni_lookup < 0] = 0
     hz_dni_lookup = horizontal_dni_lookup
  #   hz_dni_lookup.index = horizontal_dni_lookup.index.tz_convert('Asia/Dhaka')
-    hz_dni_lookup.index = hz_dni_lookup.index.shift(periods=30)
+  #  hz_dni_lookup.index = hz_dni_lookup.index.shift(periods=30)
     hourly_lookup = hz_dni_lookup.resample('H').mean()
     clearsky_dni_lookup = clearsky_lookup['dni']
  #   clearsky_dni_lookup.index = clearsky_lookup.index.tz_convert('Asia/Dhaka')
-    clearsky_dni_lookup.index = clearsky_dni_lookup.index.shift(periods=30)
+  #  clearsky_dni_lookup.index = clearsky_dni_lookup.index.shift(periods=30)
     hourly_dni_lookup = clearsky_dni_lookup.resample('H').mean()
     dni_lookup = hourly_dni_lookup / hourly_lookup
     dni_lookup[dni_lookup > 30] = 30
@@ -186,6 +186,23 @@ def get_inverter():
 
     return inverter_params
 
+def gen_costs(cost_tables, MWp, Area):
+    """"""
+
+    start_date = '1/1/2022 00:00:00'
+    end_date = '31/12/2052 23:59:00'
+    year_series = pd.date_range(start=start_date, end=end_date, freq='YS')
+    cost_capitatl_pMW = cost_tables['DC_Cables-pMW']+cost_tables['Installation_pMW']\
+                    +cost_tables["Inverter_pMW"]+cost_tables['Mounting_pMW']\
+                    +cost_tables['modules_pMW']+cost_tables['ac_cables_pMW']\
+                    +cost_tables['substation_pMW']
+    cost_capital_other = cost_tables['transmission_site'] + cost_tables['site_prep_pm2']*Area
+    ongoing_costs_pMW = cost_tables['om_pMWpy']
+
+
+
+    return
+
  # %% ===========================================================
  # define iteration scenarios
 
@@ -203,6 +220,8 @@ input_params['scheduled_price'] = 10
 input_params['zone_area'] = 19000
 input_params['num_of_zones'] = 152
 input_params['discount_rate'] = 0.07
+input_params['MW_rating'] = 460.964
+input_params['site_area'] = 4046.86*562
 
 location = {}
 location['latitude'] = 21.706871
@@ -278,6 +297,10 @@ if iter_num > iter_limit:
 else:
     combined_mc_dict, ghi_df = \
         mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
+
+# %% ==================================================
+# Generate costs
+
 
 # %% ==================================================
 # Assemble pickled data
