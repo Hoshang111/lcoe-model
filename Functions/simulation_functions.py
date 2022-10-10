@@ -716,7 +716,7 @@ def mc_dc( rack_params,
              weather_simulation,
              modules_per_zone,
              gcr,
-             location,
+             site,
              inverter,
              num_of_module_per_string=30
              ):
@@ -786,6 +786,8 @@ def mc_dc( rack_params,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
+
+    location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
 
     if rack_params['rack_type'] == 'fixed':
 
