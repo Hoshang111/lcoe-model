@@ -296,7 +296,7 @@ def apply_temp_loss(temp_var, ghi, coefficient):
     """"""
 
     temp_df = ghi.multiply(np.array(temp_var), axis='columns')
-    temp_df *= coefficient
+    temp_df *= coefficient/1000
     temp_loss = 1+temp_df
 
     return temp_loss
