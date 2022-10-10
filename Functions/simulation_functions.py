@@ -786,19 +786,19 @@ def mc_dc( rack_params,
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
-
+    print('this_worked')
     location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
 
     weather_simulation.index = weather_simulation.index.shift(periods=30, freq='T')
 
     num_of_modules_per_string = modules_per_inverter/strings_per_inverter
 
-    if rack_params['rack_type'] == 'fixed':
+    if rack_params == 'fixed':
 
         if module_params['Bifacial'] > 0:
             mount = bifacial_pvsystem.FixedMount(surface_tilt=20, surface_azimuth=90,
                                                              racking_model='open_rack',
-                                                             module_height=rack_params['elevation'])
+                                                             module_height=2)
 
             bifacial_array = bifacial_pvsystem.Array(mount=mount,
                                                      module_parameters=module_params,
@@ -815,7 +815,7 @@ def mc_dc( rack_params,
         else:
             mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=90,
                                                  racking_model='open_rack',
-                                                 module_height=rack_params['elevation'])
+                                                 module_height=2)
 
             bifacial_array = pvsys.Array(mount=mount,
                                          module_parameters=module_params,
