@@ -336,10 +336,10 @@ def gen_revenue(yield_dict, scheduled_price, discount_rate):
 
     return mc_yield_outputs
 
-def run_AC(combined_dc, inverter):
+def run_AC(p_mp, v_mp, inverter):
     """"""
-    p_dc = combined_dc['p_mp']
-    v_dc = combined_dc['v_mp']
+    p_dc = p_mp
+    v_dc = v_mp
     Paco = inverter['Paco']
     Pdco = inverter['Pdco']
     Vdco = inverter['Vdco']
@@ -371,12 +371,14 @@ def run_AC(combined_dc, inverter):
 
     return power_ac
 
-def combine_variance(weather_dict, loss_df, results_dict):
+def combine_variance(weather_dict, voltage_dict, loss_df, results_dict):
     """"""
 
     combined_dc = loss_df.mul(weather_dict, axis=0)
-    AC_outputs = run_AC(combined_dc, results_dict['inverter'])
-    combined_mc_dict = pd.concat([combined_dc, AC_outputs], axis=1)
+    AC_outputs = run_AC(combined_dc, voltage_dict, results_dict['inverter'])
+    combined_mc_dict = {}
+    combined_mc_dict['DC'] = combined_dc
+    combined_mc_dict['AC'] = AC_outputs
 
     return combined_mc_dict
 
@@ -407,9 +409,16 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     ghi_sort = pd.concat([p_out, ghi_timeseries], axis=1, ignore_index=False )
     dc_ordered = dict_sort(ghi_sort, 'ghi')
 
+    ghi_sort = pd.concat([v_dc, ghi_timeseries], axis=1, ignore_index=False)
+    vdc_ordered = dict_sort(ghi_sort, 'ghi')
+
 
     for month in dc_ordered:
         for df in dc_ordered[month].values():
+            df.drop('ghi', axis=1, inplace=True)
+
+    for month in vdc_ordered:
+        for df in vdc_ordered[month].values():
             df.drop('ghi', axis=1, inplace=True)
 
     # %% ===========================================================
@@ -436,11 +445,15 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
 
 
     dc_output = []
+    vdc_output = []
     for column in random_timeseries.T:
         generation_list = list(zip(month_series, column))
         dc_output.append(gen_mcts(dc_ordered, generation_list, start_date, end_date))
+        vdc_output.append(gen_mcts(vdc_ordered, generation_list, start_date, end_date))
     output_dict = pd.concat(dc_output, axis=1, ignore_index=False)
     output_dict.columns = np.arange(len(output_dict.columns))
+    v_output_dict = pd.concat(vdc_output, axis=1, ignore_index=False)
+    v_output_dict.columns = np.arange(len(v_output_dict.columns))
 
     # since GHI was first of our scenarios
     # %% ===========================================================
@@ -465,12 +478,12 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     # %% =========================================================
     # creating three different datatables
 
-    combined_mc_dict = combine_variance(output_dict, loss_df, results_dict)
+    combined_mc_dict = combine_variance(output_dict, v_output_dict, loss_df, results_dict)
 
     # %% ==========================================================
     # calculate revenue from yield dictionary
 
-    combined_mc_outputs = gen_revenue(combined_mc_dict['p_mp_AC'], scheduled_price, discount_rate)
+    combined_mc_outputs = gen_revenue(combined_mc_dict['AC'], scheduled_price, discount_rate)
 
     return combined_mc_outputs, ghi_discount,
 

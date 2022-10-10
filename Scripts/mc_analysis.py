@@ -206,8 +206,8 @@ def gen_costs(cost_tables, MWp, Area):
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 20
-iter_limit = 10
+iter_num = 500
+iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
@@ -291,6 +291,7 @@ combined_mc_dict = {}
 if iter_num > iter_limit:
     repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
     for i in range(repeats):
+
         combined_mc_dict, ghi_df = \
             mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
         dump_iter(combined_mc_dict, i, scenario_dict['scenario_ID'])
