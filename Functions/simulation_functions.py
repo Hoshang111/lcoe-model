@@ -810,7 +810,8 @@ def mc_dc( rack_params,
                                                          inverter_parameters=inverter)
             mc = bifacial_modelchain.ModelChain(inverter_system, location)
             mc.run_model_bifacial(weather_simulation)
-            dc_results = [mc.results.dc['p_mp'], mc.results.dc['v_mp']]
+            dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
+            dc_results.index = dc_results.index.shift(periods=-30, freq='T')
 
         else:
             mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=90,
