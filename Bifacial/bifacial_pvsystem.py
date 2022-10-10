@@ -1424,7 +1424,7 @@ class Array:
         albedo = 0.2
 
 
-        if self.mount.gcr:
+        if hasattr(self.mount, 'gcr'):
             pitch = 2 * self.module_parameters['Length'] / self.mount.gcr
             gcr_in = self.mount.gcr
         else:
