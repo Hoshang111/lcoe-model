@@ -20,7 +20,7 @@ from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable, get_npv
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
-     generate_parameters, calculate_variance_contributions, import_excel_data
+     generate_parameters, calculate_variance_contributions, import_excel_data, generate_iterations
 import warnings
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
@@ -232,9 +232,11 @@ cost_datatables = generate_parameters(cost_tables)
  # %% ===========================================================
  # code defining loss factors and generating mc dataframe
 
-loss_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\loss_tables.csv'
+loss_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\\bang_loss.csv'
 loss_tables = pd.read_csv(loss_path)
-loss_datatables = generate_parameters(loss_tables)
+loss_datatables = generate_iterations(loss_tables, index_name='YieldID',
+                                        index_description='YieldName', num_iterations=iter_num,
+                                        iteration_start=0, default_dist_type = 'flat')
 
  # %% ===========================================================
 # Monte Carlo for yield parameters
