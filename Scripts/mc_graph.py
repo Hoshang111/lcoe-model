@@ -110,10 +110,16 @@ def extract_parameter_data(df, year_str):
 
 
 # %%
-scenarios = ['2028']
+input_parameters = {}
+output_parameters = {}
+
+scenarios = [#'2024',
+            # '2026',
+            '2028']
+
 for year in scenarios:
     analysis_year = int(year)
-    input_parameters, output_parameters = extract_parameter_data(Analysis_dict, year)
+    input_parameters[year], output_parameters[year] = extract_parameter_data(Analysis_dict, year)
 
 
 
@@ -250,7 +256,6 @@ def graph_variance_contributions(output_parameters, input_parameters, scenario_n
     else:
         print('Error! Revenue type does not exist!')
 
-    cost_column = scenario_name + '_d_cost'
     if cost_mc == True:
         cost_column = scenario_name + '_d_cost'
     else:
@@ -259,25 +264,77 @@ def graph_variance_contributions(output_parameters, input_parameters, scenario_n
 
     print('heren!')
     output_name = scenario_name + '_NPV'
-    df[output_name] = df[cost_column] / df[revenue_column]
+    print(df[[revenue_column,cost_column]])
+    df[output_name] = df[revenue_column] - df[cost_column]
 
     all_parameters = input_parameters.join(df[output_name])
 
     calculate_variance_contributions(all_parameters, output_name,
                                      savename=None)
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='fixed')
+graph_variance_contributions(output_parameters['2028'], input_parameters['2028'], 'MAV_PERCa_2028', cost_mc = True, revenue_type='fixed')
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='loss')
+graph_variance_contributions(output_parameters['2028'], input_parameters['2028'], 'MAV_PERCa_2028', cost_mc = False, revenue_type='loss')
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='weather')
+graph_variance_contributions(output_parameters['2028'], input_parameters['2028'], 'MAV_PERCa_2028', cost_mc = False, revenue_type='weather')
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='combined')
+graph_variance_contributions(output_parameters['2028'], input_parameters['2028'], 'MAV_PERCa_2028', cost_mc = False, revenue_type='combined')
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='combined')
+graph_variance_contributions(output_parameters['2028'], input_parameters['2028'], 'MAV_PERCa_2028', cost_mc = True, revenue_type='combined')
+
+# %%
+def graph_scatter_2d(input_data, output_data, parameter_x, parameter_y, parameter_z, fig_name,
+               title=None, xlabel=None, ylabel=None, zlabel=None):
+    x = input_data[parameter_x]
+    y = input_data[parameter_y]
+    z = output_data[parameter_z]
+
+    fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+
+    scatterplot = ax0.scatter(x, y, c=z, cmap=None, s=None)
+    plt.colorbar(scatterplot, cax=ax1)
+
+    if title is not None:
+        ax0.set_title(title)
+
+    if xlabel is not None:
+        ax0.set_xlabel(xlabel)
+    else:
+        ax0.set_xlabel(parameter_x)
+    if ylabel is not None:
+        ax0.set_ylabel(ylabel)
+    else:
+        ax0.set_ylabel(parameter_y)
+    if zlabel is not None:
+        ax1.set_title(zlabel)
 
 
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', fig_name)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.show()
+    plt.close()
 
+graph_scatter_2d(input_parameters['2028'], output_parameters['2028'],
+                 parameter_x='ComponentID 33 AnnualMultiplier',
+                 parameter_y = 'CurrencyID 2 To_AUD',
+                 parameter_z = 'MAV_PERCa_2028_d_cost',
+                 xlabel = 'MAV ave temp increase',
+                 ylabel = 'MAV annual degradation',
+                 zlabel = 'Disc kWh',
+                 fig_name = 'test',
+                 title = 'Key loss factors affecting MAV generation')
+
+graph_scatter_2d(input_parameters['2028'], output_parameters['2028'],
+                 parameter_x='ComponentID 33 AnnualMultiplier',
+                 parameter_y='CurrencyID 2 To_AUD',
+                 parameter_z = 'SAT_HJTa_2028_d_cost',
+                 xlabel = 'SAT annual degradation',
+                 ylabel = 'SAT bifaciality modifier',
+                 zlabel = 'Disc kWh',
+                 fig_name = 'dummy',
+                 title = 'Key factors affecting SAT generation')
 
 
 

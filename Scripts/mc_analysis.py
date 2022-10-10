@@ -40,12 +40,12 @@ def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scena
  # %% ===========================================================
  # define scenarios
 
-scenarios = ['2024',
-            '2026',
+scenarios = [# '2024',
+            # '2026',
             '2028']
 
-iter_num = 500
-iter_limit = 50
+iter_num = 20
+iter_limit = 10
  # %% ===========================================================
  # import scenario data from pickle and simulation parameters from csv
 
@@ -219,8 +219,8 @@ for iteration in yield_iter_dict:
                     for parameter in yield_iter_dict[iteration][key][year][scenario]:
                         globals()[dict_name][year][scenario][parameter] = \
                             pd.concat([globals()[dict_name][year][scenario][parameter],
-                                yield_iter_dict[iteration][key][year][scenario][parameter]],
-                                axis=0, ignore_index=True)
+                            yield_iter_dict[iteration][key][year][scenario][parameter]],
+                            axis=0, ignore_index=True)
 
 
 # %% ==================================================
