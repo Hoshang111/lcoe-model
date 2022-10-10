@@ -294,7 +294,7 @@ def apply_temp_loss(temp_var, ghi, coefficient):
     """"""
 
     temp_df = ghi.multiply(np.array(temp_var), axis='columns')
-    temp_df *= coefficient
+    temp_df *= coefficient/1000
     temp_loss = 1+temp_df
 
     return temp_loss
@@ -401,8 +401,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     yield_timeseries = mc_dc_yield(results_dict, zone_area,
                                     temp_model, mc_weather_file, location)
 
-    p_out = yield_timeseries[0]*4704/720
-    v_dc = yield_timeseries[1]
+    p_out = yield_timeseries['p_mp']*4704/720
+    v_dc = yield_timeseries['v_mp']
 
     ghi_sort = pd.concat([p_out, ghi_timeseries], axis=1, ignore_index=False )
     dc_ordered = dict_sort(ghi_sort, 'ghi')
