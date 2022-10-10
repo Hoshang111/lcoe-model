@@ -196,7 +196,7 @@ iter_limit = 10
  # define input and scenario data
 
 input_params = {}
-temp_model = 'pvsyst'
+input_params['temp_model'] = 'pvsyst'
 input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['scheduled_price'] = 10
@@ -225,9 +225,11 @@ scenario_dict['modules_per_inverter'] = 4704
  # %% ===========================================================
  # define cost breakdown and generate cost datatables
 
-cost_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\cost_tables.csv'
+cost_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\\bang_costs.csv'
 cost_tables = pd.read_csv(cost_path)
-cost_datatables = generate_parameters(cost_tables)
+cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
+                                        index_description='ScenarioName', num_iterations=iter_num,
+                                        iteration_start=0, default_dist_type = 'flat')
 
  # %% ===========================================================
  # code defining loss factors and generating mc dataframe
@@ -270,11 +272,11 @@ if iter_num > iter_limit:
     repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
     for i in range(repeats):
         combined_mc_dict, ghi_df = \
-            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables)
+            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
         dump_iter(combined_mc_dict, i, scenario_dict['scenario_ID'])
 else:
     combined_mc_dict, ghi_df = \
-        mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables)
+        mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
 
 # %% ==================================================
 # Assemble pickled data
