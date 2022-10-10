@@ -1329,6 +1329,72 @@ class ModelChain:
 
         return self
 
+    def prepare_inputs_bifacial_fixed(self, weather):
+        """
+        Prepare the solar position, irradiance, and weather inputs to
+        the model, starting with GHI, DNI and DHI.
+        Parameters
+        ----------
+        weather : DataFrame, or tuple or list of DataFrame
+            Required column names include ``'dni'``, ``'ghi'``, ``'dhi'``.
+            Optional column names are ``'wind_speed'``, ``'temp_air'``; if not
+            provided, air temperature of 20 C and wind speed
+            of 0 m/s will be added to the DataFrame.
+            If `weather` is a tuple or list, it must be of the same length and
+            order as the Arrays of the ModelChain's PVSystem.
+        Raises
+        ------
+        ValueError
+            If any `weather` DataFrame(s) is missing an irradiance component.
+        ValueError
+            If `weather` is a tuple or list and the DataFrames it contains have
+            different indices.
+        ValueError
+            If `weather` is a tuple or list with a different length than the
+            number of Arrays in the system.
+        Notes
+        -----
+        Assigns attributes to ``results``: ``times``, ``weather``,
+        ``solar_position``, ``airmass``, ``total_irrad``, ``aoi``
+        See also
+        --------
+        ModelChain.complete_irradiance
+        """
+        weather = _to_tuple(weather)
+        self._check_multiple_input(weather, strict=False)
+        self._verify_df(weather, required=['ghi', 'dni', 'dhi'])
+        self._assign_weather(weather)
+
+        self._prep_inputs_solar_pos(weather)
+        self._prep_inputs_airmass()
+
+        # PVSystem.get_irradiance and SingleAxisTracker.get_irradiance
+        # and PVSystem.get_aoi and SingleAxisTracker.get_aoi
+        # have different method signatures. Use partial to handle
+        # the differences.
+
+        self._prep_inputs_fixed()
+        get_irradiance = partial(
+            self.system.get_bifacial_irradiance,
+            self.arrays.mount['surface_tilt'],
+            self.arrays.mount['surface_azimuth'],
+            self.results.solar_position['apparent_zenith'],
+            self.results.solar_position['azimuth'])
+
+        self.results.bifacial_irrad = get_irradiance(
+            _tuple_from_dfs(self.results.weather, 'dni'),
+            _tuple_from_dfs(self.results.weather, 'ghi'),
+            _tuple_from_dfs(self.results.weather, 'dhi'),
+            airmass=self.results.airmass['airmass_relative'],
+            model=self.transposition_model
+        )
+
+        self.results.total_irrad = self.results.bifacial_irrad[['poa_global', 'poa_diffuse',
+                                                                'poa_direct', 'poa_sky_diffuse',
+                                                                'poa_ground_diffuse']]
+
+        return self
+
     def prepare_inputs(self, weather):
         """
         Prepare the solar position, irradiance, and weather inputs to

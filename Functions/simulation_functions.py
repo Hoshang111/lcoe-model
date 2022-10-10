@@ -714,11 +714,11 @@ def mc_dc( rack_params,
              module_params,
              temp_model,
              weather_simulation,
-             racks_per_zone,
+             modules_per_zone,
              gcr,
-             num_of_mav_per_inverter=4,
-             num_of_sat_per_inverter=4,
-             num_of_module_per_string=30,
+             location,
+             inverter,
+             num_of_module_per_string=30
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -778,12 +778,6 @@ def mc_dc( rack_params,
             dc rated power (MW) of the solar farm according to range of number of racks per zone
 
     """
-    coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
-    latitude, longitude, name, altitude, timezone = coordinates[0]
-    location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
-    num_of_strings_per_mav = rack_params['Modules_per_rack'] / num_of_module_per_string
-    num_of_strings_per_sat = rack_params['Modules_per_rack'] / num_of_module_per_string
-    modules_per_zone = racks_per_zone * rack_params['Modules_per_rack']
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
     if temp_model == 'sapm':
@@ -793,131 +787,44 @@ def mc_dc( rack_params,
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
 
-    if rack_params['rack_type'] == 'east_west':
-        ''' DC modelling for 5B Mavericks with fixed ground mounting in east-west direction  '''
-
-        # Inverter (this part finds an inverter from the CEC list that matches the DC output of the system)
-        num_of_mod_per_inverter = num_of_mav_per_inverter * rack_params['Modules_per_rack']
-        # in kW rated DC power output per inverter
-        dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter
-
-        dc_to_ac = 1.2
-        ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
-        inverter_list = pvsys.retrieve_sam('cecinverter')
-
-        # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...
-        inv_dc_idx = (inverter_list.loc['Pdco'] >= dc_rated_power * 1000 * 0.95) & \
-                     (inverter_list.loc['Pdco'] <= dc_rated_power * 1000 * 1.05)
-
-        inverter_candidates = inverter_list.T[inv_dc_idx]
-        # If no inverters match the criteria, choose a micro-inverter. If there are candidates choose one of them.
-        if inverter_candidates is None:
-            inverter_params = inverter_candidates['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
-        else:
-            inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
-
-        module_tilt = rack_params['tilt']
-        mount1 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=90)  # east facing array
-        mount2 = pvsys.FixedMount(surface_tilt=module_tilt, surface_azimuth=270)  # west facing array
-
-        # Define two arrays resembling Maverick design: one east facing & one west facing
-        # For now we are designing at the inverter level with 4 MAVs per inverter. Half of the array is assigned with
-        # mount 1 (east facing) and the other half is assigned with mount 2 (west facing)
-        array_one = pvsys.Array(mount=mount1,
-                                   module_parameters=module_params,
-                                   temperature_model_parameters=temperature_model_parameters,
-                                   modules_per_string=num_of_module_per_string,
-                                   strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
-
-        array_two = pvsys.Array(mount=mount2,
-                                   module_parameters=module_params,
-                                   temperature_model_parameters=temperature_model_parameters,
-                                   modules_per_string=num_of_module_per_string,
-                                   strings=num_of_strings_per_mav * num_of_mav_per_inverter / 2)
-
-        inverter_mav_system = pvsys.PVSystem(arrays=[array_one, array_two], inverter_parameters=inverter_params)
-
-        # Model-Chain
-        # Todo: We can try different angle of irradiance (aoi) models down the track
-        mc = ModelChain(inverter_mav_system, location, aoi_model='ashrae')
-        # mc = ModelChain(system, location, aoi_model='sapm')  # another aoi model which could be explored...
-
-        mc.run_model(weather_simulation)
-
-        # Find the total DC output for the given DC size/total module number
-        # If you want to find the per zone output, find multiplication coefficient based on number of modules per zone
-        multiplication_coeff = modules_per_zone/num_of_mod_per_inverter
-        dc_results = (mc.results.dc[0]['p_mp'] + mc.results.dc[1]['p_mp']) * multiplication_coeff
-        # dc_results is the DC yield of the total solar farm
-
-        # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
-        # dc_df = pd.DataFrame(dc_results).T
-
-    elif rack_params['rack_type'] == 'SAT':
-        ''' DC modelling for single axis tracking (SAT) system '''
-
-        # Inverter (this part finds an inverter from the CEC list that matches the DC output of the system)
-        # Todo: Currently number of SAT per inverter is set to 4. Get more info from SunCable...
-        # Todo: If these parts are essentially same for MAV and SAT move this code prior to the IF for mounting type
-        num_of_mod_per_inverter = num_of_sat_per_inverter * rack_params['Modules_per_rack']
-        dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
-        dc_to_ac = 1.2
-        ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
-        inverter_list = pvsys.retrieve_sam('cecinverter')
-
-        # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...
-        inv_dc_idx = (inverter_list.loc['Pdco'] >= dc_rated_power * 1000 * 0.95) & \
-                     (inverter_list.loc['Pdco'] <= dc_rated_power * 1000 * 1.05)
-
-        inverter_candidates = inverter_list.T[inv_dc_idx]
-        # If no inverters match the criteria, choose a micro-inverter. If there are candidates choose one of them.
-        if inverter_candidates is None:
-            inverter_params = inverter_candidates['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
-        else:
-            inverter_params = inverter_candidates.iloc[0]  # Choose an inverter from the list of candidates
+    if rack_params['rack_type'] == 'fixed':
 
         if module_params['Bifacial'] > 0:
-            mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
-                                                            backtrack=True,
-                                                            gcr=gcr, cross_axis_tilt=0,
-                                                            racking_model='open_rack',
-                                                            module_height=rack_params['elevation'])
+            mount = bifacial_pvsystem.FixedMount(surface_tilt=20, surface_azimuth=90,
+                                                             racking_model='open_rack',
+                                                             module_height=rack_params['elevation'])
 
-            sat_array = bifacial_pvsystem.Array(mount=mount,
-                                                    module_parameters=module_params,
-                                                    temperature_model_parameters=temperature_model_parameters,
-                                                    modules_per_string=num_of_module_per_string,
-                                                    strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+            bifacial_array = bifacial_pvsystem.Array(mount=mount,
+                                                     module_parameters=module_params,
+                                                     temperature_model_parameters=temperature_model_parameters,
+                                                     modules_per_string=num_of_module_per_string,
+                                                     strings= inverter['strings'])
 
-            inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array],
-                                                    inverter_parameters=inverter_params)
-            mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
+            inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
+                                                         inverter_parameters=inverter)
+            mc = bifacial_modelchain.ModelChain(inverter_system, location)
             mc.run_model_bifacial(weather_simulation)
-            multiplication_coeff = modules_per_zone / num_of_mod_per_inverter
-            dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
+            dc_results = [mc.results.dc['p_mp'], mc.results.dc['v_mp']]
 
         else:
-            mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
-                                                     gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
-                                                     module_height=rack_params['elevation'])
+            mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=90,
+                                                 racking_model='open_rack',
+                                                 module_height=rack_params['elevation'])
 
-            sat_array = pvsys.Array(mount=mount,
-                                        module_parameters=module_params,
-                                        temperature_model_parameters=temperature_model_parameters,
-                                        modules_per_string=num_of_module_per_string,
-                                        strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+            bifacial_array = pvsys.Array(mount=mount,
+                                         module_parameters=module_params,
+                                         temperature_model_parameters=temperature_model_parameters,
+                                         modules_per_string=num_of_module_per_string,
+                                         strings= inverter['strings'])
 
-            inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+            inverter_sat_system = pvsys.PVSystem(arrays=[bifacial_array], inverter_parameters=inverter)
+
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            multiplication_coeff = modules_per_zone / num_of_mod_per_inverter
-            dc_results = (mc.results.dc['p_mp'] * multiplication_coeff)
-
-        # Todo: we can try different back-tracking algorithms for SAT as well
-        # dc_df = pd.DataFrame(dc_results)
+            dc_results = [mc.results.dc['p_mp'], mc.results.dc['v_mp']]
 
     else:
-        raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
+        raise ValueError("Please choose racking as one of these options: fixed")
 
     return dc_results
 

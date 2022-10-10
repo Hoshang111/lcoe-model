@@ -143,3 +143,63 @@ new_TMY = pd.concat([TMY_dummy, df_ghi_corrected, df_dhi_corrected, df_dni_corre
 
 save_path = os.path.join(data_path, 'corrected_sumi_TMY.csv')
 new_TMY.to_csv(save_path)
+
+def weather_correct(weather_file, corrections, location):
+    """"""
+
+    # Define conditions of interest: Cloud types
+
+    cloud_list = []
+    for i in range(9):
+        label = 'cloud' + str(i)
+        if i in weather_file['cloud type']:
+            locals()[label] = weather_file.loc[weather_file['cloud type'] == 0, ['ghi', 'dhi', 'dni']]
+        else:
+            locals()[label] = pd.DataFrame()
+
+        cloud_list.append(locals()[label])
+
+    labels = ['cloud0', 'cloud1', 'cloud2', 'cloud3', 'cloud4', 'cloud5', 'cloud6', 'cloud7', 'cloud8', 'cloud9']
+
+    cloud_zip = list(zip(cloud_list_satellite, labels))
+
+    dhi_corrected = []
+    ghi_corrected = []
+
+    for data, id in cloud_list:
+        if len(data.index) > 0:
+            ghi_label = id + '_ghi'
+            dhi_label = id + '_dhi'
+
+            if ghi_label in corrections.keys():
+                ghi_factors = corrections[ghi_label][0:3]
+            else:
+                ghi_factors = [0, 1, 0]
+            if dhi_label in corrections.keys():
+                dhi_factors = corrections[dhi_label][0:3]
+            else:
+                dhi_factors = [0, 1, 0]
+
+            ghi_correction = data['ghi'] ** 2 * ghi_factors[2] + data['ghi'] * ghi_factors[1] \
+                             + ghi_factors[0]
+            dhi_correction = data['dhi'] ** 2 * dhi_factors[2] + data['dhi'] * dhi_factors[1] \
+                             + dhi_factors[0]
+            ghi_corrected.append(ghi_correction)
+            dhi_corrected.append(dhi_correction)
+
+    df_ghi_corrected = pd.concat(ghi_corrected)
+    df_ghi_corrected.sort_index(inplace=True)
+
+    df_dhi_corrected = pd.concat(dhi_corrected)
+    df_dhi_corrected.sort_index(inplace=True)
+
+    corrected_full = pd.concat([df_ghi_corrected, df_dhi_corrected], axis=1)
+
+    df_dhi_corrected.loc[(df_dhi_corrected < 0)] = 0
+    df_ghi_corrected.loc[(df_ghi_corrected < 0)] = 0
+    df_dni_corrected = get_dni(location=site, ghi=df_ghi_corrected, dhi=df_dhi_corrected)
+
+    weather_dummy = weather_file.drop(['ghi', 'dhi', 'dni'], axis=1)
+    weather_corrected = pd.concat([TMY_dummy, df_ghi_corrected, df_dhi_corrected, df_dni_corrected], axis=1)
+
+    return weather_corrected

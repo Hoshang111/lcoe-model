@@ -219,20 +219,16 @@ def mc_weather_import(weather_file):
 
     return weather_dnv_mod
 
-def mc_dc_yield(results, zone_area, num_of_zones, temp_model, mc_weather_file):
+def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location):
     """"""
 
     module = results[5]
     rack = results[6]
-    install_dummy = results[1][1]['InstallNumber']
-    install_dummy2 = install_dummy.reset_index()
-    install_dummy3 = install_dummy2['InstallNumber']
-    racks_per_zone = install_dummy3[0]
-    module_per_zone = racks_per_zone * rack['Modules_per_rack']
+    module_per_zone = results[?]
     gcr = (module_per_zone*module['A_c']) / zone_area
     dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
-                                               racks_per_zone, gcr,
-                                               )
+                                               module_per_zone, gcr,
+                                               location)
     # dc_df.rename(columns={0: "dc_out"}, inplace=True)
     # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
@@ -319,17 +315,17 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
-def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, discount_rate):
+def gen_revenue(yield_dict, scheduled_price, discount_rate):
     """"""
     mc_yield_outputs = {}
 
     for key in yield_dict:
         NPV_outputs = {}
-        revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
-        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(revenue[0], discount_rate=0)
-        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
-        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0)
-        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        revenue = yield_dict*scheduled_price
+        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(yield_dict, discount_rate=0)
+        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(yield_dict, discount_rate)
+        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue, discount_rate=0)
+        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue, discount_rate)
         NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
         NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
         NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
@@ -338,29 +334,61 @@ def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, disco
 
     return mc_yield_outputs
 
-def combine_variance(weather_dict, loss_df):
+def run_AC(combined_dc, inverter):
+    """"""
+    p_dc = combined_dc['p_mp']
+    v_dc = combined_dc['v_mp']
+    Paco = inverter['Paco']
+    Pdco = inverter['Pdco']
+    Vdco = inverter['Vdco']
+    Pnt = inverter['Pnt']
+    Pso = inverter['Pso']
+    C0 = inverter['C0']
+    C1 = inverter['C1']
+    C2 = inverter['C2']
+    C3 = inverter['C3']
+    Pso = inverter['Pso']
+
+    A = Pdco * (1 + C1 * (v_dc - Vdco))
+    B = Pso * (1 + C2 * (v_dc - Vdco))
+    C = C0 * (1 + C3 * (v_dc - Vdco))
+
+    power_ac = (Paco / (A - B) - C * (A - B)) * (p_dc - B) + C * (p_dc - B) ** 2
+
+    power_ac = np.minimum(Paco, power_ac)
+    min_ac_power = -1.0 * abs(Pnt)
+    below_limit = p_dc < Pso
+    try:
+        power_ac[below_limit] = min_ac_power
+    except TypeError:  # power_ac is a float
+        if below_limit:
+            power_ac = min_ac_power
+
+    if isinstance(p_dc, pd.Series):
+        power_ac = pd.Series(power_ac, index=p_dc.index)
+
+    return power_ac
+
+def combine_variance(weather_dict, loss_df, results_dict):
     """"""
 
-    weather_mc_dict = weather_dict.mul(loss_df[0], axis=0)
-    loss_mc_dict = loss_df.mul(weather_dict[0], axis=0)
-    combined_mc_dict = loss_df.mul(weather_dict, axis=0)
+    combined_dc = loss_df.mul(weather_dict, axis=0)
+    AC_outputs = run_AC(combined_dc, results_dict['Inverter'])
+    combined_mc_dict = pd.concat([combined_dc, AC_outputs], axis=1)
 
-    return weather_mc_dict, loss_mc_dict, combined_mc_dict
+    return combined_mc_dict
 
  # %% ===================================================
 
-def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
+def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, location):
     """"""
 
     # %% ===========================================
     # first to get appropriate values from dataframe
     temp_model = str(input_params['temp_model'].values[0])
-    storage_capacity = input_params['storage_capacity'].values[0]
     scheduled_price = input_params['scheduled_price'].values[0]
-    export_lim = input_params['export_lim'].values[0]
     discount_rate = input_params['discount_rate'].values[0]
     zone_area = input_params['zone_area'].values[0]
-    num_of_zones = input_params['num_of_zones'].values[0]
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
@@ -370,8 +398,8 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
 
     for key in results_dict:
         results = results_dict[key]
-        yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
-                                       temp_model, mc_weather_file)
+        yield_timeseries = mc_dc_yield(results, zone_area,
+                                       temp_model, mc_weather_file, location)
         ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
         dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
 
@@ -383,11 +411,11 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     # %% ===========================================================
     # Create data tables for yield parameters
 
-    start_date = '1/1/2029 00:00:00'
-    end_date = '31/12/2058 23:59:00'
+    start_date = '1/1/2022 00:00:00'
+    end_date = '31/12/2052 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers
-    random_timeseries = np.random.random((len(month_series), len(yield_datatables['MAV'])))
+    random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
     random_timeseries[:, 0][:, None] = 0.5
 
     output_dict = {}
@@ -426,36 +454,23 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
     # Now apply losses, all to be applied through header functions
     # %%
     # TODO: check appropriate temperature coefficient of power
-    default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
-                       (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
+    default_soiling = [(1, 0.02), (2, 0.02), (3, 0.02), (4, 0.02), (5, 0.02), (6, 0.02), (7, 0.02), (8, 0.02),
+                       (9, 0.02), (10, 0.02), (11, 0.02), (12, 0.02)]
     temp_coefficient = -0.0025
-    MAV_loss_df = get_dcloss(yield_datatables['MAV'], mc_ghi, default_soiling, temp_coefficient)
-    SAT_loss_df = get_dcloss(yield_datatables['SAT'], mc_ghi, default_soiling, temp_coefficient)
+    loss_df = get_dcloss(yield_datatables, mc_ghi, default_soiling, temp_coefficient)
 
     # %% =========================================================
     # creating three different datatables
-    # due to memory issues this is now looped per scenario
-    weather_mc_dict = {}
-    loss_mc_dict ={}
-    combined_mc_dict ={}
-    for key in dc_ordered:
-        if 'MAV' in key:
-            loss_df = MAV_loss_df
-        elif 'SAT' in key:
-            loss_df = SAT_loss_df
-        else:
-            raise ValueError('System does not contain rack identifier (SAT or MAV)')
-
-        weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key] = combine_variance(output_dict[key], loss_df)
+    combined_mc_dict = {}
+    for key in results_dict:
+        combined_mc_dict[key] = combine_variance(output_dict[key], loss_df, results_dict[key])
 
     # %% ==========================================================
     # calculate revenue from yield dictionary
 
-    weather_mc_outputs = gen_revenue(weather_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
-    loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
-    combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    combined_mc_outputs = gen_revenue(combined_mc_dict['p_mp_AC'], scheduled_price, discount_rate)
 
-    return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount,
+    return combined_mc_outputs, ghi_discount,
 
 def get_cost_dict(cash_flow, discount_rate, year):
     """"""
