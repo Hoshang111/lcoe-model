@@ -218,6 +218,7 @@ scenario_dict['inverter'] = get_inverter()
 scenario_dict['strings_per_inverter'] = 24
 scenario_dict['modules_per_string'] = 196
 scenario_dict['modules_per_inverter'] = 4704
+scenario_dict['rack'] = 'fixed'
 
  # %% ==========================================================
  #code to define number of zones from provided land area

@@ -1422,12 +1422,19 @@ class Array:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
         albedo = 0.2
-        pitch = 2*self.module_parameters['Length']/self.mount.gcr
+
+
+        if self.mount.gcr:
+            pitch = 2 * self.module_parameters['Length'] / self.mount.gcr
+            gcr_in = self.mount.gcr
+        else:
+            gcr_in = 0.75
+            pitch = 2 * self.module_parameters['Length'] / gcr_in
 
         bifacial_irradiance = \
             bifacial.infinite_sheds.get_irradiance(surface_tilt, surface_azimuth,
                                                    solar_zenith, solar_azimuth,
-                                                   self.mount.gcr, self.mount.module_height,
+                                                   gcr_in, self.mount.module_height,
                                                    pitch, ghi, dhi, dni, albedo,
                                                    bifaciality=self.module_parameters['Bifacial'],
                                                    )
