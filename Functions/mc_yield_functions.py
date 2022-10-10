@@ -313,7 +313,7 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     temp_df = apply_temp_loss(temp_var=loss_parameters['ave_temp_increase'], ghi=weather, coefficient=temp_coefficient)
 
-    tol_mismatch = 1-loss_parameters['tol_mismatch']/100
+    tol_mismatch = 1-(loss_parameters['tol_mismatch']+loss_parameters['non_avail'])/100
 
     loss_df = deg_df.multiply(np.array(tol_mismatch))*soiling_df*temp_df
 
