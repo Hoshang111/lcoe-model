@@ -207,7 +207,7 @@ def gen_costs(cost_tables, MWp, Area):
  # define iteration scenarios
 
 iter_num = 500
-iter_limit = 50
+iter_limit = 20
 
  # %% ===========================================================
  # define input and scenario data
@@ -291,9 +291,10 @@ combined_mc_dict = {}
 if iter_num > iter_limit:
     repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
     for i in range(repeats):
-
+        loss_datatables_split = {}
+        loss_datatables_split = loss_datatables[i * iter_limit:(i + 1) * iter_limit]
         combined_mc_dict, ghi_df = \
-            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
+            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables_split, location)
         dump_iter(combined_mc_dict, i, scenario_dict['scenario_ID'])
 else:
     combined_mc_dict, ghi_df = \
@@ -310,8 +311,9 @@ yield_iter_dict = {}
 i =0
 test=True
 while test:
+    bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
     tag = 'analysis_dict' + '_' + scenario_dict['scenario_ID'] + '_' + str(i) + '.p'
-    iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
+    iter_path = os.path.join(bng_path, 'mc_analysis', tag)
     if os.path.isfile(iter_path):
         yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
         i = i + 1
@@ -320,8 +322,6 @@ while test:
 
 
 # %% ==================================================
-weather_mc_dict = {}
-loss_mc_dict = {}
 combined_yield_mc_dict ={}
 discounted_ghi_full = pd.DataFrame()
 

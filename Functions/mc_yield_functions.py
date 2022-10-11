@@ -319,22 +319,19 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
 def gen_revenue(yield_dict, scheduled_price, discount_rate):
     """"""
-    mc_yield_outputs = {}
 
-    for key in yield_dict:
-        NPV_outputs = {}
-        revenue = yield_dict*scheduled_price
-        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(yield_dict, discount_rate=0)
-        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(yield_dict, discount_rate)
-        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue, discount_rate=0)
-        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue, discount_rate)
-        NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
-        NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
-        NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
-        NPV_outputs['npv_yearly'] = NPV_outputs['npv_yearly'].T
-        mc_yield_outputs[key] = NPV_outputs
+    NPV_outputs = {}
+    revenue = yield_dict*scheduled_price
+    NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(yield_dict, discount_rate=0)
+    NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(yield_dict, discount_rate)
+    NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue, discount_rate=0)
+    NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue, discount_rate)
+    NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
+    NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
+    NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
+    NPV_outputs['npv_yearly'] = NPV_outputs['npv_yearly'].T
 
-    return mc_yield_outputs
+    return NPV_outputs
 
 def run_AC(p_mp, v_mp, inverter):
     """"""
