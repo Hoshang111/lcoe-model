@@ -27,6 +27,7 @@ import _pickle as cpickle
 import pytz
 from pvlib.location import Location
 import ast
+import Functions.sizing_functions as sizing
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
 warnings.filterwarnings(action='ignore',
@@ -186,28 +187,49 @@ def get_inverter():
 
     return inverter_params
 
-def gen_costs(cost_tables, MWp, Area):
+def gen_costs(cost_datatables, MWp, Area, discount_rate):
     """"""
 
-    start_date = '1/1/2022 00:00:00'
-    end_date = '31/12/2052 23:59:00'
-    year_series = pd.date_range(start=start_date, end=end_date, freq='YS')
-    cost_capitatl_pMW = cost_tables['DC_Cables-pMW']+cost_tables['Installation_pMW']\
-                    +cost_tables["Inverter_pMW"]+cost_tables['Mounting_pMW']\
-                    +cost_tables['modules_pMW']+cost_tables['ac_cables_pMW']\
-                    +cost_tables['substation_pMW']
-    cost_capital_other = cost_tables['transmission_site'] + cost_tables['site_prep_pm2']*Area
-    ongoing_costs_pMW = cost_tables['om_pMWpy']
+    cost_capital_pMW = cost_datatables['DC_Cables']+cost_datatables['Installation_pMW']\
+                    +cost_datatables["Inverters_pMW"]+cost_datatables['Mounting_pMW']\
+                    +cost_datatables['modules_pMW']+cost_datatables['ac_cables_pMW']\
+                    +cost_datatables['substation_pMW']
+    cost_capital_other = cost_datatables['transmission_site'] + cost_datatables['site_prep_pm2']*Area
+    ongoing_costs_pMW = cost_datatables['om_pMWpy']
+    capital_cost = cost_capital_pMW*MWp+cost_capital_other
 
+    cost_dict = {}
+    for i in range(31):
+        if i==0:
+            cost_dict[i] = capital_cost
+        else:
+            cost_dict[i] = ongoing_costs_pMW*MWp
 
+    cost_outputs_dict = {}
+    yearly_costs = pd.concat(cost_dict, axis=1)
+    yearly_costs.columns = range(2022, 2053)
 
-    return
+    cost_outputs_dict['yearly_costs'] = yearly_costs
+
+    cost_outputs_dict['total_cost'] = yearly_costs.sum(axis=1)
+
+    year_offset = pd.Series(range(0, 31))
+    year_offset.index = yearly_costs.columns
+
+    yearly_factor = 1 / (1 + discount_rate) ** year_offset
+    df_factor_dummy = pd.DataFrame(yearly_factor)
+    df_factor = df_factor_dummy.T
+    cost_outputs_dict['yearly_npv'] = yearly_costs.mul(yearly_factor, axis=1)
+
+    cost_outputs_dict['cost_npv'] = cost_outputs_dict['yearly_npv'].sum(axis=1)
+
+    return cost_outputs_dict
 
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 20
-iter_limit = 10
+iter_num = 2000
+iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
@@ -217,11 +239,11 @@ input_params['temp_model'] = 'pvsyst'
 input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['scheduled_price'] = 10
-input_params['zone_area'] = 19000
+input_params['zone_area'] = 28000
 input_params['num_of_zones'] = 152
 input_params['discount_rate'] = 0.07
 input_params['MW_rating'] = 460.964
-input_params['site_area'] = 4046.86*562
+input_params['site_area'] = 4046.86*1100
 
 location = {}
 location['latitude'] = 21.706871
@@ -302,7 +324,7 @@ else:
 
 # %% ==================================================
 # Generate costs
-
+cost_iter_dict = gen_costs(cost_datatables, input_params['MW_rating'], input_params['site_area'], input_params['discount_rate'])
 
 # %% ==================================================
 # Assemble pickled data
@@ -358,10 +380,10 @@ for iteration in yield_iter_dict:
 # %% ==================================================
 # Export relevant data
 
-analysis_dict = {'cost_mc': cost_mc_dict, 'combined_yield_mc': combined_yield_mc_dict,
+analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_yield_mc_dict,
                  'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
-                 'data_tables': data_iter_dict}
+                 'data_tables': cost_datatables}
 
 
-pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
+pickle_path = os.path.join(bng_path, 'mc_analysis', 'analysis_dictionary.p')
 cpickle.dump(analysis_dict, open(pickle_path, "wb"))
