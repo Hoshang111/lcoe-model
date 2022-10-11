@@ -321,9 +321,11 @@ def gen_revenue(yield_dict, scheduled_price, discount_rate):
     """"""
 
     NPV_outputs = {}
-    revenue = yield_dict*scheduled_price
-    NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(yield_dict, discount_rate=0)
-    NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(yield_dict, discount_rate)
+    revenue_init = yield_dict*scheduled_price
+    revenue = revenue_init.groupby(revenue_init.index.year).sum()
+    kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()
+    NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(kWh_yearly, discount_rate=0)
+    NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(kWh_yearly, discount_rate)
     NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue, discount_rate=0)
     NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue, discount_rate)
     NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
@@ -421,7 +423,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     # %% ===========================================================
     # Create data tables for yield parameters
 
-    start_date = '1/1/2022 00:00:00'
+    start_date = '1/1/2023 00:00:00'
     end_date = '31/12/2052 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers

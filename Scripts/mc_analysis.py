@@ -206,8 +206,8 @@ def gen_costs(cost_tables, MWp, Area):
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 500
-iter_limit = 20
+iter_num = 20
+iter_limit = 10
 
  # %% ===========================================================
  # define input and scenario data
@@ -330,13 +330,10 @@ for iteration in yield_iter_dict:
         if key == 'discounted_ghi':
             pass
         else:
-            for year in yield_iter_dict[iteration][key]:
-                dict_name = key + '_dict'
-                globals()[dict_name][year] = {}
-                for scenario in yield_iter_dict[iteration][key][year]:
-                    globals()[dict_name][year][scenario] = {}
-                    for parameter in yield_iter_dict[iteration][key][year][scenario]:
-                        globals()[dict_name][year][scenario][parameter] = pd.DataFrame()
+            dict_name = key + '_dict'
+            globals()[dict_name] = {}
+            for parameter in yield_iter_dict[iteration][key]:
+                globals()[dict_name][parameter] = pd.DataFrame()
 
 for iteration in yield_iter_dict:
     for key in yield_iter_dict[iteration]:
@@ -344,14 +341,12 @@ for iteration in yield_iter_dict:
             discounted_ghi_full = pd.concat([discounted_ghi_full, yield_iter_dict[iteration][key]], axis=0,
                                             ignore_index=True)
         else:
-            for year in yield_iter_dict[iteration][key]:
-                dict_name = key + '_dict'
-                for scenario in yield_iter_dict[iteration][key][year]:
-                    for parameter in yield_iter_dict[iteration][key][year][scenario]:
-                        globals()[dict_name][year][scenario][parameter] = \
-                            pd.concat([globals()[dict_name][year][scenario][parameter],
-                                yield_iter_dict[iteration][key][year][scenario][parameter]],
-                                axis=0, ignore_index=True)
+            dict_name = key + '_dict'
+            for parameter in yield_iter_dict[iteration][key]:
+                globals()[dict_name][parameter] = \
+                    pd.concat([globals()[dict_name][parameter],
+                        yield_iter_dict[iteration][key][parameter]],
+                        axis=0, ignore_index=True)
 
 # %% ==================================================
 # Generate cost dict
