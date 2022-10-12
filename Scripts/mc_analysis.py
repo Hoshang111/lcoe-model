@@ -240,9 +240,10 @@ input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['scheduled_price'] = 10
 input_params['zone_area'] = 28000
-input_params['num_of_zones'] = 152
-input_params['discount_rate'] = 0.07
-input_params['MW_rating'] = 460.964
+input_params['num_of_zones'] = 43
+input_params['discount_rate'] = 0.12
+input_params['MW_rating'] = 129.413
+input_params['MW_per_inverter'] = 3.104640
 input_params['site_area'] = 4046.86*1100
 
 location = {}
@@ -253,7 +254,7 @@ location['altitude'] = 0
 location['timezone'] = 'Asia/Dhaka'
 
 scenario_dict = {}
-scenario_dict['scenario_ID'] = 'Singapore'
+scenario_dict['scenario_ID'] = 'Patuakhali'
 scenario_dict['module'] = get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = get_inverter()
 scenario_dict['strings_per_inverter'] = 24
@@ -299,7 +300,7 @@ def weather_import(file_name, location, corrections):
 
     return weather_file
 
-mc_weather_name = 'sing_joined.csv'
+mc_weather_name = 'patuakhali_joined.csv'
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 file_path = os.path.join(data_path, "corrections.p")
 corrections = cpickle.load(open(file_path, 'rb'))

@@ -231,7 +231,8 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location):
                             module_per_inverter,
                             results['strings_per_inverter'],
                             gcr, location, results['inverter'],
-                            results['num_of_zones'])
+                            results['MW_per_inverter'],
+                            results['MW_rating'])
     # dc_df.rename(columns={0: "dc_out"}, inplace=True)
     # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
@@ -322,7 +323,7 @@ def gen_revenue(yield_dict, scheduled_price, discount_rate, num_inverters):
     """"""
 
     NPV_outputs = {}
-    revenue_init = yield_dict*scheduled_price/1000*num_inverters
+    revenue_init = yield_dict*scheduled_price
     revenue = revenue_init.groupby(revenue_init.index.year).sum()
     kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()
     NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(kWh_yearly, discount_rate=0)
