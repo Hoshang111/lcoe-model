@@ -230,7 +230,8 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location):
     dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
                             module_per_inverter,
                             results['strings_per_inverter'],
-                            gcr, location, results['inverter'])
+                            gcr, location, results['inverter'],
+                            results['num_of_zones'])
     # dc_df.rename(columns={0: "dc_out"}, inplace=True)
     # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
@@ -317,11 +318,11 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
-def gen_revenue(yield_dict, scheduled_price, discount_rate):
+def gen_revenue(yield_dict, scheduled_price, discount_rate, num_inverters):
     """"""
 
     NPV_outputs = {}
-    revenue_init = yield_dict*scheduled_price
+    revenue_init = yield_dict*scheduled_price/1000*num_inverters
     revenue = revenue_init.groupby(revenue_init.index.year).sum()
     kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()
     NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(kWh_yearly, discount_rate=0)
@@ -482,7 +483,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     # %% ==========================================================
     # calculate revenue from yield dictionary
 
-    combined_mc_outputs = gen_revenue(combined_mc_dict['AC'], scheduled_price, discount_rate)
+    combined_mc_outputs = gen_revenue(combined_mc_dict['AC'], scheduled_price, discount_rate, input_params['num_of_zones'])
 
     return combined_mc_outputs, ghi_discount,
 

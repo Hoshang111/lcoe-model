@@ -719,6 +719,7 @@ def mc_dc( rack_params,
              gcr,
              site,
              inverter,
+             num_of_inverters
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -828,7 +829,9 @@ def mc_dc( rack_params,
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
+            power_W = mc.results.dc['p_mp']
+            field_power_kW = power_W*num_of_inverters/1000
+            dc_results = pd.concat([field_power_kW, mc.results.dc['v_mp']], axis=1)
             dc_results.index = dc_results.index.shift(periods=-30, freq='T')
 
     else:

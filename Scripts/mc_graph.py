@@ -24,10 +24,8 @@ warnings.filterwarnings(action='ignore',
 # %% ===========================================================
 # import data from pickle
 
-current_path = os.getcwd()
-parent_path = os.path.dirname(current_path)
-
-pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
+bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
+pickle_path = os.path.join(bng_path,'mc_analysis', 'analysis_dictionary.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 # %% ==============================
@@ -35,13 +33,13 @@ Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 def extract_parameter_data(df, year_str):
     cost_mc = df['cost_mc'][year_str]
-    weather_mc = df['weather_mc'][year_str]
-    loss_mc = df['loss_mc'][year_str]
+    #weather_mc = df['weather_mc'][year_str]
+    #loss_mc = df['loss_mc'][year_str]
     combined_yield_mc = df['combined_yield_mc'][year_str]
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
-    data_tables = df['data_tables'][year_str]
+    data_tables = df['data_tables']
 
 
 
@@ -336,6 +334,25 @@ graph_scatter_2d(input_parameters['2028'], output_parameters['2028'],
                  fig_name = 'dummy',
                  title = 'Key factors affecting SAT generation')
 
+NPV = Analysis_dict['combined_yield_mc']['npv_revenue'].T - Analysis_dict['cost_mc']['cost_npv']
+new_npv_revenue = Analysis_dict['combined_yield_mc']['npv_revenue']*152/1000
+new_npv = new_npv_revenue.T - cost_iter_dict['cost_npv']
+
+n, bins, data = plt.hist(corrected_npv, bins=50, density=True, facecolor='b', alpha=0.75)
+plt.xlabel = 'NPV $USD'
+plt.ylabel = 'frequency'
+
+file_name = os.path.join(bng_path, 'mc_analysis', 'npv_hist.png')
+plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+
+font_size = 14
+rc = {'font.size': font_size, 'axes.labelsize': font_size, 'legend.fontsize': font_size,
+           'axes.titlesize': font_size, 'xtick.labelsize': font_size, 'ytick.labelsize': font_size}
+plt.rcParams.update(**rc)
+plt.rc('font', weight='bold')
+
+# For label titles
+fontdict = {'fontsize': font_size, 'fontweight': 'bold'}
 
 
 
