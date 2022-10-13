@@ -240,21 +240,21 @@ input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['scheduled_price'] = 0.1
 input_params['zone_area'] = 28000
-input_params['num_of_zones'] = 43
+input_params['num_of_zones'] = 791
 input_params['discount_rate'] = 0.12
-input_params['MW_rating'] = 129.413
+input_params['MW_rating'] = 2462.308
 input_params['MW_per_inverter'] = 3.0096
-input_params['site_area'] = 4046.86*300
+input_params['site_area'] = 4046.86*5518
 
 location = {}
-location['latitude'] = 21.986667
-location['longitude'] = 90.241667
-location['name'] = 'patuakhali_site'
+location['latitude'] = 21.634145
+location['longitude'] = 91.898492
+location['name'] = 'moheshkali_site'
 location['altitude'] = 0
 location['timezone'] = 'Asia/Dhaka'
 
 scenario_dict = {}
-scenario_dict['scenario_ID'] = 'patuakhali'
+scenario_dict['scenario_ID'] = 'moheshkali'
 scenario_dict['module'] = get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = get_inverter()
 scenario_dict['strings_per_inverter'] = 24
@@ -302,7 +302,7 @@ def weather_import(file_name, location, corrections):
 
     return weather_file
 
-mc_weather_name = 'patuakhali_joined.csv'
+mc_weather_name = 'mohesh_joined.csv'
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 file_path = os.path.join(data_path, "corrections.p")
 corrections = cpickle.load(open(file_path, 'rb'))
