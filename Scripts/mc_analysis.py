@@ -244,12 +244,12 @@ input_params['num_of_zones'] = 43
 input_params['discount_rate'] = 0.12
 input_params['MW_rating'] = 129.413
 input_params['MW_per_inverter'] = 3.0096
-input_params['site_area'] = 4046.86*1100
+input_params['site_area'] = 4046.86*300
 
 location = {}
-location['latitude'] = 21.706871
-location['longitude'] = 91.890997
-location['name'] = 'singapore_site'
+location['latitude'] = 21.986667
+location['longitude'] = 90.241667
+location['name'] = 'patuakhali_site'
 location['altitude'] = 0
 location['timezone'] = 'Asia/Dhaka'
 
