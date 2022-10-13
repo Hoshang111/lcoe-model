@@ -242,27 +242,27 @@ input_params['scheduled_price'] = 0.1
 input_params['zone_area'] = 28000
 input_params['num_of_zones'] = 43
 input_params['discount_rate'] = 0.12
-input_params['MW_rating'] = 129.413
+input_params['MW_rating'] = 2462.308
 input_params['MW_per_inverter'] = 3.0096
-input_params['site_area'] = 4046.86*300
+input_params['site_area'] = 4046.86*5518
 
 location = {}
-location['latitude'] = 21.986667
-location['longitude'] = 90.241667
-location['name'] = 'patuakhali_site'
+location['latitude'] = 21.634145
+location['longitude'] = 91.898492
+location['name'] = 'moheshkali_site'
 location['altitude'] = 0
 location['timezone'] = 'Asia/Dhaka'
 
 scenario_dict = {}
-scenario_dict['scenario_ID'] = 'Patuakhali'
+scenario_dict['scenario_ID'] = 'Moheshkali'
 scenario_dict['module'] = get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = get_inverter()
 scenario_dict['strings_per_inverter'] = 24
 scenario_dict['modules_per_string'] = 196
 scenario_dict['modules_per_inverter'] = 4560
 scenario_dict['rack'] = 'fixed'
-scenario_dict['MW_rating'] = 129.413
-scenario_dict['MW_per_inverter'] = 3.104640
+scenario_dict['MW_rating'] = input_params["MW_rating"]
+scenario_dict['MW_per_inverter'] = input_params['MW_per_inverter']
 
  # %% ==========================================================
  #code to define number of zones from provided land area

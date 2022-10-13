@@ -305,7 +305,7 @@ def get_npv_revenue(yearly_values,
     :return:
     """
 
-    year_offset = pd.Series(range(0, len(yearly_values)))
+    year_offset = pd.Series(range(1, len(yearly_values)+1))
     year_offset.index = yearly_values.index
 
     yearly_factor = 1 / (1 + discount_rate) ** year_offset
