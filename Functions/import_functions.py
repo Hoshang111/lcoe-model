@@ -10,6 +10,7 @@ import pvlib
 def import_module(pan_file_id):
 
     cwd = os.getcwd()
+    print(cwd)
     parent = Path(cwd).parent
     pvtools_path = os.path.join(parent, 'pvsyst_tools')
     sys.path.append(parent)

@@ -60,8 +60,13 @@ for key in scenarios:
 csv_path = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
 input_params = pd.read_csv(csv_path, header=0)
 
-# Import airtable data previously saved
-data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
+# Import airtable data
+use_previous_airtable_data = False
+if use_previous_airtable_data:
+    data_tables = import_excel_data('CostDatabaseFeb2022a.xlsx')
+else:
+    # cost data tables from airtable
+    data_tables = get_airtable(save_tables=True)
 
  # %% ===========================================================
  # convert dtypes in input_params, want to keep saving as csv so human readable but does not preserve dtypes

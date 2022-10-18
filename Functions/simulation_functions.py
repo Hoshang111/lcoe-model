@@ -196,8 +196,6 @@ def rack_module_params(rack_type,
     suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
                                    skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
-
-
     rack_params = suncable_racks[rack_type]
     module_params = suncable_modules[module_type]
 
