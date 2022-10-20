@@ -233,28 +233,32 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
+site = 'moheshkali'
+parent_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files'
+filename = site + '.csv'
+file_path = os.path.join(parent_path, filename)
+site_params = pd.read_csv(file_path, index_col=0)
 
 input_params = {}
 input_params['temp_model'] = 'pvsyst'
 input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
-input_params['scheduled_price'] = 0.1
 input_params['zone_area'] = 28000
 input_params['num_of_zones'] = 791
 input_params['discount_rate'] = 0.12
-input_params['MW_rating'] = 2462.308
+input_params['MW_rating'] = site_params['MW_rating']
 input_params['MW_per_inverter'] = 3.0096
-input_params['site_area'] = 4046.86*5518
+input_params['site_area'] = 4046.86*site_params['site_area']
 
 location = {}
-location['latitude'] = 21.634145
-location['longitude'] = 91.898492
-location['name'] = 'moheshkali_site'
-location['altitude'] = 0
-location['timezone'] = 'Asia/Dhaka'
+location['latitude'] = site_params['latitude']
+location['longitude'] = site_params['longitude']
+location['name'] = site
+location['altitude'] = site_params['altitude']
+location['timezone'] = site_params['timezone']
 
 scenario_dict = {}
-scenario_dict['scenario_ID'] = 'moheshkali'
+scenario_dict['scenario_ID'] = site
 scenario_dict['module'] = get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = get_inverter()
 scenario_dict['strings_per_inverter'] = 24
