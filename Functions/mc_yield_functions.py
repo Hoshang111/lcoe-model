@@ -385,7 +385,7 @@ def combine_variance(weather_dict, voltage_dict, loss_df, results_dict):
 
  # %% ===================================================
 
-def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, location):
+def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, location):
     """"""
 
     # %% ===========================================
@@ -393,6 +393,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     temp_model = input_params['temp_model']
     discount_rate = input_params['discount_rate']
     zone_area = input_params['zone_area']
+    yield_datatables = loss_datatables.reset_index()
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
