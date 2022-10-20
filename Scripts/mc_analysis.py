@@ -225,19 +225,32 @@ def gen_costs(cost_datatables, MWp, Area, discount_rate):
 
     return cost_outputs_dict
 
+def get_site_params(site_name):
+    """"""
+
+    parent_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files'
+    filename = site_name + '.csv'
+    file_path = os.path.join(parent_path, filename)
+    site_params = pd.read_csv(file_path, index_col=0)
+    site_dict = {}
+    site_dict['latitude'] = float(site_params[site_name]['latitude'])
+    site_dict['longitude'] = float(site_params[site_name]['longitude'])
+    site_dict['altitude'] = float(site_params[site_name]['altitude'])
+    site_dict['site_area'] = float(site_params[site_name]['site_area'])
+    site_dict['MW_rating'] = float(site_params[site_name]['MW_rating'])
+    site_dict['timezone'] = site_params[site_name]['timezone']
+
+    return site_dict
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 2000
-iter_limit = 50
+iter_num = 50
+iter_limit = 10
 
  # %% ===========================================================
  # define input and scenario data
 site = 'moheshkali'
-parent_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files'
-filename = site + '.csv'
-file_path = os.path.join(parent_path, filename)
-site_params = pd.read_csv(file_path, index_col=0)
+site_params = get_site_params(site)
 
 input_params = {}
 input_params['temp_model'] = 'pvsyst'
@@ -265,7 +278,7 @@ scenario_dict['strings_per_inverter'] = 24
 scenario_dict['modules_per_string'] = 196
 scenario_dict['modules_per_inverter'] = 4560
 scenario_dict['rack'] = 'fixed'
-scenario_dict['MW_rating'] = input_params["MW_rating"]
+scenario_dict['MW_rating'] = site_params['MW_rating']
 scenario_dict['MW_per_inverter'] = input_params['MW_per_inverter']
 
  # %% ==========================================================
@@ -306,7 +319,7 @@ def weather_import(file_name, location, corrections):
 
     return weather_file
 
-mc_weather_name = 'mohesh_joined.csv'
+mc_weather_name = site + '.csv'
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 file_path = os.path.join(data_path, "corrections.p")
 corrections = cpickle.load(open(file_path, 'rb'))

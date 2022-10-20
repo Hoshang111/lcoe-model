@@ -391,7 +391,6 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables, 
     # %% ===========================================
     # first to get appropriate values from dataframe
     temp_model = input_params['temp_model']
-    scheduled_price = input_params['scheduled_price']
     discount_rate = input_params['discount_rate']
     zone_area = input_params['zone_area']
 
