@@ -195,7 +195,7 @@ def gen_costs(cost_datatables, MWp, Area, discount_rate):
                     +cost_datatables['modules_pMW']+cost_datatables['ac_cables_pMW']\
                     +cost_datatables['substation_pMW']
     cost_capital_other = cost_datatables['transmission_site'] + cost_datatables['site_prep_pm2']*Area
-    ongoing_costs_pMW = cost_datatables['om_pMWpy']
+    ongoing_costs_pMW = cost_datatables['om_pMWpy'] + cost_datatables['land_lease']*Area
     capital_cost = cost_capital_pMW*MWp+cost_capital_other
 
     cost_dict = {}
