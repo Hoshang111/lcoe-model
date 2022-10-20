@@ -244,8 +244,8 @@ def get_site_params(site_name):
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 50
-iter_limit = 10
+iter_num = 2000
+iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
