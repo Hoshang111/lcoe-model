@@ -239,6 +239,7 @@ def get_site_params(site_name):
     site_dict['site_area'] = float(site_params[site_name]['site_area'])
     site_dict['MW_rating'] = float(site_params[site_name]['MW_rating'])
     site_dict['timezone'] = site_params[site_name]['timezone']
+    site_dict['num_inverters'] = site_params[site_name]['num_inverters']
 
     return site_dict
  # %% ===========================================================
