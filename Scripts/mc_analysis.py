@@ -406,5 +406,5 @@ analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_yield_
                  'data_tables': cost_datatables}
 
 output_name = site + 'output_dict.p'
-pickle_path = os.path.join(bng_path, 'mc_analysis', 'analysis_dictionary.p')
+pickle_path = os.path.join(bng_path, 'mc_analysis', output_name)
 cpickle.dump(analysis_dict, open(pickle_path, "wb"))
