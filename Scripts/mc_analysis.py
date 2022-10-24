@@ -195,7 +195,8 @@ def gen_costs(cost_datatables, MWp, Area, discount_rate):
                     +cost_datatables['modules_pMW']+cost_datatables['ac_cables_pMW']\
                     +cost_datatables['substation_pMW']
     cost_capital_other = cost_datatables['transmission_site'] + cost_datatables['site_prep_pm2']*Area
-    ongoing_costs_pMW = cost_datatables['om_pMWpy'] + cost_datatables['land_lease']*Area
+    ongoing_costs_pMW = cost_datatables['om_pMWpy']
+    ongoing_costs_fixed = cost_datatables['land_lease']*Area
     capital_cost = cost_capital_pMW*MWp+cost_capital_other
 
     cost_dict = {}
@@ -203,7 +204,7 @@ def gen_costs(cost_datatables, MWp, Area, discount_rate):
         if i==0:
             cost_dict[i] = capital_cost
         else:
-            cost_dict[i] = ongoing_costs_pMW*MWp
+            cost_dict[i] = ongoing_costs_pMW*MWp + ongoing_costs_fixed
 
     cost_outputs_dict = {}
     yearly_costs = pd.concat(cost_dict, axis=1)
@@ -250,7 +251,7 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
-site = 'singapore'
+site = 'sumitomo'
 site_params = get_site_params(site)
 
 input_params = {}

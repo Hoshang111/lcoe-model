@@ -25,13 +25,16 @@ warnings.filterwarnings(action='ignore',
 # import data from pickle
 
 bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
-pickle_path = os.path.join(bng_path,'mc_analysis', 'analysis_dictionary.p')
+pickle_path = os.path.join(bng_path,'mc_analysis', 'patuakhali_output_dict.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 #%% ============================================================
 #get basic parameters
-NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-Analysis_dict['cost_mc']['cost_npv']
-LCOE =
+costs_series = Analysis_dict['cost_mc']['cost_npv']
+cost_df = pd.DataFrame(costs_series)
+NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-cost_df
+LCOE = cost_df/Analysis_dict['combined_yield_mc']['kWh_total_discounted']
+year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
 
 # %% ==============================
 # Function to extract data tables from the analysis_dict
