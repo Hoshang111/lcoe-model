@@ -257,7 +257,7 @@ input_params['temp_model'] = 'pvsyst'
 input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['zone_area'] = 28000
-input_params['num_of_zones'] = 791
+input_params['num_of_zones'] = site_params('num_inverters')
 input_params['discount_rate'] = 0.12
 input_params['MW_rating'] = site_params['MW_rating']
 input_params['MW_per_inverter'] = 3.0096
@@ -405,6 +405,6 @@ analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_yield_
                  'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
                  'data_tables': cost_datatables}
 
-
+output_name = site + 'output_dict.p'
 pickle_path = os.path.join(bng_path, 'mc_analysis', 'analysis_dictionary.p')
 cpickle.dump(analysis_dict, open(pickle_path, "wb"))

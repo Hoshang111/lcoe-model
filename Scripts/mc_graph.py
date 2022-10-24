@@ -28,6 +28,11 @@ bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
 pickle_path = os.path.join(bng_path,'mc_analysis', 'analysis_dictionary.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
+#%% ============================================================
+#get basic parameters
+NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-Analysis_dict['cost_mc']['cost_npv']
+LCOE =
+
 # %% ==============================
 # Function to extract data tables from the analysis_dict
 
