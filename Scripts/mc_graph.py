@@ -16,6 +16,7 @@ from Functions.cost_functions import calculate_scenarios_iterations, create_iter
 import warnings
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
+from Scripts.mc_analysis import get_site_params
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
 warnings.filterwarnings(action='ignore',
@@ -30,11 +31,29 @@ Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 #%% ============================================================
 #get basic parameters
+site = 'patuakhali'
+site_params = get_site_params(site)
+
 costs_series = Analysis_dict['cost_mc']['cost_npv']
 cost_df = pd.DataFrame(costs_series)
 NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-cost_df
 LCOE = cost_df/Analysis_dict['combined_yield_mc']['kWh_total_discounted']
 year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
+module_cost = Analysis_dict['data_tables']['modules_pMW']*1000
+site = Analysis_dict['data_tables']['site_prep_pm2']
+capital_cost = Analysis_dict['cost_mc']['yearly_costs'][2022]
+ongoing_cost = Analysis_dict['cost_mc']['yearly_costs'][2023]
+tariff = Analysis_dict['loss_parameters']['scheduled_price']
+max_capital = max(capital_cost)
+min_capital = min(capital_cost)
+min_ongoing = min(ongoing_cost)
+max_ongoing = max(ongoing_cost)
+module_cost_total = module_cost*site_params['MW_rating']
+max_module = max(module_cost_total)
+min_module = min(module_cost_total)
+site_cost_total = module_cost*site_params['site_area']*4046.86
+max_site = max(module_cost_total)
+min_site = min(module_cost_total)
 
 # %% ==============================
 # Function to extract data tables from the analysis_dict
