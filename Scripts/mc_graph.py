@@ -16,11 +16,29 @@ from Functions.cost_functions import calculate_scenarios_iterations, create_iter
 import warnings
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
-from Scripts.mc_analysis import get_site_params
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
+
+#%% ============================================================
+def get_site_params(site_name):
+    """"""
+
+    parent_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files'
+    filename = site_name + '.csv'
+    file_path = os.path.join(parent_path, filename)
+    site_params = pd.read_csv(file_path, index_col=0)
+    site_dict = {}
+    site_dict['latitude'] = float(site_params[site_name]['latitude'])
+    site_dict['longitude'] = float(site_params[site_name]['longitude'])
+    site_dict['altitude'] = float(site_params[site_name]['altitude'])
+    site_dict['site_area'] = float(site_params[site_name]['site_area'])
+    site_dict['MW_rating'] = float(site_params[site_name]['MW_rating'])
+    site_dict['timezone'] = site_params[site_name]['timezone']
+    site_dict['num_inverters'] = site_params[site_name]['num_inverters']
+
+    return site_dict
 
 # %% ===========================================================
 # import data from pickle
