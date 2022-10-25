@@ -57,21 +57,25 @@ cost_df = pd.DataFrame(costs_series)
 NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-cost_df
 LCOE = cost_df/Analysis_dict['combined_yield_mc']['kWh_total_discounted']
 year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
-module_cost = Analysis_dict['data_tables']['modules_pMW']*1000
+module_cost = Analysis_dict['data_tables']['modules_pMW']/1e6
 site = Analysis_dict['data_tables']['site_prep_pm2']
 capital_cost = Analysis_dict['cost_mc']['yearly_costs'][2022]
 ongoing_cost = Analysis_dict['cost_mc']['yearly_costs'][2023]
 tariff = Analysis_dict['loss_parameters']['scheduled_price']
-max_capital = max(capital_cost)
-min_capital = min(capital_cost)
-min_ongoing = min(ongoing_cost)
-max_ongoing = max(ongoing_cost)
+max_capital = max(capital_cost)/1e6
+min_capital = min(capital_cost)/1e6
+min_ongoing = min(ongoing_cost)/1e6
+max_ongoing = max(ongoing_cost)/1e6
 module_cost_total = module_cost*site_params['MW_rating']
 max_module = max(module_cost_total)
 min_module = min(module_cost_total)
-site_cost_total = module_cost*site_params['site_area']*4046.86
-max_site = max(module_cost_total)
-min_site = min(module_cost_total)
+site_cost_total = site*site_params['site_area']*4046.86/1e6
+max_site = max(site_cost_total)
+min_site = min(site_cost_total)
+max_NPV = max(NPV[0])/1e6
+min_NPV = min(NPV[0])/1e6
+max_LCOE = max(LCOE[0])
+min_LCOE = min(LCOE[0])
 
 # %% ==============================
 # Function to extract data tables from the analysis_dict
