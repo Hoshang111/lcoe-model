@@ -44,12 +44,12 @@ def get_site_params(site_name):
 # import data from pickle
 
 bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
-pickle_path = os.path.join(bng_path,'mc_analysis', 'patuakhali_output_dict.p')
+pickle_path = os.path.join(bng_path,'mc_analysis', 'moheshkali_output_dict.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 #%% ============================================================
 #get basic parameters
-site = 'patuakhali'
+site = 'moheshkali'
 site_params = get_site_params(site)
 
 costs_series = Analysis_dict['cost_mc']['cost_npv']
@@ -76,7 +76,7 @@ max_NPV = max(NPV[0])/1e6
 min_NPV = min(NPV[0])/1e6
 max_LCOE = max(LCOE[0])
 min_LCOE = min(LCOE[0])
-
+specific_yield = year1_output/site_params['MW_rating']
 # %% ==============================
 # Function to extract data tables from the analysis_dict
 
