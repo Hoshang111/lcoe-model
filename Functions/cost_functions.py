@@ -117,7 +117,7 @@ def create_iteration_tables(input_tables, num_iterations, iteration_start=0):
 
     scenario_iter = generate_iterations(scenario_list, index_name='ScenarioID',
                                         index_description='Scenario_Tag', num_iterations=num_iterations,
-                                        iteration_start=iteration_start)
+                                        iteration_start=iteration_start, check_unique = ['Scenario_Name'])
 
     scenario_system_iter = generate_iterations(scenario_system_link, index_name='ScenarioSystemID',
                                                index_description='ScenarioSystemID', num_iterations=num_iterations,
@@ -125,19 +125,19 @@ def create_iteration_tables(input_tables, num_iterations, iteration_start=0):
 
     system_iter = generate_iterations(system_list, index_name='SystemID',
                                       index_description='SystemID', num_iterations=num_iterations,
-                                      iteration_start=iteration_start)
+                                      iteration_start=iteration_start, check_unique = ['System_Name'])
     system_component_iter = generate_iterations(system_component_link, index_name='SystemComponentID',
                                                 index_description='SystemComponentID', num_iterations=num_iterations,
                                                 iteration_start=iteration_start)
     component_iter = generate_iterations(component_list, index_name='ComponentID',
                                          index_description='ComponentID', num_iterations=num_iterations,
-                                         iteration_start=iteration_start)
+                                         iteration_start=iteration_start, check_unique = ['Component_Name'])
     currency_iter = generate_iterations(currency_list, index_name='CurrencyID',
                                         index_description='Currency_Name', num_iterations=num_iterations,
-                                        iteration_start=iteration_start)
+                                        iteration_start=iteration_start, check_unique = ['Currency_Name'])
     costcategory_iter = generate_iterations(costcategory_list, index_name='CostCategoryID',
                                             index_description='CostCategoryID', num_iterations=num_iterations,
-                                            iteration_start=iteration_start)
+                                            iteration_start=iteration_start, check_unique = ['CostCategory_Name'])
 
     return scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter
 
@@ -176,7 +176,8 @@ def generate_parameters(data_tables_iter, use_name_as_ID=False):
 
 
 def generate_iterations(input_parameter_list, index_name, index_description, num_iterations, iteration_start=0,
-                        default_dist_type=None, skip_list=[], verbose=False, suppress_errors=False):
+                        default_dist_type=None, skip_list=[], verbose=False, suppress_errors=False,
+                        check_unique=None):
 
     if (num_iterations == 1) and (iteration_start == 0):
         suppress_errors=True
@@ -266,7 +267,17 @@ def generate_iterations(input_parameter_list, index_name, index_description, num
                                        columns=column_list)
     parameter_generator.index.name = 'Iteration'
 
-    id_list = input_parameter_list[index_name].drop_duplicates()
+    # Check for duplicates of the index
+
+    if any(input_parameter_list[index_name].duplicated()):
+        print('Error! Duplicate entries in ' + index_name)
+    if check_unique is not None:
+        for check_name in check_unique:
+            if any(input_parameter_list[check_name].duplicated()):
+                print('Error! Duplicate entries in ' + check_name )
+
+
+    id_list = input_parameter_list[index_name]
     for ID in id_list:
         if verbose:
             print('  Processing ', index_name, ': ', ID)
