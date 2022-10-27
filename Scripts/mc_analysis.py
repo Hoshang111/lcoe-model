@@ -40,9 +40,9 @@ def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scena
  # %% ===========================================================
  # define scenarios
 
-scenarios = [# '2024',
+scenarios = [ '2024']#,
             # '2026',
-            '2028']
+            # '2028']
 
 iter_num = 20
 iter_limit = 10

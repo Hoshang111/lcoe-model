@@ -227,4 +227,4 @@ optimised_tables.to_csv(file_name)
 for year in ['2024', '2026', '2028']:
     file_tag = 'scenario_tables_' + year + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-    cpickle.dump(output_dict[year], open(pickle_path, "wb"))
+    dump = cpickle.dump(output_dict[year], open(pickle_path, "wb"))

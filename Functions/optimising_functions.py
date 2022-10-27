@@ -89,7 +89,6 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
 
     # %% =========================================
     # Apply losses to dc timeseries
-
     default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                        (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
     temp_coefficient = -0.01
@@ -118,7 +117,11 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
 
-    rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
+    if set_racks:
+        rack_interval = 0.1
+    else:
+        rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
+
     num_of_zones_sim = 1  # find the results per zone for now
     npv_array = []
     npv_cost_array = []
