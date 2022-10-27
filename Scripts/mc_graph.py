@@ -139,6 +139,7 @@ def calculate_variance_table(input_factors, cost_result_name, num_table=20):
     correlation_table['range'] = input_factor_range['range']
 
     output_table = correlation_table.sort_values(by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table)
+    print(output_table)
     return output_table
 
 def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None, short_titles=True,
@@ -299,6 +300,34 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
 
     plt.show()
     plt.close()
+# %%
+
+def graph_histogram(input_data, scenario_list, title=None):
+    data = input_data[[scenario_list]].reset_index()
+    print(data)
+    data.plot.hist(bins=50, histtype='step', fontsize=8)
+    if title is None:
+        title = 'Histogram'
+    plt.title(title)
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+def graph_stacked(cost_data, scenario_list, title=None):
+    scenario_costs_iter = cost_data[cost_data['ScenarioID'].isin(scenario_list)]
+    scenario_costs_nominal = scenario_costs_iter[scenario_costs_iter['Iteration'] == 0]
+
+
+    scenario_costs_total_category = pd.pivot_table(scenario_costs_nominal, values='TotalCostAUDY',
+                                                   index=['ScenarioID'], aggfunc=np.sum,
+                                                   columns=['CostCategory_ShortName'])
+    if title is None:
+        title = 'Cost by Category'
+    scenario_costs_total_category.plot.bar(stacked=True, title= title)
+    plt.close()
+
 # %%
 
 graph_scatter_2d(scenario_tables,
