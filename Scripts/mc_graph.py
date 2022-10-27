@@ -21,7 +21,7 @@ import _pickle as cpickle
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
-# %% ===========================================================
+
 # import data from pickle
 
 current_path = os.getcwd()
@@ -30,7 +30,7 @@ parent_path = os.path.dirname(current_path)
 pickle_path = os.path.join(parent_path, 'OutputFigures', 'analysis_dictionary.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
-# %% ==============================
+
 # Function to extract data tables from the analysis_dict
 
 def extract_parameter_data(df, year_str):
@@ -79,9 +79,9 @@ def extract_parameter_data(df, year_str):
     # Now generate a list of all input parameters
     input_parameters = pd.DataFrame(index=discounted_ghi.index)
     # Get input parameters from cost monte carlo
-    cost_parameters = generate_parameters(data_tables)
+    cost_parameters = generate_parameters(data_tables, use_name_as_ID=True)
     cost_parameters_flat = cost_parameters.copy()
-    cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
+    cost_parameters_flat.columns = [str(ID) + ': ' + var for (group, ID, var) in
                                     cost_parameters_flat.columns.values]
 
     input_parameters = input_parameters.join(cost_parameters_flat)
@@ -211,7 +211,7 @@ def calculate_graph_variance_contributions(input_factors, cost_result_name, save
     parameter_list = output_table.head(num_table+1).index
     graph_scatter_1d(input_factors, cost_result_name, parameter_list = parameter_list)
 
-# %%
+
 
 # import matplotlib.pylab as pylab
 # params = {
