@@ -117,57 +117,37 @@ for year in scenarios:
 
 # %%
 from scipy import stats
-def calculate_variance_contributions(input_factors, cost_result_name, savename=None):
-    num_table = 20
-    num_graphs = 5
-    title = None
-    short_titles = False
-    xlabel = None
-    ylabel = None
-    show_regression = True
-    show_r = True
-    show_r2 = False
+
+def calculate_variance_table(input_factors, cost_result_name, num_table=20):
 
     # Remove any columns that are not numeric
-    input_factors.to_csv('input_factors.csv')
     filtered_factors = input_factors.select_dtypes(exclude=['object'])
-    filtered_factors.to_csv('filtered_factors.csv')
-
     # This removes first any input factors with no variation
     filtered_factors = filtered_factors.loc[:, (filtered_factors.std() > 0)]
 
-
     correlation_table = filtered_factors.corr()
 
-    correlation_table['variance'] = round(
-        (correlation_table[cost_result_name] * correlation_table[cost_result_name]) * 100, 0)
+    correlation_table['variance'] = round((correlation_table[cost_result_name] **2) * 100, 0)
 
-    total_variance = correlation_table['variance'].sum()
     correlation_table['variance'] = correlation_table['variance'].fillna(0).astype(int)
 
-    input_factor_range = input_factors.describe(percentiles=(0.1, 0.5, 0.9)).T.loc[:, ['10%', '50%', '90%']].round(2)
-    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(str)
+    input_factor_range = input_factors.describe(percentiles=(0.1, 0.5, 0.9)).T.loc[:, ['10%', '50%', '90%']].round(
+        2)
+    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(
+        str)
 
     correlation_table['range'] = input_factor_range['range']
-    correlation_table['10th percentile'] = input_factor_range['10%']
-    correlation_table['50th percentile'] = input_factor_range['50%']
-    correlation_table['90th percentile'] = input_factor_range['90%']
 
-    print('Total Variance sum (should be 2.0) = ', total_variance)
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(correlation_table.sort_values(
-        by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table))
-    correlation_table.to_csv('correlation_table.csv')
-    # Graph scatterplot:
-    parameter_list = correlation_table.sort_values(by='variance', ascending=False).loc[:,
-                     [cost_result_name, 'variance']].head(num_graphs + 1).index
-    # print(parameter_list)
+    output_table = correlation_table.sort_values(by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table)
+    return output_table
+
+def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None, short_titles=True,
+                     xlabel=None, ylabel=None, show_regression=True, show_r=False, show_r2=True, savename=None):
+
+
     parameter_description_list = zip(parameter_list, parameter_list)
-    # print(parameter_description_list)
 
     for (parameter, label) in parameter_description_list:
-        # print(parameter)
-        # print(label)
         if parameter != cost_result_name:
             plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
             if title is None:
@@ -201,7 +181,7 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
 
                 plt.annotate('', xy=(xmin, ymin), xycoords='data', xytext=(xmax, ymax), textcoords='data',
                              arrowprops=dict(arrowstyle="-"))
-
+                text = ''
                 if show_r:
                     text = 'r = {0:.2f}'.format(r_value)
                 if show_r2:
@@ -214,6 +194,21 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
                                          savename + parameter)
                 plt.savefig(file_name)
             plt.show()
+
+
+def calculate_graph_variance_contributions(input_factors, cost_result_name, savename=None, num_table = 20, num_graphs=0):
+    title = None
+    short_titles = False
+    xlabel = None
+    ylabel = None
+    show_regression = True
+    show_r = True
+    show_r2 = False
+
+    output_table = calculate_variance_table(input_factors, cost_result_name, num_table=num_table)
+
+    parameter_list = output_table.head(num_table+1).index
+    graph_scatter_1d(input_factors, cost_result_name, parameter_list = parameter_list)
 
 # %%
 
@@ -237,11 +232,9 @@ def graph_variance_contributions(output_parameters, input_parameters, scenario_n
     df = output_parameters.copy()
 
     if (revenue_type == 'loss') or (revenue_type == 'weather') or (revenue_type == 'combined'):
-        print('here')
         revenue_column = scenario_name + '_d_revenue_' + revenue_type
 
     elif revenue_type == 'fixed':
-        print('here')
         revenue_column = scenario_name + '_d_revenue_' + revenue_type
         df[revenue_column] = df[scenario_name + '_d_revenue_loss'][0]
     else:
@@ -254,65 +247,30 @@ def graph_variance_contributions(output_parameters, input_parameters, scenario_n
         cost_column = scenario_name + '_d_cost_fixed'
         df[cost_column] = df[scenario_name + '_d_cost'][0]
 
-    print('heren!')
     output_name = scenario_name + '_NPV'
     df[output_name] = df[cost_column] / df[revenue_column]
 
     all_parameters = input_parameters.join(df[output_name])
 
-    calculate_variance_contributions(all_parameters, output_name,
+    calculate_graph_variance_contributions(all_parameters, output_name,
                                      savename=None)
 
 graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='fixed')
 
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='loss')
-
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='weather')
-
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='combined')
-
-graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='combined')
-
-
+# graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='loss')
+#
+# graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='weather')
+#
+# graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = False, revenue_type='combined')
+#
+# graph_variance_contributions(output_parameters, input_parameters, 'MAV_PERCa_2028', cost_mc = True, revenue_type='combined')
 
 
 
 
 
-# %%
-# print(scenario_tables)
 
-# all graphs in NPV. No graphs with LCOE.
-calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
-                                                              savename=None)
-# Analysis 1 - some graphs with cost_mc and 'data_tables'
 
-# Analysis 2 - some graphs with loss_mc and loss_parameters
-
-# Analysis 3 - some graphs with weather_mc and discounted_ghi
-
-# Analysis 4 (combined) - some graphs with cost_mc / combined_yield_mc (ie LCOE) and (data_tables, loss_parameters, discounted_ghi)
-
-# For each analysis, set up ability to do histogram, histogram of difference, 1D and 2D factors on difference.
-
-variance_kWh = False
-variance_LCOE = False
-delta_LCOE = True
-
-if variance_kWh:
-    calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_kWh_total_discounted',
-                                                              savename=None)
-    calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_kWh_total_discounted',
-                                                              savename=None)
-if variance_LCOE:
-    calculate_variance_contributions(scenario_tables, 'MAV_PERCa_2028_LCOE',
-                                                              savename=None)
-    calculate_variance_contributions(scenario_tables, 'SAT_PERCa_2028_LCOE',
-                                                              savename=None)
-if delta_LCOE:
-    scenario_tables['MAVvSAT_PERCa_2028_LCOE'] = scenario_tables['MAV_PERCa_2028_LCOE'] - scenario_tables['SAT_PERCa_2028_LCOE']
-    calculate_variance_contributions(scenario_tables, 'MAVvSAT_PERCa_2028_LCOE',
-                                                              savename=None)
 # %%
 def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
                title=None, xlabel=None, ylabel=None, zlabel=None):
@@ -339,11 +297,6 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
     if zlabel is not None:
         ax1.set_title(zlabel)
 
-    # fig_title = "Delta LCOE - " + savename
-    # current_path = os.getcwd()
-    # parent_path = os.path.dirname(current_path)
-    # file_name = os.path.join(parent_path, 'OutputFigures', fig_title)
-    # plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
 # %%
