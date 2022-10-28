@@ -176,4 +176,24 @@ def plot_save(fig_name, save_path):
     """
     path = save_path + fig_name
     plt.savefig(path, dpi=300, bbox_inches='tight')
-    # path="C:/Users/baran/cloudstor/SunCable/Figures/"+ figname
+
+def prep_histogram(id_list):
+     year_list = ['2024', '2026', '2028']
+     scenario_list = ['weather', 'loss', 'cost']
+
+     for id in id_list:
+         scenario_str = []
+         for year in year_list:
+             if year in id:
+                 year_id = year
+             else:
+                 pass
+
+         for scenario in scenario_list:
+             if scenario in id:
+                 scenario_str.append()
+
+
+def prep_difference_graphs(scenario_1, scenario_2, parameter):
+    """"""
+

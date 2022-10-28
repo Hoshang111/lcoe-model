@@ -113,9 +113,9 @@ def extract_parameter_data(df, year_str):
 input_parameters = {}
 output_parameters = {}
 
-scenarios = [#'2024',
+scenarios = ['2024']#,
             # '2026',
-            '2028']
+            #'2028']
 
 for year in scenarios:
     analysis_year = int(year)
