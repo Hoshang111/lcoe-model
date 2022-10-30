@@ -251,7 +251,7 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
-site = 'singapore'
+site = 'feni'
 site_params = get_site_params(site)
 
 input_params = {}
@@ -323,7 +323,7 @@ def weather_import(file_name, location, corrections):
 
     return weather_file, corrected_ghi, uncorrected_ghi
 
-mc_weather_name = site + '.csv'
+mc_weather_name = 'feni.csv' #site + '.csv'
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 file_path = os.path.join(data_path, "corrections.p")
 corrections = cpickle.load(open(file_path, 'rb'))
