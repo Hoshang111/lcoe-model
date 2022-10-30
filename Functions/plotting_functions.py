@@ -199,8 +199,8 @@ def extract_difference_data(df, scenario1, scenario2):
     weather_mc2 = df['weather_mc'][sc2_year][scenario2]
     loss_mc1 = df['loss_mc'][sc1_year][scenario1]
     loss_mc2 = df['loss_mc'][sc2_year][scenario2]
-    combined_yield_mc1 = df['combined_yield_mc'][sc1_year][scenario1]
-    combined_yield_mc2 = df['combined_yield_mc'][sc2_year][scenario2]
+    combined_mc1 = df['combined_yield_mc'][sc1_year][scenario1]
+    combined_mc2 = df['combined_yield_mc'][sc2_year][scenario2]
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
@@ -209,7 +209,6 @@ def extract_difference_data(df, scenario1, scenario2):
 
     # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
     output_parameters = pd.DataFrame(index=discounted_ghi.index)
-
 
     # Get results for cost monte carlo
     cost_mc_flat1 = cost_mc1['discounted_cost_total'].rename('d_cost').to_frame()
@@ -226,8 +225,18 @@ def extract_difference_data(df, scenario1, scenario2):
     loss_mc_flat1 = loss_mc_flat1.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(loss_mc_flat1)
 
+    loss_mc_flat1 = loss_mc1['kWh_total_discounted']
+    loss_mc_flat1.columns = ['d_kWh_loss']
+    loss_mc_flat1 = loss_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat1)
+
     loss_mc_flat2 = loss_mc2['npv_revenue']
     loss_mc_flat2.columns = ['d_revenue_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
+    loss_mc_flat2 = loss_mc2['kWh_total_discounted']
+    loss_mc_flat2.columns = ['d_kWh_loss']
     loss_mc_flat2 = loss_mc_flat2.add_prefix(scenario2 + '_')
     output_parameters = output_parameters.join(loss_mc_flat2)
 
@@ -237,21 +246,41 @@ def extract_difference_data(df, scenario1, scenario2):
     weather_mc_flat1 = weather_mc_flat1.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(weather_mc_flat1)
 
+    weather_mc_flat1 = weather_mc1['kWh_total_discounted']
+    weather_mc_flat1.columns = ['d_kWh_loss']
+    weather_mc_flat1 = weather_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat1)
+
     weather_mc_flat2 = weather_mc2['npv_revenue']
     weather_mc_flat2.columns = ['d_revenue_weather']
     weather_mc_flat2 = weather_mc_flat2.add_prefix(scenario2 + '_')
     output_parameters = output_parameters.join(weather_mc_flat2)
 
+    weather_mc_flat2 = weather_mc2['kWh_total_discounted']
+    weather_mc_flat2.columns = ['d_kWh_loss']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
     # Get results for combined_yield
-    combined_yield_mc_flat1 = combined_yield_mc1['npv_revenue']
-    combined_yield_mc_flat1.columns = ['d_revenue_combined']
-    combined_yield_mc_flat1 = combined_yield_mc_flat1.add_prefix(scenario1 + '_')
+    combined_mc_flat1 = combined_mc1['npv_revenue']
+    combined_mc_flat1.columns = ['d_revenue_combined']
+    combined_mc_flat1 = combined_mc_flat1.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(combined_yield_mc_flat1)
 
-    combined_yield_mc_flat2 = combined_yield_mc2['npv_revenue']
+    combined_mc_flat1 = combined_mc1['kWh_total_discounted']
+    combined_mc_flat1.columns = ['d_kWh_loss']
+    combined_mc_flat1 = combined_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat1)
+
+    combined_yield_mc_flat2 = combined_mc2['npv_revenue']
     combined_yield_mc_flat2.columns = ['d_revenue_combined']
     combined_yield_mc_flat2 = combined_yield_mc_flat2.add_prefix(scenario2 + '_')
     output_parameters = output_parameters.join(combined_yield_mc_flat2)
+
+    combined_mc_flat2 = combined_mc2['kWh_total_discounted']
+    combined_mc_flat2.columns = ['d_kWh_loss']
+    combined_mc_flat2 = combined_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat2)
 
     output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
 
@@ -314,28 +343,37 @@ def prep_difference_graphs(scenario1, scenario2, input_paramaters, output_parame
     else:
         raise ValueError('loss and weather check values must be boolean')
 
+    cost_tag1 = scenario1 + '_d_cost_'
+    cost_tag2 = scenario2 + '_d_cost_'
     if cost_check:
-        if output_metric == 'NPV':
-            rev_tag1 = scenario1 + '_d_revenue_' + scenario_tag
-            cost_tag1 = scenario1 + '_d_cost_' + scenario_tag
-            rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
-            cost_tag2 = scenario2 + '_d_cost_' + scenario_tag
-            npv1 = output_parameters[rev_tag1] - output_parameters[cost_tag1]
-            npv2 = output_parameters[rev_tag2] - output_parameters[cost_tag2]
-            output_diff = npv1 - npv2
-        elif output_metric == 'LCOE':
-            rev_tag1 = scenario1 + '_d_revenue_' + scenario_tag
-            cost_tag1 = scenario1 + '_d_cost_' + scenario_tag
-            rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
-            cost_tag2 = scenario2 + '_d_cost_' + scenario_tag
-            npv1 = output_parameters[rev_tag1] - output_parameters[cost_tag1]
-            npv2 = output_parameters[rev_tag2] - output_parameters[cost_tag2]
-            output_diff = npv1 - npv2
+        cost1 = output_parameters[cost_tag1]
+        cost2 = output_parameters[cost_tag2]
+    elif not cost_check:
+        cost1 = output_parameters[cost_tag1][0]
+        cost2 = output_parameters[cost_tag2][0]
 
-else:
+    if output_metric == 'NPV':
+        rev_tag1 = scenario1 + '_d_revenue_' + scenario_tag
+        rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
+        npv1 = output_parameters[rev_tag1] - output_parameters[cost_tag1]
+        npv2 = output_parameters[rev_tag2] - output_parameters[cost_tag2]
+        output_diff = npv1 - npv2
+    elif output_metric == 'LCOE':
+        rev_tag1 = scenario1 + '_d_kWh_' + scenario_tag
+        rev_tag2 = scenario2 + '_d_kWh_' + scenario_tag
+        lcoe1 = output_parameters[cost_tag1] / output_parameters[rev_tag1]
+        lcoe2 = output_parameters[cost_tag2] / output_parameters[rev_tag2]
+        output_diff = lcoe1 - lcoe2
+    elif output_metric == 'cost':
+        cost1 = output_parameters[cost_tag1]
+        cost2 = output_parameters[cost_tag2]
+        output_diff = cost1 - cost2
+
+
 
     label_diff = scenario1 + '_vs_' + scenario2 + output_metric
 
+    return output_diff, label_diff
 
 def compile_df(df, identifiers, new_tags, output_df):
     """"""
