@@ -3,6 +3,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
 
 # mpl.use('Qt5Agg')
 # mpl.use('TkAgg')
@@ -177,6 +178,110 @@ def plot_save(fig_name, save_path):
     path = save_path + fig_name
     plt.savefig(path, dpi=300, bbox_inches='tight')
 
+
+def extract_difference_data(df, scenario1, scenario2):
+
+    year_list = ['2024', '2026', '2028']
+    for year in year_list:
+        if year in scenario1:
+            sc1_year = year
+        else:
+            pass
+
+        if year in scenario2:
+            sc2_year = year
+        else:
+            pass
+
+    cost_mc1 = df['cost_mc'][sc1_year][scenario1]
+    cost_mc2 = df['cost_mc'][sc2_year][scenario2]
+    weather_mc1 = df['weather_mc'][sc1_year][scenario1]
+    weather_mc2 = df['weather_mc'][sc2_year][scenario2]
+    loss_mc1 = df['loss_mc'][sc1_year][scenario1]
+    loss_mc2 = df['loss_mc'][sc2_year][scenario2]
+    combined_yield_mc1 = df['combined_yield_mc'][sc1_year][scenario1]
+    combined_yield_mc2 = df['combined_yield_mc'][sc2_year][scenario2]
+
+    discounted_ghi = df['discounted_ghi']
+    loss_parameters = df['loss_parameters']
+    data_tables1 = df['data_tables'][sc1_year]
+    data_tables2 = df['data_tables'][sc2_year]
+
+    # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
+    output_parameters = pd.DataFrame(index=discounted_ghi.index)
+
+
+    # Get results for cost monte carlo
+    cost_mc_flat1 = cost_mc1['discounted_cost_total'].rename('d_cost').to_frame()
+    cost_mc_flat1 = cost_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(cost_mc_flat1)
+
+    cost_mc_flat2 = cost_mc2['discounted_cost_total'].rename('d_cost').to_frame()
+    cost_mc_flat2 = cost_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(cost_mc_flat2)
+
+    # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
+    loss_mc_flat1 = loss_mc1['npv_revenue']
+    loss_mc_flat1.columns = ['d_revenue_loss']
+    loss_mc_flat1 = loss_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat1)
+
+    loss_mc_flat2 = loss_mc2['npv_revenue']
+    loss_mc_flat2.columns = ['d_revenue_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
+    # Get results for weather only Monte Carlo
+    weather_mc_flat1 = weather_mc1['npv_revenue']
+    weather_mc_flat1.columns = ['d_revenue_weather']
+    weather_mc_flat1 = weather_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat1)
+
+    weather_mc_flat2 = weather_mc2['npv_revenue']
+    weather_mc_flat2.columns = ['d_revenue_weather']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
+    # Get results for combined_yield
+    combined_yield_mc_flat1 = combined_yield_mc1['npv_revenue']
+    combined_yield_mc_flat1.columns = ['d_revenue_combined']
+    combined_yield_mc_flat1 = combined_yield_mc_flat1.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(combined_yield_mc_flat1)
+
+    combined_yield_mc_flat2 = combined_yield_mc2['npv_revenue']
+    combined_yield_mc_flat2.columns = ['d_revenue_combined']
+    combined_yield_mc_flat2 = combined_yield_mc_flat2.add_prefix(scenario2 + '_')
+    output_parameters = output_parameters.join(combined_yield_mc_flat2)
+
+    output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
+
+    # Now generate a list of all input parameters
+    input_parameters = pd.DataFrame(index=discounted_ghi.index)
+    # Get input parameters from cost monte carlo
+    cost_parameters = generate_parameters(data_tables1)
+    cost_parameters_flat = cost_parameters.copy()
+    cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
+                                    cost_parameters_flat.columns.values]
+
+    input_parameters = input_parameters.join(cost_parameters_flat)
+
+    # Grab the loss parameters for MAV and SAT
+    for item in loss_parameters:
+        label = item
+        loss_parameters_flat = loss_parameters[item]
+        loss_parameters_flat = loss_parameters_flat.add_prefix(item + '_')
+        input_parameters = input_parameters.join(loss_parameters_flat)
+
+    # Grab ghi parameters
+    discounted_ghi_flat = discounted_ghi.copy()
+    discounted_ghi_flat.columns = ['discounted_ghi']
+    input_parameters = input_parameters.join(discounted_ghi_flat)
+
+    input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
+
+    return input_parameters, output_parameters
+
+
 def prep_histogram(id_list):
      year_list = ['2024', '2026', '2028']
      scenario_list = ['weather', 'loss', 'cost']
@@ -194,6 +299,49 @@ def prep_histogram(id_list):
                  scenario_str.append()
 
 
-def prep_difference_graphs(scenario_1, scenario_2, parameter):
+def prep_difference_graphs(scenario1, scenario2, input_paramaters, output_parameters,
+                           loss_check, weather_check, cost_check,  output_metric):
     """"""
 
+    if loss_check and weather_check:
+        scenario_tag = 'combined'
+    elif loss_check and not weather_check:
+        scenario_tag = 'loss'
+    elif not loss_check and weather_check:
+        scenario_tag = 'weather'
+    elif not loss_check and not weather_check:
+        scenario_tag = 'cost_only'
+    else:
+        raise ValueError('loss and weather check values must be boolean')
+
+    if cost_check:
+        if output_metric == 'NPV':
+            rev_tag1 = scenario1 + '_d_revenue_' + scenario_tag
+            cost_tag1 = scenario1 + '_d_cost_' + scenario_tag
+            rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
+            cost_tag2 = scenario2 + '_d_cost_' + scenario_tag
+            npv1 = output_parameters[rev_tag1] - output_parameters[cost_tag1]
+            npv2 = output_parameters[rev_tag2] - output_parameters[cost_tag2]
+            output_diff = npv1 - npv2
+        elif output_metric == 'LCOE':
+            rev_tag1 = scenario1 + '_d_revenue_' + scenario_tag
+            cost_tag1 = scenario1 + '_d_cost_' + scenario_tag
+            rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
+            cost_tag2 = scenario2 + '_d_cost_' + scenario_tag
+            npv1 = output_parameters[rev_tag1] - output_parameters[cost_tag1]
+            npv2 = output_parameters[rev_tag2] - output_parameters[cost_tag2]
+            output_diff = npv1 - npv2
+
+else:
+
+    label_diff = scenario1 + '_vs_' + scenario2 + output_metric
+
+
+def compile_df(df, identifiers, new_tags, output_df):
+    """"""
+
+    mc_flat = df[identifiers]
+    mc_flat.columns = [new_tags]
+    output_df = output_df.join(mc_flat)
+
+    return output_df
