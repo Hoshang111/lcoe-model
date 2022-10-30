@@ -251,7 +251,7 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
-site = 'patuakhali'
+site = 'singapore'
 site_params = get_site_params(site)
 
 input_params = {}
@@ -318,15 +318,18 @@ def weather_import(file_name, location, corrections):
     weather_file_init = pd.read_csv(weather_path, index_col=0)
     weather_file_init.index = pd.to_datetime(weather_file_init.index, utc=True)
     weather_file = weather_correct(weather_file_init, corrections, location)
+    corrected_ghi = weather_file['ghi'].groupby(weather_file.index.year).sum()
+    uncorrected_ghi = weather_file_init['ghi'].groupby(weather_file_init.index.year).sum()
 
-    return weather_file
+    return weather_file, corrected_ghi, uncorrected_ghi
 
 mc_weather_name = site + '.csv'
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 file_path = os.path.join(data_path, "corrections.p")
 corrections = cpickle.load(open(file_path, 'rb'))
-mc_weather_file = weather_import(mc_weather_name, location, corrections)
-yearly_ghi = mc_weather_file['ghi'].groupby(mc_weather_file.index.year).sum()
+mc_weather_file, yearly_ghi, uncorrected_ghi = weather_import(mc_weather_name, location, corrections)
+
+
 
 # %%
 

@@ -508,5 +508,21 @@ for column in random_timeseries.T:
     test2 = gen_mcts(DC_dict, generation_list, start_date, end_date)
     test3 = pd.concat([test2, test3], axis=1)
 
+def weather_compare(file_name, location, corrections):
+    """"""
 
+    weather_folder = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\weather'
+    weather_path = os.path.join(weather_folder, file_name)
+    weather_file_init = pd.read_csv(weather_path, index_col=0)
+    weather_file_init.index = pd.to_datetime(weather_file_init.index, utc=True)
+    weather_file = weather_correct(weather_file_init, corrections, location)
+
+    return weather_file
+
+mc_weather_name = site + '.csv'
+data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
+file_path = os.path.join(data_path, "corrections.p")
+corrections = cpickle.load(open(file_path, 'rb'))
+mc_weather_file = weather_import(mc_weather_name, location, corrections)
+yearly_ghi = mc_weather_file['ghi'].groupby(mc_weather_file.index.year).sum()
 
