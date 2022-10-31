@@ -588,3 +588,5 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
                 file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../OutputFigures/', savename + parameter)
                 plt.savefig(file_name)
             plt.show()
+
+    return parameter_list
