@@ -35,56 +35,107 @@ def load_analysis_dict():
 
     return Analysis_dict
 
-def calculate_variance_contributions(input_factors, cost_result_name, savename=None):
-    num_table = 20
-    num_graphs = 5
-    title = None
-    short_titles = False
-    xlabel = None
-    ylabel = None
-    show_regression = True
-    show_r = True
-    show_r2 = False
+def extract_parameter_data(df, year_str):
+    cost_mc = df['cost_mc'][year_str]
+    weather_mc = df['weather_mc'][year_str]
+    loss_mc = df['loss_mc'][year_str]
+    combined_yield_mc = df['combined_yield_mc'][year_str]
+
+    discounted_ghi = df['discounted_ghi']
+    loss_parameters = df['loss_parameters']
+    data_tables = df['data_tables'][year_str]
+
+
+
+
+    # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
+    output_parameters = pd.DataFrame(index=discounted_ghi.index)
+
+    # Get results for cost monte carlo
+    for item in cost_mc:
+        cost_mc_flat = cost_mc[item]['discounted_cost_total'].rename('d_cost').to_frame()
+        cost_mc_flat = cost_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(cost_mc_flat)
+
+    # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
+    for item in loss_mc:
+        loss_mc_flat = loss_mc[item]['npv_revenue'].rename('d_revenue_loss').to_frame()
+        loss_mc_flat = loss_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(loss_mc_flat)
+
+    # Get results for weather only Monte Carlo
+    for item in weather_mc:
+        weather_mc_flat = weather_mc[item]['npv_revenue'].rename('d_revenue_weather').to_frame()
+        weather_mc_flat = weather_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(weather_mc_flat)
+
+
+    # Get results for combined_yield
+    for item in combined_yield_mc:
+        combined_yield_mc_flat = combined_yield_mc[item]['npv_revenue'].rename('d_revenue_combined').to_frame()
+        combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(item + '_')
+        output_parameters = output_parameters.join(combined_yield_mc_flat)
+
+    output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
+
+    # Now generate a list of all input parameters
+    input_parameters = pd.DataFrame(index=discounted_ghi.index)
+    # Get input parameters from cost monte carlo
+    cost_parameters = generate_parameters(data_tables, use_name_as_ID=True)
+    cost_parameters_flat = cost_parameters.copy()
+    cost_parameters_flat.columns = [str(ID) + ': ' + var for (group, ID, var) in
+                                    cost_parameters_flat.columns.values]
+
+    input_parameters = input_parameters.join(cost_parameters_flat)
+
+    # Grab the loss parameters for MAV and SAT
+    for item in loss_parameters:
+        label = item
+        loss_parameters_flat = loss_parameters[item]
+        loss_parameters_flat = loss_parameters_flat.add_prefix(item + '_')
+        input_parameters = input_parameters.join(loss_parameters_flat)
+
+    # Grab gdi parameters
+    discounted_ghi_flat = discounted_ghi.copy()
+    discounted_ghi_flat.columns = ['discounted_ghi']
+    input_parameters = input_parameters.join(discounted_ghi_flat)
+
+
+
+    input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
+    return input_parameters, output_parameters
+
+def calculate_variance_table(input_factors, cost_result_name, num_table=20):
 
     # Remove any columns that are not numeric
-    input_factors.to_csv('input_factors.csv')
     filtered_factors = input_factors.select_dtypes(exclude=['object'])
-    filtered_factors.to_csv('filtered_factors.csv')
-
     # This removes first any input factors with no variation
     filtered_factors = filtered_factors.loc[:, (filtered_factors.std() > 0)]
 
     correlation_table = filtered_factors.corr()
 
-    correlation_table['variance'] = round(
-        (correlation_table[cost_result_name] * correlation_table[cost_result_name]) * 100, 0)
+    correlation_table['variance'] = round((correlation_table[cost_result_name] **2) * 100, 0)
 
-    total_variance = correlation_table['variance'].sum()
     correlation_table['variance'] = correlation_table['variance'].fillna(0).astype(int)
 
-    input_factor_range = input_factors.describe(percentiles=(0.1, 0.5, 0.9)).T.loc[:, ['10%', '50%', '90%']].round(2)
-    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(str)
+    input_factor_range = input_factors.describe(percentiles=(0.1, 0.5, 0.9)).T.loc[:, ['10%', '50%', '90%']].round(
+        2)
+    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(
+        str)
 
     correlation_table['range'] = input_factor_range['range']
-    correlation_table['10th percentile'] = input_factor_range['10%']
-    correlation_table['50th percentile'] = input_factor_range['50%']
-    correlation_table['90th percentile'] = input_factor_range['90%']
 
-    print('Total Variance sum (should be 2.0) = ', total_variance)
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(correlation_table.sort_values(
-        by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table))
-    correlation_table.to_csv('correlation_table.csv')
-    # Graph scatterplot:
-    parameter_list = correlation_table.sort_values(by='variance', ascending=False).loc[:,
-                     [cost_result_name, 'variance']].head(num_graphs + 1).index
-    # print(parameter_list)
+    output_table = correlation_table.sort_values(by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table)
+    print(output_table)
+    return output_table
+
+def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None, short_titles=True,
+                     xlabel=None, ylabel=None, show_regression=True, show_r=False, show_r2=True, savename=None):
+
+
     parameter_description_list = zip(parameter_list, parameter_list)
-    # print(parameter_description_list)
 
     for (parameter, label) in parameter_description_list:
-        # print(parameter)
-        # print(label)
         if parameter != cost_result_name:
             plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
             if title is None:
@@ -118,7 +169,7 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
 
                 plt.annotate('', xy=(xmin, ymin), xycoords='data', xytext=(xmax, ymax), textcoords='data',
                              arrowprops=dict(arrowstyle="-"))
-
+                text = ''
                 if show_r:
                     text = 'r = {0:.2f}'.format(r_value)
                 if show_r2:
@@ -132,7 +183,101 @@ def calculate_variance_contributions(input_factors, cost_result_name, savename=N
                 plt.savefig(file_name)
             plt.show()
 
-    return parameter_list
+def calculate_graph_variance_contributions(input_factors, cost_result_name, savename=None, num_table = 20, num_graphs=0):
+    title = None
+    short_titles = False
+    xlabel = None
+    ylabel = None
+    show_regression = True
+    show_r = True
+    show_r2 = False
+
+    output_table = calculate_variance_table(input_factors, cost_result_name, num_table=num_table)
+
+    parameter_list = output_table.head(num_table+1).index
+    graph_scatter_1d(input_factors, cost_result_name, parameter_list = parameter_list)
+
+
+def graph_variance_contributions(output_parameters, input_parameters, scenario_name, cost_mc =True , revenue_type = 'loss'):
+    df = output_parameters.copy()
+
+    if (revenue_type == 'loss') or (revenue_type == 'weather') or (revenue_type == 'combined'):
+        revenue_column = scenario_name + '_d_revenue_' + revenue_type
+
+    elif revenue_type == 'fixed':
+        revenue_column = scenario_name + '_d_revenue_' + revenue_type
+        df[revenue_column] = df[scenario_name + '_d_revenue_loss'][0]
+    else:
+        print('Error! Revenue type does not exist!')
+
+    cost_column = scenario_name + '_d_cost'
+    if cost_mc == True:
+        cost_column = scenario_name + '_d_cost'
+    else:
+        cost_column = scenario_name + '_d_cost_fixed'
+        df[cost_column] = df[scenario_name + '_d_cost'][0]
+
+    output_name = scenario_name + '_NPV'
+    df[output_name] = df[cost_column] / df[revenue_column]
+
+    all_parameters = input_parameters.join(df[output_name])
+
+    calculate_graph_variance_contributions(all_parameters, output_name,
+                                     savename=None)
+
+def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
+               title=None, xlabel=None, ylabel=None, zlabel=None):
+    x = input_data[parameter_x]
+    y = input_data[parameter_y]
+    z = input_data[parameter_z]
+
+    fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
+
+    scatterplot = ax0.scatter(x, y, c=z, cmap=None, s=None)
+    plt.colorbar(scatterplot, cax=ax1)
+
+    if title is not None:
+        ax0.set_title(title)
+
+    if xlabel is not None:
+        ax0.set_xlabel(xlabel)
+    else:
+        ax0.set_xlabel(parameter_x)
+    if ylabel is not None:
+        ax0.set_ylabel(ylabel)
+    else:
+        ax0.set_ylabel(parameter_y)
+    if zlabel is not None:
+        ax1.set_title(zlabel)
+
+    plt.show()
+    plt.close()
+
+def graph_histogram(input_data, scenario_list, title=None):
+    data = input_data[[scenario_list]].reset_index()
+    print(data)
+    data.plot.hist(bins=50, histtype='step', fontsize=8)
+    if title is None:
+        title = 'Histogram'
+    plt.title(title)
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+def graph_stacked(cost_data, scenario_list, title=None):
+    scenario_costs_iter = cost_data[cost_data['ScenarioID'].isin(scenario_list)]
+    scenario_costs_nominal = scenario_costs_iter[scenario_costs_iter['Iteration'] == 0]
+
+
+    scenario_costs_total_category = pd.pivot_table(scenario_costs_nominal, values='TotalCostAUDY',
+                                                   index=['ScenarioID'], aggfunc=np.sum,
+                                                   columns=['CostCategory_ShortName'])
+    if title is None:
+        title = 'Cost by Category'
+    scenario_costs_total_category.plot.bar(stacked=True, title= title)
+    plt.close()
 
 def extract_parameter_data(df, scenario1):
     """"""
@@ -274,7 +419,7 @@ def extract_difference_data(df, scenario1, scenario2):
     output_parameters = output_parameters.join(weather_mc_flat1)
 
     weather_mc_flat1 = weather_mc1['kWh_total_discounted']
-    weather_mc_flat1.columns = ['d_kWh_loss']
+    weather_mc_flat1.columns = ['d_kWh_weather']
     weather_mc_flat1 = weather_mc_flat1.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(weather_mc_flat1)
 
@@ -284,7 +429,7 @@ def extract_difference_data(df, scenario1, scenario2):
     output_parameters = output_parameters.join(weather_mc_flat2)
 
     weather_mc_flat2 = weather_mc2['kWh_total_discounted']
-    weather_mc_flat2.columns = ['d_kWh_loss']
+    weather_mc_flat2.columns = ['d_kWh_weather']
     weather_mc_flat2 = weather_mc_flat2.add_prefix(scenario2 + '_')
     output_parameters = output_parameters.join(weather_mc_flat2)
 
@@ -295,7 +440,7 @@ def extract_difference_data(df, scenario1, scenario2):
     output_parameters = output_parameters.join(combined_mc_flat1)
 
     combined_mc_flat1 = combined_mc1['kWh_total_discounted']
-    combined_mc_flat1.columns = ['d_kWh_loss']
+    combined_mc_flat1.columns = ['d_kWh_combined']
     combined_mc_flat1 = combined_mc_flat1.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(combined_mc_flat1)
 
@@ -305,7 +450,7 @@ def extract_difference_data(df, scenario1, scenario2):
     output_parameters = output_parameters.join(combined_yield_mc_flat2)
 
     combined_mc_flat2 = combined_mc2['kWh_total_discounted']
-    combined_mc_flat2.columns = ['d_kWh_loss']
+    combined_mc_flat2.columns = ['d_kWh_combined']
     combined_mc_flat2 = combined_mc_flat2.add_prefix(scenario2 + '_')
     output_parameters = output_parameters.join(combined_mc_flat2)
 
@@ -393,20 +538,21 @@ def prep_difference_graphs(scenario1, scenario2, input_parameters, output_parame
         rev_tag2 = scenario2 + '_d_revenue_' + scenario_tag
         npv1 = output_parameters[rev_tag1] - cost1
         npv2 = output_parameters[rev_tag2] - cost2
-        output_diff = npv1 - npv2
+        output_diffa = npv1 - npv2
     elif output_metric == 'LCOE':
         rev_tag1 = scenario1 + '_d_kWh_' + scenario_tag
         rev_tag2 = scenario2 + '_d_kWh_' + scenario_tag
         lcoe1 = lcoe_fiddle(output_parameters[rev_tag1], cost1)
         lcoe2 = lcoe_fiddle(output_parameters[rev_tag2], cost2)
-        output_diff = lcoe1 - lcoe2
+        output_diffa = lcoe1 - lcoe2
     elif output_metric == 'cost':
-        output_diff = cost1 - cost2
+        output_diffa = cost1 - cost2
     elif output_metric == 'yield':
         rev_tag1 = scenario1 + '_d_kWh_' + scenario_tag
         rev_tag2 = scenario2 + '_d_kWh_' + scenario_tag
-        output_diff = output_parameters[rev_tag1] - output_parameters[rev_tag2]
+        output_diffa = output_parameters[rev_tag1] - output_parameters[rev_tag2]
 
+    output_diff = output_diffa.to_frame()
     output_diff.columns = [output_metric]
 
     return output_diff
@@ -434,19 +580,20 @@ def prep_parameter_graphs(scenario1, input_parameters, output_parameters,
 
     if output_metric == 'NPV':
         rev_tag = scenario1 + '_d_revenue_' + scenario_tag
-        output = output_parameters[rev_tag] - cost
+        outputa = output_parameters[rev_tag] - cost
     elif output_metric == 'LCOE':
         rev_tag = scenario1 + '_d_kWh_' + scenario_tag
-        output_diff = lcoe_fiddle(output_parameters[rev_tag], cost)
+        outputa = lcoe_fiddle(output_parameters[rev_tag], cost)
     elif output_metric == 'cost':
-        output_diff = cost
+        outputa = cost
     elif output_metric == 'yield':
         rev_tag = scenario1 + '_d_kWh_' + scenario_tag
-        output_diff = output_parameters[rev_tag]
+        outputa = output_parameters[rev_tag]
 
-    output_diff.columns = [output_metric]
+    output = outputa.to_frame()
+    output.columns = [output_metric]
 
-    return output_diff
+    return output
 
 def compile_df(df, identifiers, new_tags, output_df):
     """"""
@@ -482,7 +629,53 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
 
     return parameter_list, input_parameters, output_parameters
 
-def run_2d_scatter(scenario_list, loss_check, weather_check, cost_check, output_metric):
+def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
+                   input_parameters, output_parameters,
+                   loss_check, weather_check, cost_check, output_metric):
+    """"""
+    try:
+        output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
+                               loss_check, weather_check, cost_check,  output_metric)
+        label_diff = '2D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
+        graph_scatter_2d(input_parameters, output_diff, parameter1, parameter2, output_metric, label_diff,
+                 title=None, xlabel=parameter1, ylabel=parameter2, zlabel=output_metric)
+    except NameError:
+        output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
+                                       loss_check, weather_check, cost_check, output_metric)
+        label = scenario1 + '_' + output_metric
+        graph_scatter_2d(input_parameters, output, parameter1, parameter2, output_metric,
+                         label, title=None, xlabel=parameter1, ylabel=parameter2,
+                         zlabel=output_metric)
+
+
+def run_1d_scatter(scenario1, scenario2, parameter_list,
+                   input_parameters, output_parameters,
+                   loss_check, weather_check, cost_check, output_metric):
+    """"""
+    try:
+        output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
+                              loss_check, weather_check, cost_check,  output_metric)
+        all_parameters = input_parameters.join(output_diff)
+        label_diff = '1D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
+        graph_scatter_1d(all_parameters, output_metric, parameter_list)
+
+    except NameError:
+        output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
+                                       loss_check, weather_check, cost_check, output_metric)
+        label = scenario1 + '_' + output_metric
+        graph_scatter_2d(input_parameters, output, parameter1, parameter2, output_metric,
+                         label, title=None, xlabel=parameter1, ylabel=parameter2,
+                         zlabel=output_metric)
+
+def run_histogram(scenario_list, loss_check, weather_check, cost_check, output_metric):
     """"""
 
+    results_dict = load_analysis_dict()
+
+    output_dict = {}
     for scenario in scenario_list:
+        input_parameters, output_parameters = extract_parameter_data(results_dict, scenario)
+        output_dict[scenario] = prep_parameter_graphs(scenario, input_parameters, output_parameters,
+                                       loss_check, weather_check, cost_check, output_metric)
+
+    plot_histogram(output_dict, output_metric)
