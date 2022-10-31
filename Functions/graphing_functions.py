@@ -411,7 +411,7 @@ def prep_difference_graphs(scenario1, scenario2, input_parameters, output_parame
 
     return output_diff
 
-def prep_scenario_graphs(scenario1, input_parameters, output_parameters,
+def prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                            loss_check, weather_check, cost_check,  output_metric):
     """"""
 
@@ -474,6 +474,15 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
 
     except NameError:
         input_parameters, output_parameters = extract_parameter_data(results_dict, scenario1)
-
+        output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
+                           loss_check, weather_check, cost_check,  output_metric)
+        label = scenario1 + '_' + output_metric
+        all_parameters = input_parameters.join(output)
+        parameter_list = calculate_variance_contributions(all_parameters, output_metric, label)
 
     return parameter_list, input_parameters, output_parameters
+
+def run_2d_scatter(scenario_list, loss_check, weather_check, cost_check, output_metric):
+    """"""
+
+    for scenario in scenario_list:

@@ -265,7 +265,7 @@ def extract_difference_data(df, scenario1, scenario2):
     combined_mc_flat1 = combined_mc1['npv_revenue']
     combined_mc_flat1.columns = ['d_revenue_combined']
     combined_mc_flat1 = combined_mc_flat1.add_prefix(scenario1 + '_')
-    output_parameters = output_parameters.join(combined_yield_mc_flat1)
+    output_parameters = output_parameters.join(combined_mc_flat1)
 
     combined_mc_flat1 = combined_mc1['kWh_total_discounted']
     combined_mc_flat1.columns = ['d_kWh_loss']
@@ -343,8 +343,8 @@ def prep_difference_graphs(scenario1, scenario2, input_paramaters, output_parame
     else:
         raise ValueError('loss and weather check values must be boolean')
 
-    cost_tag1 = scenario1 + '_d_cost_'
-    cost_tag2 = scenario2 + '_d_cost_'
+    cost_tag1 = scenario1 + '_d_cost'
+    cost_tag2 = scenario2 + '_d_cost'
     if cost_check:
         cost1 = output_parameters[cost_tag1]
         cost2 = output_parameters[cost_tag2]
@@ -368,8 +368,6 @@ def prep_difference_graphs(scenario1, scenario2, input_paramaters, output_parame
         cost1 = output_parameters[cost_tag1]
         cost2 = output_parameters[cost_tag2]
         output_diff = cost1 - cost2
-
-
 
     label_diff = scenario1 + '_vs_' + scenario2 + output_metric
 

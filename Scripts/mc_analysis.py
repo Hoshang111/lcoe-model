@@ -121,7 +121,7 @@ else:
 # Call Monte Carlo Cost analysis
 
 # Do be deleted later - import occurs above.
-data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
+# data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
 
 
 # %%
@@ -164,7 +164,7 @@ for year in scenarios:
     new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
     # Create iteration data
-    data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
+    data_tables_iter = create_iteration_tables(new_data_tables, iter_num, iteration_start=0)
 
     # Calculate cost result
     outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2058)
