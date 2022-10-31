@@ -12,7 +12,7 @@ from numpy.polynomial import Polynomial
 from Functions.optimising_functions import form_new_data_tables, optimise_layout
 from Functions.sizing_functions import get_airtable, get_npv
 from Functions.cost_functions import calculate_scenarios_iterations, create_iteration_tables, \
-     generate_parameters, calculate_variance_contributions, import_excel_data
+     generate_parameters, import_excel_data
 import warnings
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
@@ -58,6 +58,105 @@ def calculate_variance_table(input_factors, cost_result_name, num_table=20):
     output_table = correlation_table.sort_values(by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table)
     print(output_table)
     return output_table
+
+def calculate_variance_contributions(input_factors, cost_result_name, savename=None):
+    num_table=20
+    num_graphs=10
+    title=None
+    short_titles=False
+    xlabel=None
+    ylabel=None
+    show_regression=True
+    show_r=True
+    show_r2=False
+
+    # Remove any columns that are not numeric
+    filtered_factors = input_factors.select_dtypes(exclude=['object'])
+
+    # This removes first any input factors with no variation
+    filtered_factors = filtered_factors.loc[:, (filtered_factors.std() > 0)]
+
+    filtered_factors.to_csv('filtered_factors.csv')
+    correlation_table = filtered_factors.corr()
+
+    correlation_table['variance'] = round(
+        (correlation_table[cost_result_name] * correlation_table[cost_result_name]) * 100, 0)
+
+    total_variance = correlation_table['variance'].sum()
+    correlation_table['variance'] = correlation_table['variance'].fillna(0).astype(int)
+
+    input_factor_range = input_factors.describe(percentiles=(0.1, 0.5, 0.9)).T.loc[:, ['10%', '50%', '90%']].round(2)
+    input_factor_range['range'] = input_factor_range['10%'].astype(str) + ' - ' + input_factor_range['90%'].astype(str)
+
+    correlation_table['range'] = input_factor_range['range']
+    correlation_table['10th percentile'] = input_factor_range['10%']
+    correlation_table['50th percentile'] = input_factor_range['50%']
+    correlation_table['90th percentile'] = input_factor_range['90%']
+
+    print('Total Variance sum (should be 2.0) = ', total_variance)
+
+    print(correlation_table.sort_values(
+        by='variance', ascending=False).loc[:, [cost_result_name, 'variance', 'range']].head(num_table))
+
+    # Graph scatterplot:
+    parameter_list = correlation_table.sort_values(by='variance', ascending=False).loc[:,
+                     [cost_result_name, 'variance']].head(num_graphs + 1).index
+    # print(parameter_list)
+    parameter_description_list = zip(parameter_list, parameter_list)
+    # print(parameter_description_list)
+
+    for (parameter, label) in parameter_description_list:
+        # print(parameter)
+        # print(label)
+        if parameter != cost_result_name:
+            plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
+            if title is None:
+                if short_titles:
+                    this_title = 'Correlation to ' + cost_result_name
+                else:
+                    this_title = 'Impact of ' + str(parameter) + ' on ' + cost_result_name
+            plt.title(this_title)
+            if xlabel is None:
+                if short_titles:
+                    this_xlabel = str(label)
+                else:
+                    this_xlabel = 'Input Factor: ' + str(label)
+            else:
+                this_xlabel = xlabel
+            plt.xlabel(this_xlabel)
+            if ylabel is None:
+                if short_titles:
+                    this_ylabel = cost_result_name
+                else:
+                    this_ylabel = 'Output Factor: ' + cost_result_name
+            plt.ylabel(this_ylabel)
+
+            if show_regression:
+                slope, intercept, r_value, p_value, std_err = stats.linregress(input_factors[parameter],
+                                                                               input_factors[cost_result_name])
+
+                xmin, xmax = plt.xlim()
+                ymin = slope * xmin + intercept
+                ymax = slope * xmax + intercept
+
+                plt.annotate('', xy=(xmin, ymin), xycoords='data', xytext=(xmax, ymax), textcoords='data',
+                             arrowprops=dict(arrowstyle="-"))
+
+                if show_r:
+                    text = 'r = {0:.2f}'.format(r_value)
+                if show_r2:
+                    r2_value = r_value * r_value
+                    text = text + '\nr$^2$ = {0:.2f}'.format(r2_value)
+                plt.annotate(text, xy=(0.5, 0.5), fontsize=20, xycoords='figure fraction')
+
+            if savename is not None:
+                file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../OutputFigures/', savename + parameter)
+                plt.savefig(file_name)
+            plt.show()
+
+    parameter_select = parameter_list.tolist()
+
+    return parameter_select
 
 def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None, short_titles=True,
                      xlabel=None, ylabel=None, show_regression=True, show_r=False, show_r2=True, savename=None):
@@ -481,8 +580,11 @@ def prep_difference_graphs(scenario1, scenario2, input_parameters, output_parame
         rev_tag1 = scenario1 + '_d_kWh_' + scenario_tag
         rev_tag2 = scenario2 + '_d_kWh_' + scenario_tag
         output_diffa = output_parameters[rev_tag1] - output_parameters[rev_tag2]
+    try:
+        output_diff = output_diffa.to_frame()
+    except AttributeError:
+        pass
 
-    output_diff = output_diffa.to_frame()
     output_diff.columns = [output_metric]
 
     return output_diff
