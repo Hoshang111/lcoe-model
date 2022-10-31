@@ -45,9 +45,6 @@ def extract_parameter_data(df, year_str):
     loss_parameters = df['loss_parameters']
     data_tables = df['data_tables'][year_str]
 
-
-
-
     # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
     output_parameters = pd.DataFrame(index=discounted_ghi.index)
 
@@ -657,15 +654,15 @@ def run_1d_scatter(scenario1, scenario2, parameter_list,
                               loss_check, weather_check, cost_check,  output_metric)
         all_parameters = input_parameters.join(output_diff)
         label_diff = '1D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
-        graph_scatter_1d(all_parameters, output_metric, parameter_list)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, savename=label_diff)
 
     except NameError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
+        all_parameters = input_parameters.join(output)
         label = scenario1 + '_' + output_metric
-        graph_scatter_2d(input_parameters, output, parameter1, parameter2, output_metric,
-                         label, title=None, xlabel=parameter1, ylabel=parameter2,
-                         zlabel=output_metric)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, savename=label_diff)
+
 
 def run_histogram(scenario_list, loss_check, weather_check, cost_check, output_metric):
     """"""
@@ -678,4 +675,6 @@ def run_histogram(scenario_list, loss_check, weather_check, cost_check, output_m
         output_dict[scenario] = prep_parameter_graphs(scenario, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
 
-    plot_histogram(output_dict, output_metric)
+    label = output_metric + 'histogram'
+    output_df = pd.DataFrame(output_dict)
+    graph_histogram(output_df, scenario_list, output_metric, title=label)
