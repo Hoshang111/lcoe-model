@@ -49,7 +49,7 @@ Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 #%% ============================================================
 #get basic parameters
-site = 'moheshkali'
+site = 'sumitomo'
 site_params = get_site_params(site)
 
 costs_series = Analysis_dict['cost_mc']['cost_npv']
