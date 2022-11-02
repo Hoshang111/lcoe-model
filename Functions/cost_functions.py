@@ -496,7 +496,7 @@ def calculate_scenarios_iterations(iteration_input_tables, year_start, year_end)
 
 def calculate_variance_contributions(input_factors, cost_result_name, savename=None):
     num_table=20
-    num_graphs=5
+    num_graphs=10
     title=None
     short_titles=False
     xlabel=None
