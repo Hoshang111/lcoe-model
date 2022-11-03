@@ -44,7 +44,7 @@ def get_site_params(site_name):
 # import data from pickle
 
 bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
-pickle_path = os.path.join(bng_path,'mc_analysis', 'moheshkali_output_dict.p')
+pickle_path = os.path.join(bng_path,'mc_analysis', 'sumitomo_output_dict.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 #%% ============================================================

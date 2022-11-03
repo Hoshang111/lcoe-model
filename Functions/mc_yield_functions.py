@@ -406,7 +406,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     yield_timeseries = mc_dc_yield(results_dict, zone_area,
                                     temp_model, mc_weather_file, location)
 
-    p_out = yield_timeseries['p_mp']
+    p_out = yield_timeseries['p_mp']*4704/720
     v_dc = yield_timeseries['v_mp']
 
     ghi_sort = pd.concat([p_out, ghi_timeseries], axis=1, ignore_index=False )
