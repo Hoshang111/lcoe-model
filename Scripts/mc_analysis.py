@@ -40,9 +40,9 @@ def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scena
  # %% ===========================================================
  # define scenarios
 
-scenarios = [ '2024']#,
-            # '2026',
-            # '2028']
+scenarios = [ '2024',
+             '2026',
+             '2028']
 
 iter_num = 20
 iter_limit = 10
@@ -113,16 +113,6 @@ else:
         results_dict = scenario_dict[key]
         weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
             mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables)
-
-# %% ===========================================================
-# Now calculate AC output (currently not used)
-
-# %%
-# Call Monte Carlo Cost analysis
-
-# Do be deleted later - import occurs above.
-# data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
-
 
 # %%
 def extract_scenario_tables(scenario_dict, analysis_year):
