@@ -621,6 +621,10 @@ def prep_parameter_graphs(scenario1, input_parameters, output_parameters,
     elif output_metric == 'yield':
         rev_tag = scenario1 + '_d_kWh_' + scenario_tag
         outputa = output_parameters[rev_tag]
+    elif output_metric == 'capital_cost':
+        pass
+    elif output_metric == 'yr1_output':
+        pass
 
     output = outputa.to_frame()
     output.columns = [output_metric]
@@ -649,7 +653,7 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
                            loss_check, weather_check, cost_check,  output_metric)
         label_diff = scenario1 + '_vs_' + scenario2 + '_' + output_metric
         all_parameters = input_parameters.join(output_diff)
-        parameter_list = calculate_variance_contributions(all_parameters, output_metric, label_diff)
+        output_table = calculate_variance_table(all_parameters, output_metric, label_diff)
 
     except NameError:
         input_parameters, output_parameters = extract_parameter_data(results_dict, scenario1)
@@ -657,9 +661,9 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
                            loss_check, weather_check, cost_check,  output_metric)
         label = scenario1 + '_' + output_metric
         all_parameters = input_parameters.join(output)
-        parameter_list = calculate_variance_contributions(all_parameters, output_metric, label)
+        output_table = calculate_variance_table(all_parameters, output_metric, label)
 
-    return parameter_list, input_parameters, output_parameters
+    return output_table, input_parameters, output_parameters
 
 def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
                    input_parameters, output_parameters,
