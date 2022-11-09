@@ -119,7 +119,8 @@ def run(file_name):
     # %%
     # Cycle through alternative analysis scenarios
 
-    def optimize(RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params):
+    def optimize(RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params,
+                 number_racks=0, set_racks=False, ):
         module_type = MODULE_TYPE
         install_year = INSTALL_YEAR
         rack_type = RACK_TYPE
@@ -129,7 +130,8 @@ def run(file_name):
             install_year, DCTotal, num_of_zones, zone_area,
             rack_interval_ratio, temp_model, export_lim,
             storage_capacity, scheduled_price, data_tables,
-            discount_rate, loss_params, fig_title=SCENARIO_LABEL)
+            discount_rate, loss_params, set_racks, number_racks,
+            fig_title=SCENARIO_LABEL)
 
         scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
