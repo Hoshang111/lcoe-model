@@ -55,7 +55,7 @@ import Functions.testing as testing
 def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate, loss_params, set_racks=False, number_racks=0,
+                     data_tables, discount_rate, loss_params, number_racks=None,
                      fig_title=None):
 
     # %% ======================================
@@ -64,7 +64,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
 
     # %% =======================================
     # statement to allow users to define number of racks
-    if set_racks:
+    if number_racks:
         rack_per_zone_num_range = number_racks
         module_per_zone_num_range = rack_per_zone_num_range * rack_params['Modules_per_rack']
         if rack_params['rack_type'] == 'SAT':
