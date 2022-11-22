@@ -649,7 +649,7 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
                            loss_check, weather_check, cost_check,  output_metric)
         label_diff = scenario1 + '_vs_' + scenario2 + '_' + output_metric
         all_parameters = input_parameters.join(output_diff)
-        parameter_list = calculate_variance_contributions(all_parameters, output_metric, label_diff)
+        output_table = calculate_variance_table(all_parameters, output_metric, label_diff)
 
     except NameError:
         input_parameters, output_parameters = extract_parameter_data(results_dict, scenario1)
@@ -657,9 +657,9 @@ def calculate_variance_diff(scenario1, scenario2, loss_check,
                            loss_check, weather_check, cost_check,  output_metric)
         label = scenario1 + '_' + output_metric
         all_parameters = input_parameters.join(output)
-        parameter_list = calculate_variance_contributions(all_parameters, output_metric, label)
+        output_table = calculate_variance_table(all_parameters, output_metric, label)
 
-    return parameter_list, input_parameters, output_parameters
+    return output_table, input_parameters, output_parameters
 
 def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
                    input_parameters, output_parameters,
@@ -713,3 +713,16 @@ def run_histogram(scenario_list, loss_check, weather_check, cost_check, output_m
     label = output_metric + 'histogram'
     output_df = pd.DataFrame(output_dict)
     graph_histogram(output_df, scenario_list, output_metric, title=label)
+
+def gen_schedule(results_dict, scenario_list):
+    """"""
+
+    schedule_dict = {}
+
+    for key, multiplier in scenario_list:
+        for category in results_dict[key]:
+            for df in results_dict[key][category]:
+                if df is '':
+
+                elif df is '':
+                    schedule_dict[category][df] = schedule_dict[category][df] + multiplier * results_dict[key][category][df]

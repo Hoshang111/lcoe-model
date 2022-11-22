@@ -120,7 +120,7 @@ def run(file_name):
     # Cycle through alternative analysis scenarios
 
     def optimize(RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params,
-                 number_racks=0, set_racks=False, ):
+                 number_racks=None, optimize_for='NPV'):
         module_type = MODULE_TYPE
         install_year = INSTALL_YEAR
         rack_type = RACK_TYPE
@@ -130,7 +130,7 @@ def run(file_name):
             install_year, DCTotal, num_of_zones, zone_area,
             rack_interval_ratio, temp_model, export_lim,
             storage_capacity, scheduled_price, data_tables,
-            discount_rate, loss_params, set_racks, number_racks,
+            discount_rate, loss_params, number_racks, optimize_for,
             fig_title=SCENARIO_LABEL)
 
         scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
@@ -140,18 +140,7 @@ def run(file_name):
     # Create variables to hold the results of each analysis
     SAT = 'SAT_1_update'
     MAV = '5B_MAV_update'
-    PERC2023 = 'PERC_2023_M10'
-    TOP2023 = 'TOPCON_2023_M10'
-    HJT2023 = 'HJT_2023_M10'
-    PERC2025 = 'PERC_2025_M10'
-    TOP2025 = 'TOPCON_2025_M10'
-    HJT2025 = 'HJT_2025_M10'
-    PERC2028 = 'PERC_2028_M10'
-    TOP2028 = 'TOPCON_2028_M10'
-    HJT2028 = 'HJT_2028_M10'
-    PERC2031 = 'PERC_2031_M10'
-    TOP2031 = 'TOPCON_2031_M10'
-    HJT2031 = 'HJT_2031_M10'
+    MAV_gen6 = '5B_MAV_gen6'
 
     #
     # 2024 - assume modules PERC_2023_M10, etc
@@ -166,123 +155,51 @@ def run(file_name):
     scenario_1 = [year_sc1, mount_tech_sc1, module_tech_sc2]
     scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2]
     scenario_params = [scenario_1, scenario_2]
-    scenario_tables_2024 = []
-    scenario_tables_2026 = []
-    scenario_tables_2028 = []
+    scenario_tables = []
 
 
     for scenario in scenario_params:
         year = scenario[0]
         mount_tech = scenario[1]
         module_tech = scenario[2]
-        if year == 2024:
-            if mount_tech == "SAT":
-                if module_tech == "PERC":
-                    results_SAT_PERC_2024 = optimize(SAT, PERC2023, 2024, 'SAT_PERC_2024', scenario_tables_2024,
-                                                     SAT_loss_params)
-                    results_SAT_PERCa_2024 = optimize(SAT, PERC2025, 2024, 'SAT_PERCa_2024', scenario_tables_2024,
-                                                      SAT_loss_params)
-                elif module_tech == "HJT":
-                    results_SAT_HJT_2024 = optimize(SAT, HJT2023, 2024, 'SAT_HJT_2024', scenario_tables_2024,
-                                                    SAT_loss_params)
-                    results_SAT_HJTa_2024 = optimize(SAT, HJT2025, 2024, 'SAT_HJTa_2024', scenario_tables_2024,
-                                                     SAT_loss_params)
-                elif module_tech == "TOPCON":
-                    results_SAT_TOP_2024 = optimize(SAT, TOP2023, 2024, 'SAT_TOP_2024', scenario_tables_2024,
-                                                    SAT_loss_params)
-                    results_SAT_TOPa_2024 = optimize(SAT, TOP2025, 2024, 'SAT_TOPa_2024', scenario_tables_2024,
-                                                     SAT_loss_params)
-            elif mount_tech == "MAV":
-                if module_tech == "PERC":
-                    results_MAV_PERC_2024 = optimize(MAV, PERC2023, 2024, 'MAV_PERC_2024', scenario_tables_2024,
-                                                     MAV_loss_params)
-                    results_MAV_PERCa_2024 = optimize(MAV, PERC2025, 2024, 'MAV_PERCa_2024', scenario_tables_2024,
-                                                      MAV_loss_params)
-                if module_tech == "HJT":
-                    results_MAV_HJT_2024 = optimize(MAV, HJT2023, 2024, 'MAV_HJT_2024', scenario_tables_2024,
-                                                    MAV_loss_params)
-                    results_MAV_HJTa_2024 = optimize(MAV, HJT2025, 2024, 'MAV_HJTa_2024', scenario_tables_2024,
-                                                     MAV_loss_params)
-                if module_tech == "TOPCON":
-                    results_MAV_TOP_2024 = optimize(MAV, TOP2023, 2024, 'MAV_TOP_2024', scenario_tables_2024,
-                                                    MAV_loss_params)
-                    results_MAV_TOPa_2024 = optimize(MAV, TOP2025, 2024, 'MAV_TOPa_2024', scenario_tables_2024,
-                                                     MAV_loss_params)
-        elif year == 2026:
-            if mount_tech == "SAT":
-                if module_tech == "PERC":
-                    results_SAT_PERC_2026 = optimize(SAT, PERC2025, 2026, 'SAT_PERC_2026', scenario_tables_2026,
-                                                     SAT_loss_params)
-                    results_SAT_PERCa_2026 = optimize(SAT, PERC2028, 2026, 'SAT_PERCa_2026', scenario_tables_2026,
-                                                      SAT_loss_params)
-                elif module_tech == "HJT":
-                    results_SAT_HJT_2026 = optimize(SAT, HJT2025, 2026, 'SAT_HJT_2026', scenario_tables_2026,
-                                                    SAT_loss_params)
-                    results_SAT_HJTa_2026 = optimize(SAT, HJT2028, 2026, 'SAT_HJTa_2026', scenario_tables_2026,
-                                                     SAT_loss_params)
-                elif module_tech == "TOPCON":
-                    results_SAT_TOP_2026 = optimize(SAT, TOP2025, 2026, 'SAT_TOP_2026', scenario_tables_2026,
-                                                    SAT_loss_params)
-                    results_SAT_TOPa_2026 = optimize(SAT, TOP2028, 2026, 'SAT_TOPa_2026', scenario_tables_2026,
-                                                     SAT_loss_params)
-            elif mount_tech == "MAV":
-                if module_tech == "PERC":
-                    results_MAV_PERC_2026 = optimize(MAV, PERC2025, 2026, 'MAV_PERC_2026', scenario_tables_2026,
-                                                     MAV_loss_params)
-                    results_MAV_PERCa_2026 = optimize(MAV, PERC2028, 2026, 'MAV_PERCa_2026', scenario_tables_2026,
-                                                      MAV_loss_params)
-                if module_tech == "HJT":
-                    results_MAV_HJT_2026 = optimize(MAV, HJT2025, 2026, 'MAV_HJT_2026', scenario_tables_2026,
-                                                    MAV_loss_params)
-                    results_MAV_HJTa_2026 = optimize(MAV, HJT2028, 2026, 'MAV_HJTa_2026', scenario_tables_2026,
-                                                     MAV_loss_params)
-                if module_tech == "TOPCON":
-                    results_MAV_TOP_2026 = optimize(MAV, TOP2025, 2026, 'MAV_TOP_2026', scenario_tables_2026,
-                                                    MAV_loss_params)
-                    results_MAV_TOPa_2026 = optimize(MAV, TOP2028, 2026, 'MAV_TOPa_2026', scenario_tables_2026,
-                                                     MAV_loss_params)
-        elif year == 2028:
-            if mount_tech == "SAT":
-                if module_tech == "PERC":
-                    results_SAT_PERCa_2028 = optimize(SAT, PERC2031, 2028, 'SAT_PERCa_2028', scenario_tables_2028,
-                                                      SAT_loss_params)
-                elif module_tech == "HJT":
-                    results_SAT_HJTa_2028 = optimize(SAT, HJT2031, 2028, 'SAT_HJTa_2028', scenario_tables_2028,
-                                                     SAT_loss_params)
-                elif module_tech == "TOPCON":
-                    results_SAT_TOPa_2028 = optimize(SAT, TOP2031, 2028, 'SAT_TOPa_2028', scenario_tables_2028,
-                                                     SAT_loss_params)
-            elif mount_tech == "MAV":
-                if module_tech == "PERC":
-                    results_MAV_PERCa_2028 = optimize(MAV, PERC2031, 2028, 'MAV_PERCa_2028', scenario_tables_2028,
-                                                      MAV_loss_params)
-                if module_tech == "HJT":
-                    results_MAV_HJTa_2028 = optimize(MAV, HJT2031, 2028, 'MAV_HJTa_2028', scenario_tables_2028,
-                                                     MAV_loss_params)
-                if module_tech == "TOPCON":
-                    results_MAV_TOPa_2028 = optimize(MAV, TOP2031, 2028, 'MAV_TOPa_2028', scenario_tables_2028,
-                                                     MAV_loss_params)
+        set_racks = scenario[3]
+        optimize_for = scenario[4]
+
+        if mount_tech == "SAT":
+            label = "results_SAT_" + module_tech + "_" + str(year)
+            if set_racks:
+                results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params, set_racks = set_racks,
+                                   optimize_for=optimize_for)
+            else:
+                results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params,
+                                   optimize_for=optimize_for)
+
+        elif mount_tech == "MAV":
+            label = "results_MAV_" + module_tech + "_" + str(year)
+            if set_racks:
+                results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params, set_racks=set_racks,
+                                   optimize_for=optimize_for)
+            else:
+                results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
+                                   optimize_for=optimize_for)
 
     # %% Save and download optimized layouts, needs to be updated
 
     output_data = []
     output_dict = {}
 
-    for year in ['2028']:
-        scenario_tables = locals()['scenario_tables_' + year]
-        output_dict[year] = {}
-        for results in scenario_tables:
-            index = results[1]
-            install_dummy = results[0][1]['InstallNumber']
-            install_dummy2 = install_dummy.reset_index()
-            install_dummy3 = install_dummy2['InstallNumber']
-            Racks = install_dummy3[0]
-            W_zone = install_dummy3[3]
-            # MW_per_zone = Modules*results[2]
-            # Total_GW = MW_per_zone*num_of_zones/1000
-            output_data.append([index, Racks, W_zone])
-            results_string = 'results_' + index
-            output_dict[year][index] = locals()[results_string]
+    for results in scenario_tables:
+        index = results[1]
+        install_dummy = results[0][1]['InstallNumber']
+        install_dummy2 = install_dummy.reset_index()
+        install_dummy3 = install_dummy2['InstallNumber']
+        Racks = install_dummy3[0]
+        W_zone = install_dummy3[3]
+        # MW_per_zone = Modules*results[2]
+        # Total_GW = MW_per_zone*num_of_zones/1000
+        output_data.append([index, Racks, W_zone])
+        results_string = 'results_' + index
+        output_dict[year][index] = locals()[results_string]
 
     optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
     optimised_tables.set_index('scenario', inplace=True)
@@ -293,9 +210,8 @@ def run(file_name):
 
     # %% ========================================
     # save results tables to pickl
+    # TODO update save path to project folder
+    file_tag = 'scenario_tables_' + projectID + '.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
+    cpickle.dump(output_dict[year], open(pickle_path, "wb"))
 
-    for year in ['2028']:
-        file_tag = 'scenario_tables_' + year + '.p'
-        pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-        cpickle.dump(output_dict[year], open(pickle_path, "wb"))
-    return year, iter_limit
