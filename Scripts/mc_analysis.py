@@ -26,7 +26,7 @@ import _pickle as cpickle
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
-def run_mc(year, iter):
+def run_mc(projectID, iter):
     def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
          """"""
 
@@ -42,7 +42,7 @@ def run_mc(year, iter):
 
 
 
-    scenarios = [str(year)]
+    scenarios = [str(projectID)]
     iter_num = iter
     iter_limit = 10
      # %% ===========================================================
@@ -50,11 +50,9 @@ def run_mc(year, iter):
 
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
-    scenario_dict = {}
 
-    for key in scenarios:
-        pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'scenario_tables_' + key + '.p')
-        scenario_dict[key] = cpickle.load(open(pickle_path, 'rb'))
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'scenario_tables_' + projectID + '.p')
+    scenario_dict = cpickle.load(open(pickle_path, 'rb'))
 
     csv_path = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
     input_params = pd.read_csv(csv_path, header=0)
@@ -92,7 +90,11 @@ def run_mc(year, iter):
     mc_weather_file = mc_func.mc_weather_import(mc_weather_name)
 
     # %%
+    # generate full timeseries for weather and yield
 
+    dc_ordered, ghi_dict = mc_func.gen_dcseries(scenario_dict, input_params, mc_weather_file)
+
+    # %% ============================================================
     weather_mc_dict = {}
     loss_mc_dict = {}
     combined_mc_dict = {}
@@ -102,48 +104,36 @@ def run_mc(year, iter):
             loss_datatables_split = {}
             loss_datatables_split['MAV'] = loss_datatables['MAV'][i * iter_limit:(i+1) * iter_limit]
             loss_datatables_split['SAT'] = loss_datatables['SAT'][i * iter_limit:(i+1) * iter_limit]
-            for key in scenarios:
-                results_dict = scenario_dict[key]
-                weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
-                    mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables_split)
-                dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, key)
+            weather_mc_dict, loss_mc_dict, combined_mc_dict, ghi_df = \
+                mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables_split)
+            dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, projectID)
     else:
-        for key in scenarios:
-            results_dict = scenario_dict[key]
-            weather_mc_dict[key], loss_mc_dict[key], combined_mc_dict[key], ghi_df = \
-                mc_func.run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables)
+        weather_mc_dict, loss_mc_dict, combined_mc_dict, ghi_df = \
+            mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables)
 
     # %% ===========================================================
     # Now calculate AC output (currently not used)
 
     # %%
-    # Call Monte Carlo Cost analysis
-
-    # Do be deleted later - import occurs above.
-    data_tables = import_excel_data('CostDatabaseSept2022.xlsx')
-
-
-    # %%
-    def extract_scenario_tables(scenario_dict, analysis_year):
-        mydata = scenario_dict[analysis_year]
+    def extract_scenario_tables(scenario_dict):
         # print(mydata)
         output_list = []
-        for item in mydata:
+        for item in scenario_dict:
             # print(item)
 
-            label = mydata[item][0]
+            label = scenario_dict[item][0]
 
-            data = mydata[item][1]
+            data = scenario_dict[item][1]
             output_tuple = (data, label)
             output_list.append(output_tuple)
 
         return output_list
 
-    def extract_results_tables(scenario_dict, analysis_year):
-        mydata = scenario_dict[analysis_year]
+    def extract_results_tables(scenario_dict):
         output_list = []
-        for item in mydata:
-            output_tuple = (mydata[item][0], mydata[item][1], mydata[item][2], mydata[item][3], mydata[item][4])
+        for item in scenario_dict:
+            output_tuple = (scenario_dict[item][0], scenario_dict[item][1], scenario_dict[item][2],
+                            scenario_dict[item][3], scenario_dict[item][4])
             output_list.append(output_tuple)
 
         return output_list
@@ -155,40 +145,46 @@ def run_mc(year, iter):
     data_iter_dict = {}
     # output_iter_dict ={}
 
-    for year in scenarios:
-        analysis_year = int(year)
-        scenario_tables = extract_scenario_tables(scenario_dict, year)
+    scenario_tables = extract_scenario_tables(scenario_dict)
 
-        # First generate data tables with the ScenarioID changed to something more intuitive
-        new_data_tables = form_new_data_tables(data_tables, scenario_tables)
+    # First generate data tables with the ScenarioID changed to something more intuitive
+    new_data_tables = form_new_data_tables(data_tables, scenario_tables)
 
-        # Create iteration data
-        data_tables_iter = create_iteration_tables(new_data_tables, 500, iteration_start=0)
+    # Create iteration data
+    data_tables_iter = create_iteration_tables(new_data_tables, iter_num, iteration_start=0)
 
-        # Calculate cost result
-        outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2058)
+    year_list = ['2026', '2027', '2028', '2029', '2030', '2031']
+
+    # calculate cost result
+    for scenario in scenario_dict:
+
+        for year in year_list:
+            if year in scenario:
+                analysis_year = int(year)
+            else:
+                pass
+
+        outputs_iter = calculate_scenarios_iterations(data_tables_iter[scenario], year_start=analysis_year, year_end=2061)
         component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, year)
-        cost_mc_dict[year] = cost_dict
+        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, analysis_year)
+        cost_mc_dict[scenario] = cost_dict
 
-        data_iter_dict[year] = data_tables_iter
         # output_iter_dict[year] = outputs_iter
 
     # %% ==================================================
     # Assemble pickled data
     yield_iter_dict = {}
 
-    for year in scenarios:
-        i =0
-        test=True
-        while test:
-            tag = 'analysis_dict' + '_' + year + '_' + str(i) + '.p'
-            iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
-            if os.path.isfile(iter_path):
-                yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
-                i = i + 1
-            else:
+    i =0
+    test=True
+    while test:
+        tag = 'analysis_dict' + '_' + projectID + '_' + str(i) + '.p'
+        iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
+        if os.path.isfile(iter_path):
+            yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
+            i = i + 1
+        else:
                 test=False
 
 
@@ -233,8 +229,8 @@ def run_mc(year, iter):
     analysis_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
                      'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_yield_mc_dict,
                      'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
-                     'data_tables': data_iter_dict}
+                     'data_tables': data_tables_iter}
 
-
-    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
+    file_name = 'analysis_dictionary_' + projectID + '.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
     cpickle.dump(analysis_dict, open(pickle_path, "wb"))

@@ -349,7 +349,7 @@ def combine_variance(weather_dict, loss_df):
 
  # %% ===================================================
 
-def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
+def run_yield_mc(dc_ordered, input_params, ghi_dict, yield_datatables):
     """"""
 
     # %% ===========================================
@@ -364,27 +364,27 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, yield_datatables):
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
-    dc_ordered = {}
-    ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
-    ghi_dict = dict_sort(ghi_timeseries, 'ghi')
+    #dc_ordered = {}
+    #ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
+    #ghi_dict = dict_sort(ghi_timeseries, 'ghi')
 
-    for key in results_dict:
-        results = results_dict[key]
-        yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
-                                       temp_model, mc_weather_file)
-        ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
-        dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
+    #for key in results_dict:
+        #results = results_dict[key]
+        #yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
+        #                               temp_model, mc_weather_file)
+        #ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False )
+        #dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
 
-    for key in dc_ordered:
-        for month in dc_ordered[key]:
-            for df in dc_ordered[key][month].values():
-                df.drop('ghi', axis=1, inplace=True)
+    #for key in dc_ordered:
+        #for month in dc_ordered[key]:
+            #for df in dc_ordered[key][month].values():
+                #df.drop('ghi', axis=1, inplace=True)
 
     # %% ===========================================================
     # Create data tables for yield parameters
-
-    start_date = '1/1/2029 00:00:00'
-    end_date = '31/12/2058 23:59:00'
+    # TODO confirm dates for export
+    start_date = '1/1/2030 00:00:00'
+    end_date = '31/12/2059 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers
     random_timeseries = np.random.random((len(month_series), len(yield_datatables['MAV'])))
@@ -501,5 +501,35 @@ def get_cost_dict(cash_flow, discount_rate, year):
 
     return cost_dict
 
+def gen_dcseries(results_dict, input_params, mc_weather_file):
+    """"""
 
+    # %% ===========================================
+    # first to get appropriate values from dataframe
+    temp_model = str(input_params['temp_model'].values[0])
+    storage_capacity = input_params['storage_capacity'].values[0]
+    scheduled_price = input_params['scheduled_price'].values[0]
+    export_lim = input_params['export_lim'].values[0]
+    discount_rate = input_params['discount_rate'].values[0]
+    zone_area = input_params['zone_area'].values[0]
+    num_of_zones = input_params['num_of_zones'].values[0]
 
+    # %% ===========================================
+    # create a dict of ordered dicts with dc output, including weather GHI as first column
+    dc_ordered = {}
+    ghi_timeseries = pd.DataFrame(mc_weather_file['ghi'])
+    ghi_dict = dict_sort(ghi_timeseries, 'ghi')
+
+    for key in results_dict:
+        results = results_dict[key]
+        yield_timeseries = mc_dc_yield(results, zone_area, num_of_zones,
+                                        temp_model, mc_weather_file)
+        ghi_sort = pd.concat([yield_timeseries, ghi_timeseries], axis=1, ignore_index=False)
+        dc_ordered[results[0]] = dict_sort(ghi_sort, 'ghi')
+
+    for key in dc_ordered:
+        for month in dc_ordered[key]:
+            for df in dc_ordered[key][month].values():
+                df.drop('ghi', axis=1, inplace=True)
+
+    return dc_ordered, ghi_dict

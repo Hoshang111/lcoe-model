@@ -44,6 +44,7 @@ cost function also give the Monte-Carlo distribution.
 
 # %% Import
 import pandas as pd
+import numpy as np
 import Functions.simulation_functions as func
 import Functions.sizing_functions as sizing
 import Functions.plotting_functions as plot_func
@@ -54,16 +55,31 @@ import Functions.testing as testing
 def optimise_layout(weather_simulation, rack_type, module_type, install_year,
                      DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                      export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate, loss_params, fig_title=None):
+                     data_tables, discount_rate, loss_params, number_racks=None,
+                     optimize_for = 'NPV', optimize_target=None, fig_title=None):
 
     # %% ======================================
     # Rack_module
     rack_params, module_params = func.rack_module_params(rack_type, module_type)
 
-    # %%
-    # Sizing/rack and module numbers
-    # Call the constants from the database - unneeded if we just pass module class?
-    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
+    # %% =======================================
+    # statement to allow users to define number of racks
+    if number_racks is not None:
+        rack_per_zone_num_range = number_racks
+        module_per_zone_num_range = rack_per_zone_num_range * rack_params['Modules_per_rack']
+        if rack_params['rack_type'] == 'SAT':
+            gcr_range = module_params['A_c'] * module_per_zone_num_range / zone_area
+        elif rack_params['rack_type'] == 'east_west':
+            gcr_range = rack_per_zone_num_range * rack_params['Area'] * np.cos(
+                10 * np.pi / 180) / zone_area  # edited to have values as mucks up later graphs
+        elif rack_params['rack_type'] == 'east_west_future':  # if we start taking inter-row spacing into acount for mav
+            # in the future
+            gcr_range = rack_per_zone_num_range * rack_params['Area'] * np.cos(
+                10 * np.pi / 180) / zone_area  # multiply by cos(10)
+        else:
+            raise ValueError('unrecognised rack type')
+    else:
+        rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
                                                                                  rack_params, zone_area, rack_interval_ratio)
     # %% ========================================
     # DC yield
@@ -73,7 +89,6 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
 
     # %% =========================================
     # Apply losses to dc timeseries
-
     default_soiling = [(1, 0.001), (2, 0.002), (3, 0.004), (4, 0.007), (5, 0.011), (6, 0.015), (7, 0.02), (8, 0.026),
                        (9, 0.027), (10, 0.027), (11, 0.015), (12, 0.002)]
     temp_coefficient = -0.01
@@ -102,7 +117,11 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone
 
-    rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
+    if number_racks is not None:
+        rack_interval = 0.1
+    else:
+        rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
+
     num_of_zones_sim = 1  # find the results per zone for now
     npv_array = []
     npv_cost_array = []
@@ -111,19 +130,29 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     rack_per_zone_num_range_array = []
     iteration = 1
 
+    if number_racks is not None:
+        rack_interval = 0.1
+
     while rack_interval > 1:
-        print('Max NPV is %d' % npv.max())
-        print('Iteration = %d' % iteration)
-        npv_array.append(npv)
-        npv_cost_array.append(npv_cost)
-        npv_revenue_array.append(npv_revenue)
-        gcr_range_array.append(gcr_range)
-        rack_per_zone_num_range_array.append(rack_per_zone_num_range)
-        index_max = npv.idxmax()
-        DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
-        new_interval_ratio = rack_interval / index_max / 5
-        if index_max == npv.index[0] or index_max == npv.index[10]:
-            new_interval_ratio = 0.04
+        if optimize_for == "NPV":
+            print('Max NPV is %d' % npv.max())
+            print('Iteration = %d' % iteration)
+            npv_array.append(npv)
+            npv_cost_array.append(npv_cost)
+            npv_revenue_array.append(npv_revenue)
+            gcr_range_array.append(gcr_range)
+            rack_per_zone_num_range_array.append(rack_per_zone_num_range)
+            index_max = npv.idxmax()
+            DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
+            new_interval_ratio = rack_interval / index_max / 5
+            if index_max == npv.index[0] or index_max == npv.index[10]:
+                new_interval_ratio = 0.04
+        elif optimize_for == 'Yield':
+            dummy = dc_df - optimize_target * 1e9
+            residual = abs(dummy)
+            index_min = residual.idxmin()
+            new_interval_ratio = rack_interval / index_min / 5
+            DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
 
         rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
                                                                                        module_params, rack_params, zone_area,
@@ -151,16 +180,28 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
 
     # %% ================================================
     # Find optimum number of racks and create tables for Monte Carlo Analysis
-    racks_per_zone_max = npv.idxmax()
+    if optimize_for == 'NPV':
+        racks_per_zone_max = npv.idxmax()
 
-    rpzm_series = pd.Series(racks_per_zone_max)
-    #cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
-    cost_outputs, table_outputs = sizing.get_costs(rpzm_series, rack_params, module_params, data_tables,
+        rpzm_series = pd.Series(racks_per_zone_max)
+        #cost_outputs, table_outputs = sizing.get_costs_and_tables(rpzm_series, rack_params, module_params, data_tables, install_year=install_year)
+        cost_outputs, table_outputs = sizing.get_costs(rpzm_series, rack_params, module_params, data_tables,
                                                    install_year=install_year, return_table_outputs = True)
 
-    revenue_output = revenue_series[racks_per_zone_max]
-    kWh_output = kWh_series[racks_per_zone_max]
-    npv_output = npv[racks_per_zone_max]
+        revenue_output = revenue_series[racks_per_zone_max]
+        kWh_output = kWh_series[racks_per_zone_max]
+        npv_output = npv[racks_per_zone_max]
+
+    elif optimize_for == 'Yield':
+        racks_per_zone_target = residual.idxmin()
+        rpzt_series = pd.Series(racks_per_zone_target)
+        cost_outputs, table_outputs = sizing.get_costs(rpzt_series, rack_params, module_params, data_tables,
+                                                       install_year=install_year, return_table_outputs=True)
+
+        revenue_output = revenue_series[racks_per_zone_target]
+        kWh_output = kWh_series[racks_per_zone_target]
+        npv_output = npv[racks_per_zone_target]
+
     return table_outputs, revenue_output, kWh_output, npv_output, module_params, rack_params
 
 
@@ -286,6 +327,7 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
     LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_export)
 
     return kWh_series, test_index, dc_df, kWh_degraded, degradation_factor, LCOE, kWh_export, revenue_series
+
 
 
 

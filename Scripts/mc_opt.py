@@ -61,10 +61,25 @@ def run(file_name):
     year_sc1 = int(parameters[9])
     mount_tech_sc1 = str(parameters[10])
     module_tech_sc1 = str(parameters[11])
-    year_sc2 = int(parameters[12])
-    mount_tech_sc2 = str(parameters[13])
-    module_tech_sc2 = str(parameters[14])
-    iter_limit = int(parameters[15])
+    try:
+        set_racks1 = int(parameters[12])
+    except ValueError:
+        set_racks1 = None
+    year_sc2 = int(parameters[13])
+    mount_tech_sc2 = str(parameters[14])
+    module_tech_sc2 = str(parameters[15])
+    try:
+        set_racks2 = int(parameters[16])
+    except ValueError:
+        set_racks2 = None
+    iter_limit = int(parameters[17])
+
+    optimize_for = str(parameters[18])
+    try:
+        optimize_target = int(parameters[12])
+    except ValueError:
+        optimize_target = None
+    projectID = str(parameters[20])
 
     # Weather
     simulation_years = np.arange(2007, 2022, 1)
@@ -120,7 +135,7 @@ def run(file_name):
     # Cycle through alternative analysis scenarios
 
     def optimize(RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params,
-                 number_racks=None, optimize_for='NPV'):
+                 number_racks=None, optimize_for='NPV', optimize_target=None):
         module_type = MODULE_TYPE
         install_year = INSTALL_YEAR
         rack_type = RACK_TYPE
@@ -131,7 +146,7 @@ def run(file_name):
             rack_interval_ratio, temp_model, export_lim,
             storage_capacity, scheduled_price, data_tables,
             discount_rate, loss_params, number_racks, optimize_for,
-            fig_title=SCENARIO_LABEL)
+            optimize_target, fig_title=SCENARIO_LABEL)
 
         scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
@@ -152,8 +167,8 @@ def run(file_name):
     # 2028 - assume modules PERC_2028_M10, etc
     # 2028 - assume modules PERC_2031_M10, etc
 
-    scenario_1 = [year_sc1, mount_tech_sc1, module_tech_sc2]
-    scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2]
+    scenario_1 = [year_sc1, mount_tech_sc1, module_tech_sc2, set_racks1]
+    scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2, set_racks2]
     scenario_params = [scenario_1, scenario_2]
     scenario_tables = []
 
@@ -163,25 +178,25 @@ def run(file_name):
         mount_tech = scenario[1]
         module_tech = scenario[2]
         set_racks = scenario[3]
-        optimize_for = scenario[4]
+
 
         if mount_tech == "SAT":
             label = "results_SAT_" + module_tech + "_" + str(year)
             if set_racks:
-                results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params, set_racks = set_racks,
-                                   optimize_for=optimize_for)
+                results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params,
+                                   set_racks = set_racks,)
             else:
                 results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params,
-                                   optimize_for=optimize_for)
+                                   optimize_for=optimize_for, optimize_target=optimize_target)
 
         elif mount_tech == "MAV":
             label = "results_MAV_" + module_tech + "_" + str(year)
             if set_racks:
-                results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params, set_racks=set_racks,
-                                   optimize_for=optimize_for)
+                results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
+                                   set_racks=set_racks)
             else:
                 results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
-                                   optimize_for=optimize_for)
+                                   optimize_for=optimize_for, optimize_target=optimize_target)
 
     # %% Save and download optimized layouts, needs to be updated
 

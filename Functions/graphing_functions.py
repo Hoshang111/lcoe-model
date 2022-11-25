@@ -25,12 +25,13 @@ warnings.filterwarnings(action='ignore',
 # %% =======================================
 # script here to take inputs from GUI for generating graphs and extract the relevant entries
 
-def load_analysis_dict():
+def load_analysis_dict(projectID):
     # import data from pickle
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
 
-    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
+    file_name = 'analysis_dict_' + projectID +'.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
     Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
     return Analysis_dict
@@ -311,21 +312,14 @@ def graph_stacked(cost_data, scenario_list, title=None):
 def extract_parameter_data(df, scenario1):
     """"""
 
-    year_list = ['2024', '2026', '2028']
-    for year in year_list:
-        if year in scenario1:
-            sc1_year = year
-        else:
-            pass
-
-    cost_mc = df['cost_mc'][sc1_year][scenario1]
-    weather_mc = df['weather_mc'][sc1_year][scenario1]
-    loss_mc = df['loss_mc'][sc1_year][scenario1]
-    combined_yield_mc = df['combined_yield_mc'][sc1_year][scenario1]
+    cost_mc = df['cost_mc'][scenario1]
+    weather_mc = df['weather_mc'][scenario1]
+    loss_mc = df['loss_mc'][scenario1]
+    combined_yield_mc = df['combined_yield_mc'][scenario1]
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
-    data_tables = df['data_tables'][sc1_year]
+    data_tables = df['data_tables']
 
     # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
     output_parameters = pd.DataFrame(index=discounted_ghi.index)
@@ -380,33 +374,86 @@ def extract_parameter_data(df, scenario1):
     input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
     return input_parameters, output_parameters
 
-def extract_difference_data(df, scenario1, scenario2):
+def extract_schedule_parameters(df, schedule1, ID1):
+    """"""
 
-    year_list = ['2024', '2026', '2028']
-    for year in year_list:
-        if year in scenario1:
-            sc1_year = year
-        else:
-            pass
-
-        if year in scenario2:
-            sc2_year = year
-        else:
-            pass
-
-    cost_mc1 = df['cost_mc'][sc1_year][scenario1]
-    cost_mc2 = df['cost_mc'][sc2_year][scenario2]
-    weather_mc1 = df['weather_mc'][sc1_year][scenario1]
-    weather_mc2 = df['weather_mc'][sc2_year][scenario2]
-    loss_mc1 = df['loss_mc'][sc1_year][scenario1]
-    loss_mc2 = df['loss_mc'][sc2_year][scenario2]
-    combined_mc1 = df['combined_yield_mc'][sc1_year][scenario1]
-    combined_mc2 = df['combined_yield_mc'][sc2_year][scenario2]
+    cost_mc = schedule1['cost_mc']
+    weather_mc = schedule1['weather_mc']
+    loss_mc = schedule1['loss_mc']
+    combined_yield_mc = schedule1['combined_yield_mc']
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
-    data_tables1 = df['data_tables'][sc1_year]
-    data_tables2 = df['data_tables'][sc2_year]
+    data_tables = df['data_tables']
+
+    # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
+    output_parameters = pd.DataFrame(index=discounted_ghi.index)
+
+    # Get results for cost monte carlo
+    cost_mc_flat = cost_mc['discounted_cost_total'].rename('d_cost').to_frame()
+    cost_mc_flat = cost_mc_flat.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(cost_mc_flat)
+
+    # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
+    loss_mc_flat = loss_mc['npv_revenue']
+    loss_mc_flat.columns = ['d_revenue_loss']
+    loss_mc_flat = loss_mc_flat.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat)
+
+    # Get results for weather only Monte Carlo
+    weather_mc_flat = weather_mc['npv_revenue']
+    weather_mc_flat.columns = ['d_revenue_weather']
+    weather_mc_flat = weather_mc_flat.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat)
+
+    # Get results for combined_yield
+    combined_yield_mc_flat = combined_yield_mc['npv_revenue']
+    combined_yield_mc_flat.columns = ['d_revenue_combined']
+    combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(combined_yield_mc_flat)
+
+    output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
+
+    # Now generate a list of all input parameters
+    input_parameters = pd.DataFrame(index=discounted_ghi.index)
+    # Get input parameters from cost monte carlo
+    cost_parameters = generate_parameters(data_tables)
+    cost_parameters_flat = cost_parameters.copy()
+    cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
+                                    cost_parameters_flat.columns.values]
+
+    input_parameters = input_parameters.join(cost_parameters_flat)
+
+    # Grab the loss parameters for MAV and SAT
+    for item in loss_parameters:
+        label = item
+        loss_parameters_flat = loss_parameters[item]
+        loss_parameters_flat = loss_parameters_flat.add_prefix(item + '_')
+        input_parameters = input_parameters.join(loss_parameters_flat)
+
+    # Grab gdi parameters
+    discounted_ghi_flat = discounted_ghi.copy()
+    discounted_ghi_flat.columns = ['discounted_ghi']
+    input_parameters = input_parameters.join(discounted_ghi_flat)
+
+    input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
+    return input_parameters, output_parameters
+
+def extract_difference_data(df, scenario1, scenario2):
+
+    cost_mc1 = df['cost_mc'][scenario1]
+    cost_mc2 = df['cost_mc'][scenario2]
+    weather_mc1 = df['weather_mc'][scenario1]
+    weather_mc2 = df['weather_mc'][scenario2]
+    loss_mc1 = df['loss_mc'][scenario1]
+    loss_mc2 = df['loss_mc'][scenario2]
+    combined_mc1 = df['combined_yield_mc'][scenario1]
+    combined_mc2 = df['combined_yield_mc'][scenario2]
+
+    discounted_ghi = df['discounted_ghi']
+    loss_parameters = df['loss_parameters']
+    data_tables = df['data_tables']
+
 
     # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
     output_parameters = pd.DataFrame(index=discounted_ghi.index)
@@ -488,7 +535,126 @@ def extract_difference_data(df, scenario1, scenario2):
     # Now generate a list of all input parameters
     input_parameters = pd.DataFrame(index=discounted_ghi.index)
     # Get input parameters from cost monte carlo
-    cost_parameters = generate_parameters(data_tables1)
+    cost_parameters = generate_parameters(data_tables)
+    cost_parameters_flat = cost_parameters.copy()
+    cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
+                                    cost_parameters_flat.columns.values]
+
+    input_parameters = input_parameters.join(cost_parameters_flat)
+
+    # Grab the loss parameters for MAV and SAT
+    for item in loss_parameters:
+        label = item
+        loss_parameters_flat = loss_parameters[item]
+        loss_parameters_flat = loss_parameters_flat.add_prefix(item + '_')
+        input_parameters = input_parameters.join(loss_parameters_flat)
+
+    # Grab ghi parameters
+    discounted_ghi_flat = discounted_ghi.copy()
+    discounted_ghi_flat.columns = ['discounted_ghi']
+    input_parameters = input_parameters.join(discounted_ghi_flat)
+
+    input_parameters = input_parameters.apply(pd.to_numeric, errors='ignore')
+
+    return input_parameters, output_parameters
+
+def extract_schedule_difference(df, results1, results2, ID1, ID2):
+
+    cost_mc1 = results1['cost_mc']
+    cost_mc2 = results2['cost_mc']
+    weather_mc1 = results1['weather_mc']
+    weather_mc2 = results2['weather_mc']
+    loss_mc1 = results1['loss_mc']
+    loss_mc2 = results2['loss_mc']
+    combined_mc1 = results1['combined_yield_mc']
+    combined_mc2 = results2['combined_yield_mc']
+
+    discounted_ghi = df['discounted_ghi']
+    loss_parameters = df['loss_parameters']
+    data_tables = df['data_tables']
+
+
+    # First set up a dataframe with all the possible output parameters we would like - the discounted revenue and cost
+    output_parameters = pd.DataFrame(index=discounted_ghi.index)
+
+    # Get results for cost monte carlo
+    cost_mc_flat1 = cost_mc1['discounted_cost_total'].rename('d_cost').to_frame()
+    cost_mc_flat1 = cost_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(cost_mc_flat1)
+
+    cost_mc_flat2 = cost_mc2['discounted_cost_total'].rename('d_cost').to_frame()
+    cost_mc_flat2 = cost_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(cost_mc_flat2)
+
+    # Get results for yield only monte carlo - from loss_mc (which varies the loss parameters)
+    loss_mc_flat1 = loss_mc1['npv_revenue']
+    loss_mc_flat1.columns = ['d_revenue_loss']
+    loss_mc_flat1 = loss_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat1)
+
+    loss_mc_flat1 = loss_mc1['kWh_total_discounted']
+    loss_mc_flat1.columns = ['d_kWh_loss']
+    loss_mc_flat1 = loss_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat1)
+
+    loss_mc_flat2 = loss_mc2['npv_revenue']
+    loss_mc_flat2.columns = ['d_revenue_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
+    loss_mc_flat2 = loss_mc2['kWh_total_discounted']
+    loss_mc_flat2.columns = ['d_kWh_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
+    # Get results for weather only Monte Carlo
+    weather_mc_flat1 = weather_mc1['npv_revenue']
+    weather_mc_flat1.columns = ['d_revenue_weather']
+    weather_mc_flat1 = weather_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat1)
+
+    weather_mc_flat1 = weather_mc1['kWh_total_discounted']
+    weather_mc_flat1.columns = ['d_kWh_weather']
+    weather_mc_flat1 = weather_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat1)
+
+    weather_mc_flat2 = weather_mc2['npv_revenue']
+    weather_mc_flat2.columns = ['d_revenue_weather']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
+    weather_mc_flat2 = weather_mc2['kWh_total_discounted']
+    weather_mc_flat2.columns = ['d_kWh_weather']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
+    # Get results for combined_yield
+    combined_mc_flat1 = combined_mc1['npv_revenue']
+    combined_mc_flat1.columns = ['d_revenue_combined']
+    combined_mc_flat1 = combined_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat1)
+
+    combined_mc_flat1 = combined_mc1['kWh_total_discounted']
+    combined_mc_flat1.columns = ['d_kWh_combined']
+    combined_mc_flat1 = combined_mc_flat1.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat1)
+
+    combined_yield_mc_flat2 = combined_mc2['npv_revenue']
+    combined_yield_mc_flat2.columns = ['d_revenue_combined']
+    combined_yield_mc_flat2 = combined_yield_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(combined_yield_mc_flat2)
+
+    combined_mc_flat2 = combined_mc2['kWh_total_discounted']
+    combined_mc_flat2.columns = ['d_kWh_combined']
+    combined_mc_flat2 = combined_mc_flat2.add_prefix(ID2 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat2)
+
+    output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
+
+    # Now generate a list of all input parameters
+    input_parameters = pd.DataFrame(index=discounted_ghi.index)
+    # Get input parameters from cost monte carlo
+    cost_parameters = generate_parameters(data_tables)
     cost_parameters_flat = cost_parameters.copy()
     cost_parameters_flat.columns = [group + ' ' + str(ID) + ' ' + var for (group, ID, var) in
                                     cost_parameters_flat.columns.values]
@@ -520,23 +686,6 @@ def lcoe_fiddle(generation, cost):
     lcoe_df.index = generation.index
 
     return lcoe_df
-
-def prep_histogram(id_list):
-     year_list = ['2024', '2026', '2028']
-     scenario_list = ['weather', 'loss', 'cost']
-
-     for id in id_list:
-         scenario_str = []
-         for year in year_list:
-             if year in id:
-                 year_id = year
-             else:
-                 pass
-
-         for scenario in scenario_list:
-             if scenario in id:
-                 scenario_str.append()
-
 
 def prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                            loss_check, weather_check, cost_check,  output_metric):
@@ -636,11 +785,11 @@ def compile_df(df, identifiers, new_tags, output_df):
 
     return output_df
 
-def calculate_variance_diff(scenario1, scenario2, loss_check,
+def calculate_variance_diff(projectID, scenario1, scenario2, loss_check,
                             weather_check, cost_check,  output_metric):
     """"""
     # load pickl file containing mc results
-    results_dict = load_analysis_dict()
+    results_dict = load_analysis_dict(projectID)
 
     # grab parameters for scenarios of interest
     try:
@@ -699,10 +848,10 @@ def run_1d_scatter(scenario1, scenario2, parameter_list,
         graph_scatter_1d(all_parameters, output_metric, parameter_list, savename=label_diff)
 
 
-def run_histogram(scenario_list, loss_check, weather_check, cost_check, output_metric):
+def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_check, output_metric):
     """"""
 
-    results_dict = load_analysis_dict()
+    results_dict = load_analysis_dict(projectID)
 
     output_dict = {}
     for scenario in scenario_list:
@@ -722,7 +871,35 @@ def gen_schedule(results_dict, scenario_list):
     for key, multiplier in scenario_list:
         for category in results_dict[key]:
             for df in results_dict[key][category]:
-                if df is '':
+                schedule_dict[key][category] = schedule_dict[key][category] + results_dict[key][category] * multiplier
 
-                elif df is '':
-                    schedule_dict[category][df] = schedule_dict[category][df] + multiplier * results_dict[key][category][df]
+    return schedule_dict
+
+def compare_schedules(projectID, schedule1, schedule1ID, schedule2, schedule2ID,
+                      loss_check, weather_check, cost_check, output_metric):
+    """"""
+
+    results_dict = load_analysis_dict(projectID)
+
+    # grab parameters for scenarios of interest
+    try:
+        results1 = gen_schedule(results_dict, schedule1)
+        results2 = gen_schedule(results_dict, schedule2)
+        input_parameters, output_parameters = extract_schedule_difference(results_dict, results1, results2,
+                                                                      schedule1ID, schedule2ID)
+        output_diff = prep_difference_graphs(results1, results2, input_parameters, output_parameters,
+                                             loss_check, weather_check, cost_check, output_metric)
+        label_diff = schedule1ID + '_vs_' + schedule2ID + '_' + output_metric
+        all_parameters = input_parameters.join(output_diff)
+        output_table = calculate_variance_table(all_parameters, output_metric, label_diff)
+
+    except NameError:
+        results1 = gen_schedule(results_dict, schedule1)
+        input_parameters, output_parameters = extract_schedule_parameters(results_dict, results1)
+        output = prep_parameter_graphs(results1, input_parameters, output_parameters,
+                                       loss_check, weather_check, cost_check, output_metric)
+        label = schedule1ID + '_' + output_metric
+        all_parameters = input_parameters.join(output)
+        output_table = calculate_variance_table(all_parameters, output_metric, label)
+
+    return output_table, input_parameters, output_parameters
