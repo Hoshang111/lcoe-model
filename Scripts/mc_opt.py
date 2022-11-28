@@ -201,7 +201,7 @@ def run(file_name):
                 results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
                                    optimize_for=optimize_for, optimize_target=optimize_target)
 
-    scenario_dict[label] = results
+        scenario_dict[label] = results
 
     # %% Save and download optimized layouts, needs to be updated
 
