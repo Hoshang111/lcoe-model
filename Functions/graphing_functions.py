@@ -796,17 +796,17 @@ def calculate_variance_diff(projectID, scenario1, scenario2, loss_check,
         input_parameters, output_parameters = extract_difference_data(results_dict, scenario1, scenario2)
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                            loss_check, weather_check, cost_check,  output_metric)
-        label_diff = scenario1 + '_vs_' + scenario2 + '_' + output_metric
+
         all_parameters = input_parameters.join(output_diff)
-        output_table = calculate_variance_table(all_parameters, output_metric, label_diff)
+        output_table = calculate_variance_table(all_parameters, output_metric)
 
     except NameError:
         input_parameters, output_parameters = extract_parameter_data(results_dict, scenario1)
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                            loss_check, weather_check, cost_check,  output_metric)
-        label = scenario1 + '_' + output_metric
+
         all_parameters = input_parameters.join(output)
-        output_table = calculate_variance_table(all_parameters, output_metric, label)
+        output_table = calculate_variance_table(all_parameters, output_metric)
 
     return output_table, input_parameters, output_parameters
 
