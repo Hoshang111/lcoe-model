@@ -284,7 +284,7 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
     plt.close()
 
 def graph_histogram(input_data, scenario_list, title=None):
-    data = input_data[[scenario_list]].reset_index()
+    data = input_data
     print(data)
     data.plot.hist(bins=50, histtype='step', fontsize=8)
     if title is None:
@@ -680,7 +680,7 @@ def extract_schedule_difference(df, results1, results2, ID1, ID2):
 def lcoe_fiddle(generation, cost):
     lcoe_list = []
     for i in generation.index:
-        lcoe_list.append(cost/generation[i])
+        lcoe_list.append(cost[i]/generation[i])
 
     lcoe_df = pd.DataFrame(lcoe_list)
     lcoe_df.index = generation.index
@@ -732,7 +732,7 @@ def prep_difference_graphs(scenario1, scenario2, input_parameters, output_parame
     try:
         output_diff = output_diffa.to_frame()
     except AttributeError:
-        pass
+        output_diff = output_diffa
 
     output_diff.columns = [output_metric]
 
@@ -860,8 +860,14 @@ def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_chec
                                        loss_check, weather_check, cost_check, output_metric)
 
     label = output_metric + 'histogram'
-    output_df = pd.DataFrame(output_dict)
-    graph_histogram(output_df, scenario_list, output_metric, title=label)
+
+    output_df = pd.DataFrame()
+    for key in output_dict:
+        output_df = pd.concat([output_df, output_dict[key]], axis=1)
+
+    output_df.columns = scenario_list
+
+    graph_histogram(output_df, scenario_list, title=label)
 
 def gen_schedule(results_dict, scenario_list):
     """"""
