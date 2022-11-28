@@ -76,11 +76,13 @@ def run(file_name):
 
     optimize_for = str(parameters[18])
     try:
-        optimize_target = int(parameters[12])
+        optimize_target = float(parameters[19])
     except ValueError:
         optimize_target = None
     projectID = str(parameters[20])
 
+    print(parameters)
+    print(optimize_for)
     # Weather
     simulation_years = np.arange(2007, 2022, 1)
     weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'
@@ -213,8 +215,7 @@ def run(file_name):
         # MW_per_zone = Modules*results[2]
         # Total_GW = MW_per_zone*num_of_zones/1000
         output_data.append([index, Racks, W_zone])
-        results_string = 'results_' + index
-        output_dict[year][index] = locals()[results_string]
+        output_dict[index] = results
 
     optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
     optimised_tables.set_index('scenario', inplace=True)
@@ -228,5 +229,5 @@ def run(file_name):
     # TODO update save path to project folder
     file_tag = 'scenario_tables_' + projectID + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-    cpickle.dump(output_dict[year], open(pickle_path, "wb"))
+    cpickle.dump(output_dict, open(pickle_path, "wb"))
 

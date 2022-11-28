@@ -6,7 +6,7 @@
 
 1) Weather:
 Input: Weather file, year of simulation
-Output: Weather dataframe in the required format for PVlib simulatins
+Output: Weather dataframe in the required format for PVlib simulations
 
 2) Racks & modules:
 Input: Type of module and rack
@@ -133,6 +133,9 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     if number_racks is not None:
         rack_interval = 0.1
 
+    print(optimize_target)
+    print(dc_df.head)
+
     while rack_interval > 1:
         if optimize_for == "NPV":
             print('Max NPV is %d' % npv.max())
@@ -148,10 +151,13 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
             if index_max == npv.index[0] or index_max == npv.index[10]:
                 new_interval_ratio = 0.04
         elif optimize_for == 'Yield':
-            dummy = dc_df - optimize_target * 1e9
+            dummy = dc_df.sum(axis=0) - optimize_target * 1e9
+            print(dummy)
             residual = abs(dummy)
             index_min = residual.idxmin()
             new_interval_ratio = rack_interval / index_min / 5
+            if index_min == residual.index[0] or index_min == residual.index[10]:
+                new_interval_ratio = 0.04
             DCpower_min = index_min * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
 
         rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
