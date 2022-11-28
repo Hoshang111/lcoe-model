@@ -30,7 +30,7 @@ def load_analysis_dict(projectID):
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
 
-    file_name = 'analysis_dict_' + projectID +'.p'
+    file_name = 'analysis_dictionary_' + projectID +'.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
     Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
@@ -312,10 +312,10 @@ def graph_stacked(cost_data, scenario_list, title=None):
 def extract_parameter_data(df, scenario1):
     """"""
 
-    cost_mc = df['cost_mc'][scenario1]
-    weather_mc = df['weather_mc'][scenario1]
-    loss_mc = df['loss_mc'][scenario1]
-    combined_yield_mc = df['combined_yield_mc'][scenario1]
+    cost_mc = df[scenario1]['cost_mc']
+    weather_mc = df[scenario1]['weather_mc']
+    loss_mc = df[scenario1]['loss_mc']
+    combined_yield_mc = df[scenario1]['combined_yield_mc']
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']
@@ -441,14 +441,14 @@ def extract_schedule_parameters(df, schedule1, ID1):
 
 def extract_difference_data(df, scenario1, scenario2):
 
-    cost_mc1 = df['cost_mc'][scenario1]
-    cost_mc2 = df['cost_mc'][scenario2]
-    weather_mc1 = df['weather_mc'][scenario1]
-    weather_mc2 = df['weather_mc'][scenario2]
-    loss_mc1 = df['loss_mc'][scenario1]
-    loss_mc2 = df['loss_mc'][scenario2]
-    combined_mc1 = df['combined_yield_mc'][scenario1]
-    combined_mc2 = df['combined_yield_mc'][scenario2]
+    cost_mc1 = df[scenario1]['cost_mc']
+    cost_mc2 = df[scenario2]['cost_mc']
+    weather_mc1 = df[scenario1]['weather_mc']
+    weather_mc2 = df[scenario2]['weather_mc']
+    loss_mc1 = df[scenario1]['loss_mc']
+    loss_mc2 = df[scenario2]['loss_mc']
+    combined_mc1 = df[scenario1]['combined_yield_mc']
+    combined_mc2 = df[scenario2]['combined_yield_mc']
 
     discounted_ghi = df['discounted_ghi']
     loss_parameters = df['loss_parameters']

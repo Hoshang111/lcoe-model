@@ -164,20 +164,21 @@ def run_mc(projectID, iter):
             else:
                 pass
 
-        outputs_iter = calculate_scenarios_iterations(data_tables_iter[scenario], year_start=analysis_year, year_end=2061)
+        outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2061)
         component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
         cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, analysis_year)
-        cost_mc_dict[scenario] = cost_dict
+        cost_mc_dict = cost_dict
 
         # output_iter_dict[year] = outputs_iter
 
     # %% ==================================================
     # Assemble pickled data
+
     yield_iter_dict = {}
 
-    i =0
-    test=True
+    i = 0
+    test = True
     while test:
         tag = 'analysis_dict' + '_' + projectID + '_' + str(i) + '.p'
         iter_path = os.path.join(parent_path, 'Data', 'mc_analysis', tag)
@@ -185,27 +186,32 @@ def run_mc(projectID, iter):
             yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
             i = i + 1
         else:
-                test=False
-
+            test = False
 
     # %% ==================================================
-    weather_mc_dict = {}
-    loss_mc_dict = {}
-    combined_yield_mc_dict ={}
     discounted_ghi_full = pd.DataFrame()
+    analysis_dict = {}
 
     for iteration in yield_iter_dict:
         for key in yield_iter_dict[iteration]:
             if key == 'discounted_ghi':
                 pass
             else:
-                for year in yield_iter_dict[iteration][key]:
-                    dict_name = key + '_dict'
-                    locals()[dict_name][year] = {}
-                    for scenario in yield_iter_dict[iteration][key][year]:
-                        locals()[dict_name][year][scenario] = {}
-                        for parameter in yield_iter_dict[iteration][key][year][scenario]:
-                            locals()[dict_name][year][scenario][parameter] = pd.DataFrame()
+                for scenario in yield_iter_dict[iteration][key]:
+                    dict_name = str(scenario)
+                    analysis_dict[dict_name] = {}
+
+    for iteration in yield_iter_dict:
+        for key in yield_iter_dict[iteration]:
+            if key == 'discounted_ghi':
+                pass
+            else:
+                for scenario in yield_iter_dict[iteration][key]:
+                    dict_name = str(scenario)
+                    analysis_dict[dict_name][key] = {}
+                    for parameter in yield_iter_dict[iteration][key][scenario]:
+                        analysis_dict[dict_name][key][parameter] = pd.DataFrame()
+
 
     for iteration in yield_iter_dict:
         for key in yield_iter_dict[iteration]:
@@ -213,23 +219,23 @@ def run_mc(projectID, iter):
                 discounted_ghi_full = pd.concat([discounted_ghi_full, yield_iter_dict[iteration][key]], axis=0,
                                                 ignore_index=True)
             else:
-                for year in yield_iter_dict[iteration][key]:
-                    dict_name = key + '_dict'
-                    for scenario in yield_iter_dict[iteration][key][year]:
-                        for parameter in yield_iter_dict[iteration][key][year][scenario]:
-                            locals()[dict_name][year][scenario][parameter] = \
-                                pd.concat([locals()[dict_name][year][scenario][parameter],
-                                yield_iter_dict[iteration][key][year][scenario][parameter]],
-                                axis=0, ignore_index=True)
+                for scenario in yield_iter_dict[iteration][key]:
+                    dict_name = str(scenario)
+                    for parameter in yield_iter_dict[iteration][key][scenario]:
+                        analysis_dict[dict_name][key][parameter] = \
+                            pd.concat([analysis_dict[dict_name][key][parameter],
+                            yield_iter_dict[iteration][key][scenario][parameter]],
+                            axis=0, ignore_index=True)
 
 
     # %% ==================================================
     # Export relevant data
 
-    analysis_dict = {'cost_mc': cost_mc_dict, 'weather_mc': weather_mc_dict,
-                     'loss_mc': loss_mc_dict, 'combined_yield_mc': combined_yield_mc_dict,
-                     'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
-                     'data_tables': data_tables_iter}
+    for key in analysis_dict:
+        analysis_dict[key]['cost_mc'] = cost_mc_dict[key]
+    analysis_dict['discounted_ghi'] = discounted_ghi_full
+    analysis_dict['loss_parameters'] = loss_datatables
+    analysis_dict['data_tables'] = data_tables_iter
 
     file_name = 'analysis_dictionary_' + projectID + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_name)
