@@ -207,7 +207,7 @@ def run(file_name):
 
     output_data = []
 
-    for results in scenario_dict:
+    for results in scenario_tables:
         index = results[1]
         install_dummy = results[0][1]['InstallNumber']
         install_dummy2 = install_dummy.reset_index()
