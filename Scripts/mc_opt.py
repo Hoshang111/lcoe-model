@@ -173,6 +173,7 @@ def run(file_name):
     scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2, set_racks2]
     scenario_params = [scenario_1, scenario_2]
     scenario_tables = []
+    scenario_dict = {}
 
 
     for scenario in scenario_params:
@@ -200,12 +201,13 @@ def run(file_name):
                 results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
                                    optimize_for=optimize_for, optimize_target=optimize_target)
 
+    scenario_dict[label] = results
+
     # %% Save and download optimized layouts, needs to be updated
 
     output_data = []
-    output_dict = {}
 
-    for results in scenario_tables:
+    for results in scenario_dict:
         index = results[1]
         install_dummy = results[0][1]['InstallNumber']
         install_dummy2 = install_dummy.reset_index()
@@ -215,7 +217,7 @@ def run(file_name):
         # MW_per_zone = Modules*results[2]
         # Total_GW = MW_per_zone*num_of_zones/1000
         output_data.append([index, Racks, W_zone])
-        output_dict[index] = results
+
 
     optimised_tables = pd.DataFrame(data=output_data, columns=['scenario', 'racks', 'W_zone'])
     optimised_tables.set_index('scenario', inplace=True)
@@ -229,5 +231,5 @@ def run(file_name):
     # TODO update save path to project folder
     file_tag = 'scenario_tables_' + projectID + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-    cpickle.dump(output_dict, open(pickle_path, "wb"))
+    cpickle.dump(scenario_dict, open(pickle_path, "wb"))
 
