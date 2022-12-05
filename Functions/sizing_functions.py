@@ -102,7 +102,7 @@ def get_revenue(yield_series, export_limit, price_schedule, storage_capacity):
 
     return kwh_export, yearly_direct, yearly_storage, yearly_total
 
-def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025, return_table_outputs=False):
+def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025,end_year=2058, return_table_outputs=False):
     '''
     Function to return a yearly timeseries of costs
     for installing different numbers of racks
@@ -212,7 +212,7 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
          component_list, currency_list, costcategory_list
 
     # Running the cost calculations
-    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, year_end =2058)
+    cost_outputs = calculate_scenarios(new_data_tables, year_start=install_year, year_end =end_year)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
 
     if return_table_outputs:
@@ -270,7 +270,9 @@ def align_cashflows(yearly_costs, yearly_revenue, start_year = 2029):
 
 def get_npv(yearly_costs,
             yearly_revenue,
-            discount_rate=0.07):
+            discount_rate=0.07,
+            start_year = 2029,
+            end_year = 2058):
     """
 
     :param yearly_costs:
@@ -281,8 +283,12 @@ def get_npv(yearly_costs,
 
     net_cashflow = -yearly_costs+yearly_revenue.values
 
-    year_offset = pd.Series(range(0, len(net_cashflow)))
-    year_offset.index = net_cashflow.index
+    start_date = '1/1/' + str(start_year) + ' 00:00'
+    end_date = '12/31/' + str(end_year) + ' 23:59'
+    dummy_series = pd.date_range(start=start_date, end=end_date, freq='YS')
+    year_series = dummy_series.year()
+    year_offset = pd.Series(range(0, len(year_series)))
+    year_offset.index = year_series
 
     yearly_factor = 1 / (1 + discount_rate) ** year_offset
     yearly_npv = net_cashflow.mul(yearly_factor, axis=0)
@@ -296,7 +302,9 @@ def get_npv(yearly_costs,
     return npv, yearly_npv, npv_costs, npv_revenue, yearly_npv_revenue, yearly_npv_costs
 
 def get_npv_revenue(yearly_values,
-            discount_rate=0.07):
+                    discount_rate=0.07,
+                    start_year = 2029,
+                    end_year = 2058):
     """
 
     :param yearly_costs:
@@ -305,8 +313,12 @@ def get_npv_revenue(yearly_values,
     :return:
     """
 
-    year_offset = pd.Series(range(0, len(yearly_values)))
-    year_offset.index = yearly_values.index
+    start_date = '1/1/' + str(start_year) + ' 00:00'
+    end_date = '12/31/' + str(end_year) + ' 23:59'
+    dummy_series = pd.date_range(start=start_date, end=end_date, freq='YS')
+    year_series = dummy_series.year()
+    year_offset = pd.Series(range(0, len(year_series)))
+    year_offset.index = year_series
 
     yearly_factor = 1 / (1 + discount_rate) ** year_offset
     yearly_npv = yearly_values.mul(yearly_factor, axis=0)

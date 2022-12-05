@@ -873,11 +873,23 @@ def gen_schedule(results_dict, scenario_list):
     """"""
 
     schedule_dict = {}
+    test = 1;
+
+    for key, multiplier in scenario_list:
+        schedule_dict[key] = {}
+        if test ==1:
+            for category in results_dict[key]:
+                schedule_dict[category] = {}
+                for df in results_dict[key][category]:
+                    schedule_dict[category][df] = {}
+        else:
+            pass
+        test = 0;
 
     for key, multiplier in scenario_list:
         for category in results_dict[key]:
             for df in results_dict[key][category]:
-                schedule_dict[key][category] = schedule_dict[key][category] + results_dict[key][category] * multiplier
+                schedule_dict[category][df] = schedule_dict[category][df] + results_dict[key][category][df] * multiplier
 
     return schedule_dict
 

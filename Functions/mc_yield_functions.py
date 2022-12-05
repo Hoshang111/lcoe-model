@@ -319,17 +319,21 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
-def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, discount_rate):
+def gen_revenue(yield_dict, export_lim, scheduled_price, storage_capacity, discount_rate, start_year, end_year):
     """"""
     mc_yield_outputs = {}
 
     for key in yield_dict:
         NPV_outputs = {}
         revenue = sizing.get_revenue(yield_dict[key], export_lim, scheduled_price, storage_capacity)
-        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(revenue[0], discount_rate=0)
-        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0], discount_rate)
-        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0)
-        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate)
+        NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(revenue[0], discount_rate=0,
+                                                                                    start_year=start_year, end_year=end_year)
+        NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(revenue[0],
+                                                                                    discount_rate, start_year=start_year, end_year=end_year)
+        NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate=0,
+                                                                                    start_year=start_year, end_year=end_year)
+        NPV_outputs['npv_revenue'], NPV_outputs['npv_yearly'] = sizing.get_npv_revenue(revenue[3], discount_rate,
+                                                                                    start_year=start_year, end_year=end_year)
         NPV_outputs['kWh_yearly'] = NPV_outputs['kWh_yearly'].T
         NPV_outputs['kWh_yearly_discounted'] = NPV_outputs['kWh_yearly_discounted'].T
         NPV_outputs['revenue_yearly'] = NPV_outputs['revenue_yearly'].T
@@ -349,7 +353,8 @@ def combine_variance(weather_dict, loss_df):
 
  # %% ===================================================
 
-def run_yield_mc(dc_ordered, input_params, ghi_dict, yield_datatables):
+def run_yield_mc(dc_ordered, input_params, ghi_dict, yield_datatables,
+                 start_year, revenue_year, end_year):
     """"""
 
     # %% ===========================================
@@ -383,8 +388,8 @@ def run_yield_mc(dc_ordered, input_params, ghi_dict, yield_datatables):
     # %% ===========================================================
     # Create data tables for yield parameters
     # TODO confirm dates for export
-    start_date = '1/1/2030 00:00:00'
-    end_date = '31/12/2059 23:59:00'
+    start_date = '1/1/' + str(revenue_year) + ' 00:00:00'
+    end_date = '31/12/' +str(end_year) + ' 23:59:00'
     month_series = pd.date_range(start=start_date, end=end_date, freq='MS')
     # need to create a wrapper function to call for each set of random numbers
     random_timeseries = np.random.random((len(month_series), len(yield_datatables['MAV'])))
@@ -451,23 +456,23 @@ def run_yield_mc(dc_ordered, input_params, ghi_dict, yield_datatables):
     # %% ==========================================================
     # calculate revenue from yield dictionary
 
-    weather_mc_outputs = gen_revenue(weather_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
-    loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
-    combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate)
+    weather_mc_outputs = gen_revenue(weather_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate, start_year, end_year)
+    loss_mc_outputs = gen_revenue(loss_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate, start_year, end_year)
+    combined_mc_outputs = gen_revenue(combined_mc_dict, export_lim, scheduled_price, storage_capacity, discount_rate, start_year, end_year)
 
     return weather_mc_outputs, loss_mc_outputs, combined_mc_outputs, ghi_discount,
 
-def get_cost_dict(cash_flow, discount_rate, year):
+def get_cost_dict(cash_flow, discount_rate, start_year, install_year, end_year):
     """"""
 
-    install_year = int(year)
+    install_year = int(install_year)
     cost_dict = {}
     for column in cash_flow:
         dummy_a = cash_flow[column]
         dummy = dummy_a.reset_index()
         dummy.columns = ['Iteration', 'Year', 'cost']
         discounted_cost = dummy['cost'] / (1 + discount_rate) ** \
-                                                     (dummy['Year'] - install_year)
+                                                     (dummy['Year'] - start_year)
         dummy = pd.concat([dummy, discounted_cost], axis=1, ignore_index=True)
         dummy.columns = ['Iteration', 'Year', 'cost', 'discounted_cost']
         cost_total_list = []

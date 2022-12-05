@@ -152,7 +152,7 @@ def run(file_name):
 
         scenario_tables_combined.append((scenario_tables_optimum, SCENARIO_LABEL))
 
-        return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, rack_params, module_params
+        return SCENARIO_LABEL, scenario_tables_optimum, revenue, kWh_export, npv_output, rack_params, module_params, INSTALL_YEAR
 
     # Create variables to hold the results of each analysis
     SAT = 'SAT_1_update'

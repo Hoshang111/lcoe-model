@@ -26,7 +26,7 @@ import _pickle as cpickle
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
-def run_mc(projectID, iter):
+def run_mc(projectID, iter, start_year, revenue_year, end_year):
     def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
          """"""
 
@@ -105,7 +105,7 @@ def run_mc(projectID, iter):
             loss_datatables_split['MAV'] = loss_datatables['MAV'][i * iter_limit:(i+1) * iter_limit]
             loss_datatables_split['SAT'] = loss_datatables['SAT'][i * iter_limit:(i+1) * iter_limit]
             weather_mc_dict, loss_mc_dict, combined_mc_dict, ghi_df = \
-                mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables_split)
+                mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables_split, start_year, revenue_year, end_year)
             dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, projectID)
     else:
         weather_mc_dict, loss_mc_dict, combined_mc_dict, ghi_df = \
@@ -153,21 +153,15 @@ def run_mc(projectID, iter):
     # Create iteration data
     data_tables_iter = create_iteration_tables(new_data_tables, iter_num, iteration_start=0)
 
-    year_list = ['2026', '2027', '2028', '2029', '2030', '2031']
 
     # calculate cost result
     for scenario in scenario_dict:
 
-        for year in year_list:
-            if year in scenario:
-                analysis_year = int(year)
-            else:
-                pass
-
-        outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=analysis_year, year_end=2061)
+        install_year = scenario[7]
+        outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=install_year, year_end=end_year)
         component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
 
-        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, analysis_year)
+        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, start_year)
         cost_mc_dict = cost_dict
 
         # output_iter_dict[year] = outputs_iter

@@ -289,7 +289,8 @@ def dc_yield(DCTotal,
              num_of_zones,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
-             num_of_module_per_string=30,
+             num_of_strings_per_mav=4,
+             num_of_strings_per_sat=3,
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -352,8 +353,6 @@ def dc_yield(DCTotal,
     coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
-    num_of_strings_per_mav = rack_params['Modules_per_rack']/num_of_module_per_string
-    num_of_strings_per_sat = rack_params['Modules_per_rack']/num_of_module_per_string
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
     if temp_model == 'sapm':
@@ -370,6 +369,7 @@ def dc_yield(DCTotal,
         num_of_mod_per_inverter = num_of_mav_per_inverter * rack_params['Modules_per_rack']
         # in kW rated DC power output per inverter
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter
+        num_of_module_per_string = rack_params['Modules_per_rack'] / num_of_strings_per_mav
 
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
@@ -437,6 +437,8 @@ def dc_yield(DCTotal,
         num_of_mod_per_inverter = num_of_sat_per_inverter * rack_params['Modules_per_rack']
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
         dc_to_ac = 1.2
+        num_of_module_per_string = rack_params['Modules_per_rack'] / num_of_strings_per_sat
+
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
         inverter_list = pvsys.retrieve_sam('cecinverter')
 
@@ -716,7 +718,8 @@ def mc_dc( rack_params,
              gcr,
              num_of_mav_per_inverter=4,
              num_of_sat_per_inverter=4,
-             num_of_module_per_string=30,
+             num_of_strings_per_mav=4,
+             num_of_strings_per_sat=3,
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -779,8 +782,6 @@ def mc_dc( rack_params,
     coordinates = [(-18.7692, 133.6159, 'Suncable_Site', 00, 'Australia/Darwin')]  # Coordinates of the solar farm
     latitude, longitude, name, altitude, timezone = coordinates[0]
     location = Location(latitude, longitude, name=name, altitude=altitude, tz=timezone)
-    num_of_strings_per_mav = rack_params['Modules_per_rack'] / num_of_module_per_string
-    num_of_strings_per_sat = rack_params['Modules_per_rack'] / num_of_module_per_string
     modules_per_zone = racks_per_zone * rack_params['Modules_per_rack']
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
@@ -798,6 +799,7 @@ def mc_dc( rack_params,
         num_of_mod_per_inverter = num_of_mav_per_inverter * rack_params['Modules_per_rack']
         # in kW rated DC power output per inverter
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter
+        num_of_module_per_string = rack_params['Modules_per_rack'] / num_of_strings_per_mav
 
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
@@ -861,6 +863,8 @@ def mc_dc( rack_params,
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
         dc_to_ac = 1.2
         ac_rated_power = dc_rated_power / dc_to_ac  # in kW rated AC power output
+        num_of_module_per_string = rack_params['Modules_per_rack'] / num_of_strings_per_sat
+
         inverter_list = pvsys.retrieve_sam('cecinverter')
 
         # Find inverter candidates by narrowing down the options. Assume 5% tolerance for now for the DC ratings...

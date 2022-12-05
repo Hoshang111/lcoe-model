@@ -52,11 +52,11 @@ import Functions.testing as testing
 
 # mpl.use('Qt5Agg')
 
-def optimise_layout(weather_simulation, rack_type, module_type, install_year,
-                     DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
-                     export_lim, storage_capacity, scheduled_price,
-                     data_tables, discount_rate, loss_params, number_racks=None,
-                     optimize_for = 'NPV', optimize_target=None, fig_title=None):
+def optimise_layout(weather_simulation, rack_type, module_type, install_year, revenue_year,
+                    end_year, DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
+                    export_lim, storage_capacity, scheduled_price,
+                    data_tables, discount_rate, loss_params, number_racks=None,
+                    optimize_for = 'NPV', optimize_target=None, fig_title=None):
 
     # %% ======================================
     # Rack_module
@@ -103,13 +103,13 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year,
     #%% ==========================================
     # Cost
 
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
+    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year, end_year=end_year)
     component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
     #%% ==========================================
     # Net present value (NPV)
     # resize yield output to match cost time series
     kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
-    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
+    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue, start_year = revenue_year)
 
     # ==========================================
     npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
