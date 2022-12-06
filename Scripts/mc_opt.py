@@ -72,14 +72,28 @@ def run(file_name):
         set_racks2 = int(parameters[16])
     except ValueError:
         set_racks2 = None
-    iter_limit = int(parameters[17])
-
-    optimize_for = str(parameters[18])
+    year_sc3 = int(parameters[17])
+    mount_tech_sc3 = str(parameters[18])
+    module_tech_sc3 = str(parameters[19])
     try:
-        optimize_target = float(parameters[19])
+        set_racks3 = int(parameters[20])
+    except ValueError:
+        set_racks3 = None
+    year_sc4 = int(parameters[21])
+    mount_tech_sc4 = str(parameters[22])
+    module_tech_sc4 = str(parameters[23])
+    try:
+        set_racks4 = int(parameters[24])
+    except ValueError:
+        set_racks4 = None
+    iter_limit = int(parameters[25])
+
+    optimize_for = str(parameters[26])
+    try:
+        optimize_target = float(parameters[27])
     except ValueError:
         optimize_target = None
-    projectID = str(parameters[20])
+    projectID = str(parameters[28])
 
     print(parameters)
     print(optimize_for)
@@ -157,8 +171,8 @@ def run(file_name):
     # Create variables to hold the results of each analysis
     SAT = 'SAT_1_update'
     MAV = '5B_MAV_update'
-    MAV_gen6 = '5B_MAV_gen6'
-
+    MAV_6g = '5B_MAV_6g'
+    SAT_84 = 'SAT_84modules'
     #
     # 2024 - assume modules PERC_2023_M10, etc
     # 2024 - assume modules PERC_2025_M10, etc
@@ -192,6 +206,15 @@ def run(file_name):
                 results = optimize(SAT, module_tech, year, label, scenario_tables, SAT_loss_params,
                                    optimize_for=optimize_for, optimize_target=optimize_target)
 
+        if mount_tech == "SAT_84":
+            label = "results_SAT_" + module_tech + "_" + str(year)
+            if set_racks:
+                results = optimize(SAT_84, module_tech, year, label, scenario_tables, SAT_loss_params,
+                                   set_racks = set_racks,)
+            else:
+                results = optimize(SAT_84, module_tech, year, label, scenario_tables, SAT_loss_params,
+                                   optimize_for=optimize_for, optimize_target=optimize_target)
+
         elif mount_tech == "MAV":
             label = "results_MAV_" + module_tech + "_" + str(year)
             if set_racks:
@@ -199,6 +222,15 @@ def run(file_name):
                                    set_racks=set_racks)
             else:
                 results = optimize(MAV, module_tech, year, label, scenario_tables, MAV_loss_params,
+                                   optimize_for=optimize_for, optimize_target=optimize_target)
+
+        if mount_tech == "MAV_6g":
+            label = "results_MAV_" + module_tech + "_" + str(year)
+            if set_racks:
+                results = optimize(MAV_6g, module_tech, year, label, scenario_tables, SAT_loss_params,
+                                   set_racks = set_racks,)
+            else:
+                results = optimize(MAV_6g, module_tech, year, label, scenario_tables, SAT_loss_params,
                                    optimize_for=optimize_for, optimize_target=optimize_target)
 
         scenario_dict[label] = results
