@@ -56,44 +56,47 @@ def run(file_name):
 
     # Financial Parameters
     discount_rate = float(parameters[8])
+    start_year = int(parameters[9])
+    revenue_year = int(parameters[10])
+    end_year = int(parameters[11])
 
     # Optimising Parameters
-    year_sc1 = int(parameters[9])
-    mount_tech_sc1 = str(parameters[10])
-    module_tech_sc1 = str(parameters[11])
+    year_sc1 = int(parameters[12])
+    mount_tech_sc1 = str(parameters[13])
+    module_tech_sc1 = str(parameters[14])
     try:
-        set_racks1 = int(parameters[12])
+        set_racks1 = int(parameters[15])
     except ValueError:
         set_racks1 = None
-    year_sc2 = int(parameters[13])
-    mount_tech_sc2 = str(parameters[14])
-    module_tech_sc2 = str(parameters[15])
+    year_sc2 = int(parameters[16])
+    mount_tech_sc2 = str(parameters[17])
+    module_tech_sc2 = str(parameters[18])
     try:
-        set_racks2 = int(parameters[16])
+        set_racks2 = int(parameters[19])
     except ValueError:
         set_racks2 = None
-    year_sc3 = int(parameters[17])
-    mount_tech_sc3 = str(parameters[18])
-    module_tech_sc3 = str(parameters[19])
+    year_sc3 = int(parameters[20])
+    mount_tech_sc3 = str(parameters[21])
+    module_tech_sc3 = str(parameters[22])
     try:
-        set_racks3 = int(parameters[20])
+        set_racks3 = int(parameters[23])
     except ValueError:
         set_racks3 = None
-    year_sc4 = int(parameters[21])
-    mount_tech_sc4 = str(parameters[22])
-    module_tech_sc4 = str(parameters[23])
+    year_sc4 = int(parameters[24])
+    mount_tech_sc4 = str(parameters[25])
+    module_tech_sc4 = str(parameters[26])
     try:
-        set_racks4 = int(parameters[24])
+        set_racks4 = int(parameters[27])
     except ValueError:
         set_racks4 = None
-    iter_limit = int(parameters[25])
+    iter_limit = int(parameters[28])
 
-    optimize_for = str(parameters[26])
+    optimize_for = str(parameters[29])
     try:
-        optimize_target = float(parameters[27])
+        optimize_target = float(parameters[30])
     except ValueError:
         optimize_target = None
-    projectID = str(parameters[28])
+    projectID = str(parameters[31])
 
     print(parameters)
     print(optimize_for)
@@ -158,7 +161,7 @@ def run(file_name):
 
         scenario_tables_optimum, revenue, kWh_export, npv_output, rack_params, module_params = optimise_layout(
             weather_simulation, rack_type, module_type,
-            install_year, DCTotal, num_of_zones, zone_area,
+            install_year, start_year, revenue_year, end_year, DCTotal, num_of_zones, zone_area,
             rack_interval_ratio, temp_model, export_lim,
             storage_capacity, scheduled_price, data_tables,
             discount_rate, loss_params, number_racks, optimize_for,
@@ -172,7 +175,7 @@ def run(file_name):
     SAT = 'SAT_1_update'
     MAV = '5B_MAV_update'
     MAV_6g = '5B_MAV_6g'
-    SAT_84 = 'SAT_84modules'
+    SAT_84 = 'SAT_84module'
     #
     # 2024 - assume modules PERC_2023_M10, etc
     # 2024 - assume modules PERC_2025_M10, etc
@@ -182,6 +185,11 @@ def run(file_name):
 
     # 2028 - assume modules PERC_2028_M10, etc
     # 2028 - assume modules PERC_2031_M10, etc
+
+    print(set_racks1)
+    print(set_racks2)
+    print(set_racks3)
+    print(set_racks4)
 
     scenario_1 = [year_sc1, mount_tech_sc1, module_tech_sc2, set_racks1]
     scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2, set_racks2]

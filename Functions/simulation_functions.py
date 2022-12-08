@@ -287,8 +287,8 @@ def dc_yield(DCTotal,
              module_per_zone_num_range,
              gcr_range,
              num_of_zones,
-             num_of_mav_per_inverter=4,
-             num_of_sat_per_inverter=4,
+             num_of_mav_per_inverter=3,
+             num_of_sat_per_inverter=3,
              num_of_strings_per_mav=4,
              num_of_strings_per_sat=3,
              ):
@@ -436,6 +436,7 @@ def dc_yield(DCTotal,
         # Todo: If these parts are essentially same for MAV and SAT move this code prior to the IF for mounting type
         num_of_mod_per_inverter = num_of_sat_per_inverter * rack_params['Modules_per_rack']
         dc_rated_power = module_params['STC'] / 1000 * num_of_mod_per_inverter  # in kW rated DC power output per inverter
+        print(dc_rated_power)
         dc_to_ac = 1.2
         num_of_module_per_string = rack_params['Modules_per_rack'] / num_of_strings_per_sat
 

@@ -52,7 +52,7 @@ import Functions.testing as testing
 
 # mpl.use('Qt5Agg')
 
-def optimise_layout(weather_simulation, rack_type, module_type, install_year, revenue_year,
+def optimise_layout(weather_simulation, rack_type, module_type, install_year, start_year, revenue_year,
                     end_year, DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
                     export_lim, storage_capacity, scheduled_price,
                     data_tables, discount_rate, loss_params, number_racks=None,
@@ -61,7 +61,7 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year, re
     # %% ======================================
     # Rack_module
     rack_params, module_params = func.rack_module_params(rack_type, module_type)
-
+    print(number_racks)
     # %% =======================================
     # statement to allow users to define number of racks
     if number_racks is not None:
@@ -112,7 +112,8 @@ def optimise_layout(weather_simulation, rack_type, module_type, install_year, re
     revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue, start_year = revenue_year)
 
     # ==========================================
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
+    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year,
+                                                                        revenue_series, discount_rate, start_year, end_year)
     LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
     # %% =======================================
     # Simulations to find optimum NPV according to number of racks per zone

@@ -286,7 +286,7 @@ def get_npv(yearly_costs,
     start_date = '1/1/' + str(start_year) + ' 00:00'
     end_date = '12/31/' + str(end_year) + ' 23:59'
     dummy_series = pd.date_range(start=start_date, end=end_date, freq='YS')
-    year_series = dummy_series.year()
+    year_series = dummy_series.year
     year_offset = pd.Series(range(0, len(year_series)))
     year_offset.index = year_series
 

@@ -54,6 +54,7 @@ def run_mc(projectID, iter, start_year, revenue_year, end_year):
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'scenario_tables_' + projectID + '.p')
     scenario_dict = cpickle.load(open(pickle_path, 'rb'))
 
+    # TODO this should read from inputs database
     csv_path = os.path.join(parent_path, 'OutputFigures', 'input_params.csv')
     input_params = pd.read_csv(csv_path, header=0)
 
