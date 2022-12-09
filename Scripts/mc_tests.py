@@ -331,7 +331,7 @@ mc_weather_file, yearly_ghi, uncorrected_ghi = weather_import(mc_weather_name, l
 weather_mc_dict = {}
 loss_mc_dict = {}
 combined_mc_dict = {}
-tilt_range = [range(15,30,1)]
+tilt_range = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
 combined_mc_dict, ghi_df = \
         mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location, tilt_range)
 dump_iter(combined_mc_dict, 0, scenario_dict['scenario_ID'])

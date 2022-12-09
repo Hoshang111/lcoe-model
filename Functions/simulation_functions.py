@@ -995,6 +995,7 @@ def test_dc( rack_params,
         if module_params['Bifacial'] > 0:
             bifacial_array = []
             for tilt in tilt_range:
+                print(tilt)
                 mount = bifacial_pvsystem.FixedMount(surface_tilt=tilt, surface_azimuth=90,
                                                              racking_model='open_rack',
                                                              module_height=2)
@@ -1006,7 +1007,7 @@ def test_dc( rack_params,
                                                      strings= strings_per_inverter)
                 bifacial_array.append(bifacial_array_dummy)
 
-            inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
+            inverter_system = bifacial_pvsystem.PVSystem(arrays=bifacial_array,
                                                          inverter_parameters=inverter)
             mc = bifacial_modelchain.ModelChain(inverter_system, location)
             mc.run_model_bifacial(weather_simulation)
