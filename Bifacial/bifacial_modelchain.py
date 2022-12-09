@@ -1307,11 +1307,9 @@ class ModelChain:
         # have different method signatures. Use partial to handle
         # the differences.
 
-        self._prep_inputs_tracking()
+        self._prep_inputs_fixed()
         get_irradiance = partial(
             self.system.get_bifacial_irradiance,
-            self.results.tracking['surface_tilt'],
-            self.results.tracking['surface_azimuth'],
             self.results.solar_position['apparent_zenith'],
             self.results.solar_position['azimuth'])
 
@@ -1323,9 +1321,7 @@ class ModelChain:
             model=self.transposition_model
         )
 
-        self.results.total_irrad = self.results.bifacial_irrad[['poa_global', 'poa_diffuse',
-                                                                'poa_direct', 'poa_sky_diffuse',
-                                                                'poa_ground_diffuse']]
+        self.results.total_irrad = self.results.bifacial_irrad
 
         return self
 

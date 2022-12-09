@@ -358,7 +358,7 @@ class PVSystem:
         )
 
     @_unwrap_single_value
-    def get_bifacial_irradiance(self, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi,
+    def get_bifacial_irradiance(self,solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
@@ -378,7 +378,7 @@ class PVSystem:
         ghi = self._validate_per_array(ghi, system_wide=True)
         dhi = self._validate_per_array(dhi, system_wide=True)
         return tuple(
-            array.get_bifacial_irradiance(surface_tilt, surface_azimuth, solar_zenith,
+            array.get_bifacial_irradiance(solar_zenith,
                                  solar_azimuth,
                                  dni, ghi, dhi,
                                  dni_extra, airmass, model,
@@ -1398,7 +1398,7 @@ class Array:
                                                albedo=self.albedo,
                                                **kwargs)
 
-    def get_bifacial_irradiance(self, surface_tilt, surface_azimuth, solar_zenith, solar_azimuth, dni, ghi, dhi,
+    def get_bifacial_irradiance(self, solar_zenith, solar_azimuth, dni, ghi, dhi,
                        dni_extra=None, airmass=None, model='haydavies',
                        **kwargs):
         """
@@ -1421,6 +1421,8 @@ class Array:
         if airmass is None:
             airmass = atmosphere.get_relative_airmass(solar_zenith)
 
+        orientation = self.mount.get_orientation(solar_zenith, solar_azimuth)
+
         albedo = 0.2
 
 
@@ -1432,7 +1434,7 @@ class Array:
             pitch = 2 * self.module_parameters['Length'] / gcr_in
 
         bifacial_irradiance = \
-            bifacial.infinite_sheds.get_irradiance(surface_tilt, surface_azimuth,
+            bifacial.infinite_sheds.get_irradiance(orientation['surface_tilt'], orientation['surface_azimuth'],
                                                    solar_zenith, solar_azimuth,
                                                    gcr_in, self.mount.module_height,
                                                    pitch, ghi, dhi, dni, albedo,

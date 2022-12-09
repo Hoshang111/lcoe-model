@@ -204,8 +204,6 @@ def rack_module_params(rack_type,
     suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
                                    skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
-
-
     rack_params = suncable_racks[rack_type]
     module_params = suncable_modules[module_type]
 
@@ -433,10 +431,15 @@ def dc_yield(DCTotal,
         dc_size = module_per_zone_num_range * module_params['STC'] / 1e6 * num_of_zones  # dc_size in MW
 
         # Converting MAV DC results to match SAT results according SAT's module_per_zone_num_range
-        dc_results = [dc_results_total.values/total_module_number * m for m in module_per_zone_num_range]
-        dc_df = pd.DataFrame(dc_results).T
-        dc_df.columns = rack_per_zone_num_range
-        dc_df.index = dc_results_total.index
+        try:
+            dc_results = [dc_results_total.values/total_module_number * m for m in module_per_zone_num_range]
+            dc_df = pd.DataFrame(dc_results).T
+            dc_df.columns = rack_per_zone_num_range
+            dc_df.index = dc_results_total.index
+        except TypeError:
+            dc_results = dc_results_total/total_module_number * module_per_zone_num_range
+            dc_df = pd.DataFrame(dc_results)
+            dc_df.columns = [rack_per_zone_num_range]
 
     elif rack_params['rack_type'] == 'SAT':
         ''' DC modelling for single axis tracking (SAT) system '''
@@ -464,31 +467,70 @@ def dc_yield(DCTotal,
         dc_results = []
         dc_size = []
 
-        for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
-            if module_params['Bifacial'] > 0:
-                mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
+
+        if module_params['Bifacial'] > 0:
+            sat_array = []
+            try:
+                for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
+                    mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
                                                                  backtrack=True,
                                                                  gcr=gcr, cross_axis_tilt=0,
                                                                  racking_model='open_rack',
                                                                  module_height=rack_params['elevation'])
 
-                sat_array = bifacial_pvsystem.Array(mount=mount,
+                    array = bifacial_pvsystem.Array(mount=mount,
                                                     module_parameters=module_params,
                                                     temperature_model_parameters=temperature_model_parameters,
                                                     modules_per_string=num_of_module_per_string,
                                                     strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+                    sat_array.append(array)
+                inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=sat_array, inverter_parameters=inverter_params)
 
-                inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array],
-                                                                 inverter_parameters=inverter_params)
-                mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
-                mc.run_model_bifacial(weather_simulation)
-                multiplication_coeff = module_num / num_of_mod_per_inverter
-                dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
-                dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
+            except TypeError: # TypeError: gcr is not iterable
+                mount = bifacial_pvsystem.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60,
+                                                                 backtrack=True,
+                                                                 gcr=gcr_range, cross_axis_tilt=0,
+                                                                 racking_model='open_rack',
+                                                                 module_height=rack_params['elevation'])
 
-            else:
-                mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+                sat_array = bifacial_pvsystem.Array(mount=mount,
+                                                           module_parameters=module_params,
+                                                           temperature_model_parameters=temperature_model_parameters,
+                                                           modules_per_string=num_of_module_per_string,
+                                                           strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+                inverter_sat_system = bifacial_pvsystem.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
+
+            mc = bifacial_modelchain.ModelChain(inverter_sat_system, location)
+            mc.run_model_bifacial(weather_simulation)
+            multiplication_coeff = module_per_zone_num_range / num_of_mod_per_inverter
+
+            try:
+                dc_results = mc.results.dc['p_mp'] * multiplication_coeff
+            except TypeError:
+                for results, coefficient in zip(mc.results.dc, multiplication_coeff):
+                    dc_append = results['p_mp'].mul(coefficient)
+                    pickl_it(dc_append)
+                    dc_results.append(dc_append)
+            dc_size = module_per_zone_num_range * num_of_zones * module_params['STC'] / 1e6
+
+        else:
+            sat_array = []
+            try:
+                for gcr, module_num in zip(gcr_range, module_per_zone_num_range):
+                    mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
                                                      gcr=gcr, cross_axis_tilt=0, racking_model='open_rack',
+                                                     module_height=rack_params['elevation'])
+
+                    array = pvsys.Array(mount=mount,
+                                        module_parameters=module_params,
+                                        temperature_model_parameters=temperature_model_parameters,
+                                        modules_per_string=num_of_module_per_string,
+                                        strings=num_of_strings_per_sat * num_of_sat_per_inverter)
+                    sat_array.append(array)
+                inverter_sat_system = pvsys.PVSystem(arrays=sat_array, inverter_parameters=inverter_params)
+            except TypeError: # TypeError object is not iterable
+                mount = pvsys.SingleAxisTrackerMount(axis_tilt=0, axis_azimuth=0, max_angle=60, backtrack=True,
+                                                     gcr=gcr_range, cross_axis_tilt=0, racking_model='open_rack',
                                                      module_height=rack_params['elevation'])
 
                 sat_array = pvsys.Array(mount=mount,
@@ -496,17 +538,26 @@ def dc_yield(DCTotal,
                                         temperature_model_parameters=temperature_model_parameters,
                                         modules_per_string=num_of_module_per_string,
                                         strings=num_of_strings_per_sat * num_of_sat_per_inverter)
-
                 inverter_sat_system = pvsys.PVSystem(arrays=[sat_array], inverter_parameters=inverter_params)
-                mc = ModelChain(inverter_sat_system, location)
-                mc.run_model(weather_simulation)
-                multiplication_coeff = module_num / num_of_mod_per_inverter
-                dc_results.append(mc.results.dc['p_mp'] * multiplication_coeff)
-                dc_size.append(module_num * num_of_zones * module_params['STC'] / 1e6)
+
+            mc = ModelChain(inverter_sat_system, location)
+            mc.run_model(weather_simulation)
+            multiplication_coeff = module_per_zone_num_range / num_of_mod_per_inverter
+            pickl_it(multiplication_coeff)
+            dc_results = []
+            for results in mc.results.dc:
+                dc_append = results['p_mp'].mul(multiplication_coeff)
+                dc_results.append(dc_append)
+            dc_size = module_num * num_of_zones * module_params['STC'] / 1e6
 
         # Todo: we can try different back-tracking algorithms for SAT as well
-        dc_df = pd.DataFrame(dc_results).T
-        dc_df.columns = rack_per_zone_num_range
+
+        try:
+            dc_df = pd.DataFrame(dc_results).T
+            dc_df.columns = rack_per_zone_num_range
+        except TypeError:
+            dc_df = pd.DataFrame(dc_results)
+            dc_df.columns = [rack_per_zone_num_range]
     else:
         raise ValueError("Please choose racking as one of these options: 5B_MAV or SAT_1")
 
