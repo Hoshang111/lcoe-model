@@ -13,6 +13,7 @@ import Functions.weather_functions as weather
 import pvanalytics
 from pvanalytics.quality.irradiance import check_irradiance_consistency_qcrad
 import pathlib
+import _pickle as cpickle
 
 #%%
 SMALL_SIZE = 8
@@ -29,24 +30,31 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 #%%
 
-data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
-measured_path = os.path.join(data_path, "ground_measurements_feni.csv")
-measured_data_a = pd.read_csv(measured_path, index_col=0, header=1)
-measured_data_a.set_index(pd.to_datetime(measured_data_a.index), inplace=True)
-measured_data_a = measured_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
-                                                 'GHI_ThPyra1_Wm-2_avg':'ghi',
-                                                 'DNI_ThPyrh1_Wm-2_avg':'dni',
-                                                 'Temp_ThPyra1_degC_avg':'temp',
-                                                 'WindSpeed_Anemo1_ms_avg':'wind_speed',
-                                                  'RH_ThHyg1_per100_avg':'relative_humidity'})
-measured_data = measured_data_a.tz_localize("UTC")
-measured_data.drop(labels=measured_data.index[0], axis=0, inplace=True)
+# data_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data"
+# measured_path = os.path.join(data_path, "ground_measurements_feni.csv")
+# measured_data_a = pd.read_csv(measured_path, index_col=0, header=1)
+# measured_data_a.set_index(pd.to_datetime(measured_data_a.index), inplace=True)
+ #measured_data_a = measured_data_a.rename(columns = {'DHI_ThPyra2_Wm-2_avg':'dhi',
+  #                                                'GHI_ThPyra1_Wm-2_avg':'ghi',
+   #                                               'DNI_ThPyrh1_Wm-2_avg':'dni',
+   #                                               'Temp_ThPyra1_degC_avg':'temp',
+     #                                             'WindSpeed_Anemo1_ms_avg':'wind_speed',
+      #                                             'RH_ThHyg1_per100_avg':'relative_humidity'})
+# measured_data = measured_data_a.tz_localize("UTC")
+# measured_data.drop(labels=measured_data.index[0], axis=0, inplace=True)
 
-dni_comparison_path = os.path.join(data_path, "dni_simulated_Feni.csv")
-dni_comparison = pd.read_csv(dni_comparison_path, index_col=0, header=1)
+#dni_comparison_path = os.path.join(data_path, "dni_simulated_Feni.csv")
+#dni_comparison = pd.read_csv(dni_comparison_path, index_col=0, header=1)
+
+data_path = 'C:\\Users\phill\Documents\\bifacial_data'
+measured_path = os.path.join(data_path, 'best_data.pickle')
+measured_data = cpickle.load(open(measured_path,'rb'))
+measured_data = measured_data.rename(columns = {'SRRL Direct CHP1-1 [W/m^2]': 'dni',
+                                                 'SRRL Diffuse 8-48 (vent) [W/m^2]':'dhi',
+                                                'SRRL Global CMP22 (vent/cor) [W/m^2]':'ghi'})
 
 #%%
-weather.weather_nofit(measured_data['dni'], dni_comparison, 'dni_check')
+# weather.weather_nofit(measured_data['dni'], dni_comparison, 'dni_check')
 
 #%% Apply pvanalytics irradiance checks
 
@@ -60,8 +68,8 @@ Check consistency of GHI, DHI and DNI using QCRad criteria.
 # Now generate solar zenith estimates for the location,
 # based on the data's time zone and site latitude-longitude
 # coordinates.
-latitude = 23.0159
-longitude = 91.3976
+latitude = 39.7398341
+longitude = -105.1727827
 solar_position = pvlib.solarposition.get_solarposition(measured_data.index,
                                                        latitude,
                                                        longitude)
@@ -91,7 +99,7 @@ fig.legend(labels=["GHI", "DHI", "DNI", "QCRAD Consistent"],
 plt.xlabel("Date")
 plt.ylabel("Irradiance (W/m^2)")
 plt.tight_layout()
-save_path = "C:\\Users\phill\Documents\Bangladesh Application\weather_data/qcrad"
+save_path = "C:\\Users\phill\Documents\\bifacial_data\qcrad"
 plt.savefig(save_path, dpi=300, bbox_inches='tight')
 plt.close()
 
@@ -119,8 +127,8 @@ qcrad_data_ratio = measured_data.mask(~qcrad_consistency_mask[0])
 qcrad_data_diffuse = qcrad_data_ratio.mask(~qcrad_consistency_mask[1])
 
 #%% now plot updated distributions against initial and calculated data
-weather.weather_overlay(measured_data['dni'], qcrad_data_ratio['dni'], dni_comparison, 'qcrad_ratio_masked')
-weather.weather_overlay(measured_data['dni'], qcrad_data_diffuse['dni'], dni_comparison, 'qcrad_diffuse_masked')
+weather.weather_overlay(measured_data['ghi'], qcrad_data_ratio['dni'], measured_data['dni'], 'qcrad_ratio_masked')
+weather.weather_overlay(measured_data['ghi'], qcrad_data_diffuse['dni'], measured_data['dni'], 'qcrad_diffuse_masked')
 
 #%% output masked file to csv for use in adaptation
 

@@ -162,10 +162,12 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
         # First setup the scenario_list
         scenario_list = {'Scenario_Name': num_of_racks, 'ScenarioID': num_of_racks, \
                          'Scenario_Tag': num_of_racks}
-
-        scn_cost_data = pd.DataFrame(scenario_list, columns=[
-            'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
-
+        try:
+            scn_cost_data = pd.DataFrame(scenario_list, columns=[
+                'Scenario_Name', 'ScenarioID', 'Scenario_Tag'])
+        except ValueError:
+            scn_cost_data = pd.DataFrame(scenario_list, index=[0], columns = ['Scenario_Name',
+                                         'ScenarioID', 'Scenario_Tag'])
         # Now setup the sys_cost_data table that will replace the scenario_system_link table
         # First obtain a list of cost components that should be used
         component_list = rack_params['cost_components'] + module_params['cost_components']
@@ -176,9 +178,13 @@ def get_costs(num_of_racks, rack_params, module_params, data_tables, install_yea
 
             system_link_racks = {'ScenarioID': num_of_racks, 'ScenarioSystemID': num_of_racks, \
                              'InstallNumber': num_of_racks, 'SystemID': num_of_racks, 'InstallDate': num_of_racks}
+            try:
+                sys_cost_component = pd.DataFrame(system_link_racks, columns=[
+                    'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
+            except ValueError:
+                sys_cost_component = pd.DataFrame(system_link_racks, index=[0], columns=[
+                    'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
 
-            sys_cost_component = pd.DataFrame(system_link_racks, columns=[
-                'ScenarioID', 'ScenarioSystemID', 'InstallNumber', 'SystemID', 'InstallDate'])
             sys_cost_component['InstallDate'] = install_year
             sys_cost_component['SystemID'] = component_id
             if install_number_type == 'fixed':
