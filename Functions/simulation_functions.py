@@ -999,11 +999,12 @@ def test_dc( rack_params,
                                                              racking_model='open_rack',
                                                              module_height=2)
 
-                bifacial_array.append = bifacial_pvsystem.Array(mount=mount,
+                bifacial_array_dummy = bifacial_pvsystem.Array(mount=mount,
                                                      module_parameters=module_params,
                                                      temperature_model_parameters=temperature_model_parameters,
                                                      modules_per_string=num_of_modules_per_string,
                                                      strings= strings_per_inverter)
+                bifacial_array.append(bifacial_array_dummy)
 
             inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
                                                          inverter_parameters=inverter)
