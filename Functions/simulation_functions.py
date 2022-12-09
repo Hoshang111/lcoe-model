@@ -16,12 +16,20 @@ import Bifacial.bifacial_modelchain as bifacial_modelchain
 import Bifacial.bifacial_modelchain_dc as dc_modelchain
 import pvlib.bifacial as bifacial
 from pvlib.tracking import singleaxis
+import _pickle as cpickle
 
 import ast
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
 # %%
+def pickl_it(file_name):
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_tag = 'test_output.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
+    print(pickle_path)
+    dump = cpickle.dump(file_name, open(pickle_path, "wb"))
 
 def weather(simulation_years,
             weather_file,
@@ -904,13 +912,9 @@ def test_dc( rack_params,
              module_params,
              temp_model,
              weather_simulation,
-             modules_per_inverter,
              strings_per_inverter,
-             gcr,
              site,
              inverter,
-             MW_per_inverter,
-             MW_rating,
              tilt_range
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
@@ -995,7 +999,7 @@ def test_dc( rack_params,
                                                              racking_model='open_rack',
                                                              module_height=2)
 
-                bifacial_array.Append = bifacial_pvsystem.Array(mount=mount,
+                bifacial_array.append = bifacial_pvsystem.Array(mount=mount,
                                                      module_parameters=module_params,
                                                      temperature_model_parameters=temperature_model_parameters,
                                                      modules_per_string=num_of_modules_per_string,
@@ -1006,9 +1010,7 @@ def test_dc( rack_params,
             mc = bifacial_modelchain.ModelChain(inverter_system, location)
             mc.run_model_bifacial(weather_simulation)
             pickl_it(mc.results.dc)
-            power_W = mc.results.dc['p_mp']
-            field_power_kW = power_W * MW_rating / MW_per_inverter / 1000
-            dc_results = pd.concat([field_power_kW, mc.results.dc['v_mp']], axis=1)
+            dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
             dc_results.index = dc_results.index.shift(periods=-30, freq='T')
 
         else:
@@ -1026,9 +1028,7 @@ def test_dc( rack_params,
 
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
-            power_W = mc.results.dc['p_mp']
-            field_power_kW = power_W*MW_rating/MW_per_inverter/1000
-            dc_results = pd.concat([field_power_kW, mc.results.dc['v_mp']], axis=1)
+            dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
             dc_results.index = dc_results.index.shift(periods=-30, freq='T')
     else:
         raise ValueError("Please choose racking as one of these options: fixed")

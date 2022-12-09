@@ -220,19 +220,22 @@ def mc_weather_import(weather_file):
 
     return weather_dnv_mod
 
-def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location):
+def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_range):
     """"""
 
     module = results['module']
     rack = results['rack']
     module_per_inverter = results['modules_per_inverter']
     gcr = (module_per_inverter*module['A_c']) / zone_area
-    dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
-                            module_per_inverter,
-                            results['strings_per_inverter'],
-                            gcr, location, results['inverter'],
-                            results['MW_per_inverter'],
-                            results['MW_rating'])
+    dc_results = func.test_dc(rack, module, temp_model, mc_weather_file,
+                              results['strings_per_inverter'], location,
+                              results['inverter'], tilt_range)
+    #dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
+    #                        module_per_inverter,
+    #                        results['strings_per_inverter'],
+    #                        gcr, location, results['inverter'],
+    #                        results['MW_per_inverter'],
+    #                        results['MW_rating'])
     # dc_df.rename(columns={0: "dc_out"}, inplace=True)
     # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
@@ -387,7 +390,7 @@ def combine_variance(weather_dict, voltage_dict, loss_df, results_dict):
 
  # %% ===================================================
 
-def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, location):
+def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, location, tilt_range):
     """"""
 
     # %% ===========================================
@@ -404,9 +407,9 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     ghi_dict = dict_sort(ghi_timeseries, 'ghi')
 
     yield_timeseries = mc_dc_yield(results_dict, zone_area,
-                                    temp_model, mc_weather_file, location)
+                                    temp_model, mc_weather_file, location, tilt_range)
 
-    p_out = yield_timeseries['p_mp']*4704/720
+    p_out = yield_timeseries['p_mp']
     v_dc = yield_timeseries['v_mp']
 
     ghi_sort = pd.concat([p_out, ghi_timeseries], axis=1, ignore_index=False )

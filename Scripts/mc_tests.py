@@ -246,7 +246,7 @@ def get_site_params(site_name):
 
  # %% ===========================================================
  # define input and scenario data
-site = 'Singapore'
+site = 'singapore'
 site_params = get_site_params(site)
 
 input_params = {}
@@ -331,9 +331,9 @@ mc_weather_file, yearly_ghi, uncorrected_ghi = weather_import(mc_weather_name, l
 weather_mc_dict = {}
 loss_mc_dict = {}
 combined_mc_dict = {}
-
+tilt_range = [range(15,30,1)]
 combined_mc_dict, ghi_df = \
-        mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
+        mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location, tilt_range)
 dump_iter(combined_mc_dict, 0, scenario_dict['scenario_ID'])
 
 # %% ==================================================
@@ -342,6 +342,7 @@ cost_iter_dict = gen_costs(cost_datatables, input_params['MW_rating'], input_par
 
 # %% ==================================================
 # Export relevant data
+bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
 
 analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_mc_dict,
                  'discounted_ghi': ghi_df, 'loss_parameters': loss_datatables,
