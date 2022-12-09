@@ -16,12 +16,20 @@ import Bifacial.bifacial_modelchain as bifacial_modelchain
 import Bifacial.bifacial_modelchain_dc as dc_modelchain
 import pvlib.bifacial as bifacial
 from pvlib.tracking import singleaxis
+import _pickle as cpickle
 
 import ast
 
 os.chdir(os.path.dirname(os.path.abspath(__file__))) # Change the directory to the current folder
 
 # %%
+def pickl_it(file_name):
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_tag = 'test_output.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
+    print(pickle_path)
+    dump = cpickle.dump(file_name, open(pickle_path, "wb"))
 
 def weather(simulation_years,
             weather_file,
