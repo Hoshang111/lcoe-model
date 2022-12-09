@@ -720,7 +720,7 @@ def mc_dc( rack_params,
              site,
              inverter,
              MW_per_inverter,
-             MW_rating
+             MW_rating,
              ):
     """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
         The model has two options rack options: 5B_MAV or SAT_1
@@ -900,3 +900,139 @@ def get_dcloss(loss_parameters, weather, default_soiling, temp_coefficient):
 
     return loss_df
 
+def test_dc( rack_params,
+             module_params,
+             temp_model,
+             weather_simulation,
+             modules_per_inverter,
+             strings_per_inverter,
+             gcr,
+             site,
+             inverter,
+             MW_per_inverter,
+             MW_rating,
+             tilt_range
+             ):
+    """ dc_yield function finds the dc output for the simulation period for the given rack, module and gcr ranges
+        The model has two options rack options: 5B_MAV or SAT_1
+
+        Parameters
+        ----------
+        DCTotal: numeric
+            Total DC rated power of the simulated solar farm in MW
+
+        rack_params: Dataframe
+            rack parameters for the array
+
+        module_params : Dataframe
+            module parameters for the array
+
+        temp_model : str
+            temperature model for calculating module temperature: Sandia ('sapm) or PVSyst ('pvsyst')
+
+        weather_simulation : Dataframe
+            weather data to be used for simulations
+
+        rack_per_zone_num_range: pandas series
+            possible number of racks per zone
+
+        module_per_zone_num_range: pandas series
+            possible number of modules per zone
+
+        gcr_range: pandas series
+            possible number of ground coverage ratio (gcr) for the given DC size. This info is more relevant for the
+            single axis tracking (SAT) simulations
+
+        num_of_zones: Int
+            number of zones withing the simulated DC farm
+
+        num_of_mav_per_inverter: Int
+            number of 5B Mavericks per inverter, currently set to 4
+
+        num_of_sat_per_inverter: Int
+            number of single axis tracker (SAT) per inverter, currently set to 4
+
+        num_of_module_per_string: Int
+            number of modules per string, currently set to 30
+
+        num_of_strings_per_mav: Int
+            number of parallel strings per mav, currently set to 4
+
+        num_of_strings_per_sat: Int
+            number of parallel strings per sat, currently set to 4
+
+        Return
+        ------
+        dc_results: List
+            time series (Wh) of DC yield per zone for the studied TMYs according to the range of number of racks per zone
+        dc_df: Pandas DataFrame
+            dataframe (Wh) of dc_results with columns matched to the range of number of racks per zone
+        dc_size: Pandas series
+            dc rated power (MW) of the solar farm according to range of number of racks per zone
+
+    """
+
+    # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
+    if temp_model == 'sapm':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
+    elif temp_model == 'pvsyst':
+        temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
+    else:
+        raise ValueError('Please choose temperature model as Sandia: or PVSyst')
+    print('this_worked')
+    location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
+
+    weather_simulation.index = weather_simulation.index.shift(periods=30, freq='T')
+
+    num_of_modules_per_string = 30
+
+    if rack_params == 'fixed':
+
+        if module_params['Bifacial'] > 0:
+            bifacial_array = []
+            for tilt in tilt_range:
+                mount = bifacial_pvsystem.FixedMount(surface_tilt=tilt, surface_azimuth=90,
+                                                             racking_model='open_rack',
+                                                             module_height=2)
+
+                bifacial_array.Append = bifacial_pvsystem.Array(mount=mount,
+                                                     module_parameters=module_params,
+                                                     temperature_model_parameters=temperature_model_parameters,
+                                                     modules_per_string=num_of_modules_per_string,
+                                                     strings= strings_per_inverter)
+
+            inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
+                                                         inverter_parameters=inverter)
+            mc = bifacial_modelchain.ModelChain(inverter_system, location)
+            mc.run_model_bifacial(weather_simulation)
+            pickl_it(mc.results.dc)
+            power_W = mc.results.dc['p_mp']
+            field_power_kW = power_W * MW_rating / MW_per_inverter / 1000
+            dc_results = pd.concat([field_power_kW, mc.results.dc['v_mp']], axis=1)
+            dc_results.index = dc_results.index.shift(periods=-30, freq='T')
+
+        else:
+            mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=90,
+                                                 racking_model='open_rack',
+                                                 module_height=2)
+
+            bifacial_array = pvsys.Array(mount=mount,
+                                         module_parameters=module_params,
+                                         temperature_model_parameters=temperature_model_parameters,
+                                         modules_per_string=num_of_modules_per_string,
+                                         strings= strings_per_inverter)
+
+            inverter_sat_system = pvsys.PVSystem(arrays=[bifacial_array], inverter_parameters=inverter)
+
+            mc = ModelChain(inverter_sat_system, location)
+            mc.run_model(weather_simulation)
+            power_W = mc.results.dc['p_mp']
+            field_power_kW = power_W*MW_rating/MW_per_inverter/1000
+            dc_results = pd.concat([field_power_kW, mc.results.dc['v_mp']], axis=1)
+            dc_results.index = dc_results.index.shift(periods=-30, freq='T')
+    else:
+        raise ValueError("Please choose racking as one of these options: fixed")
+
+    weather_simulation.index = weather_simulation.index.shift(periods=-30, freq='T')
+
+    return dc_results
