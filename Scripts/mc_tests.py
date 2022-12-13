@@ -271,7 +271,7 @@ scenario_dict = {}
 scenario_dict['scenario_ID'] = site
 scenario_dict['module'] = get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = get_inverter()
-scenario_dict['strings_per_inverter'] = 24
+scenario_dict['strings_per_inverter'] = 126
 scenario_dict['modules_per_string'] = 196
 scenario_dict['modules_per_inverter'] = 4560
 scenario_dict['rack'] = 'fixed'
@@ -331,7 +331,7 @@ mc_weather_file, yearly_ghi, uncorrected_ghi = weather_import(mc_weather_name, l
 weather_mc_dict = {}
 loss_mc_dict = {}
 combined_mc_dict = {}
-tilt_range = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+tilt_range = [15, 20]
 combined_mc_dict, ghi_df = \
         mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location, tilt_range)
 dump_iter(combined_mc_dict, 0, scenario_dict['scenario_ID'])
