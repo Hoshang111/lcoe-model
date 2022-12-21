@@ -26,7 +26,7 @@ import _pickle as cpickle
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
-def run_mc(year, iter):
+def run_mc(num_iterations):
     def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
          """"""
 
@@ -42,8 +42,8 @@ def run_mc(year, iter):
 
 
 
-    scenarios = [str(year)]
-    iter_num = iter
+    scenarios = ['2028']
+    iter_num = int(num_iterations)
     iter_limit = 10
      # %% ===========================================================
      # import scenario data from pickle and simulation parameters from csv

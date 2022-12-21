@@ -6,6 +6,7 @@ can then be used for full Monte-Carlo analysis including both yield and costs
 # %% Import
 import random
 import sqlite3
+import re
 import sys
 
 sys.path.append('..')
@@ -33,11 +34,13 @@ use_previous_airtable_data = False
 def run(file_name):
     # Get inputs from filename
     parameters = []
+    number_of_inputs = 0
     conn = sqlite3.connect(file_name)
     cur = conn.cursor()
     cur.execute("SELECT INPUT FROM INPUTS")
     inputs = cur.fetchall()
     for i in inputs:
+        number_of_inputs += 1
         parameters.append(i[0])
 
     # Sizing/rack and module numbers
@@ -45,26 +48,27 @@ def run(file_name):
     DCTotal = int(parameters[0])  # DC size in MW
     num_of_zones = int(parameters[1])  # Number of smaller zones that will make up the solar farm
     zone_area = int(parameters[2])  # Zone Area in m2
-    rack_interval_ratio = float(parameters[3])
+
     # Yield Assessment Inputs
-    temp_model = str(parameters[4])  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
+    temp_model = str(parameters[3])  # choose a temperature model either Sandia: 'sapm' or PVSyst: 'pvsyst'
 
     # Revenue and storage behaviour
-    export_lim = float(parameters[5])  # Watts per zone
-    storage_capacity = int(parameters[6])  # Wh per zone
-    scheduled_price = float(parameters[7])  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
+    export_lim = float(parameters[4])  # Watts per zone
+    storage_capacity = int(parameters[5])  # Wh per zone
+    scheduled_price = float(parameters[6])  # AUD / Wh. Assumption: AUD 4c/kWh (conversion from Wh to kWh)
 
     # Financial Parameters
-    discount_rate = float(parameters[8])
+    discount_rate = float(parameters[7])
 
     # Optimising Parameters
-    year_sc1 = int(parameters[9])
-    mount_tech_sc1 = str(parameters[10])
-    module_tech_sc1 = str(parameters[11])
-    year_sc2 = int(parameters[12])
-    mount_tech_sc2 = str(parameters[13])
-    module_tech_sc2 = str(parameters[14])
-    iter_limit = int(parameters[15])
+    num_racks = int(parameters[8])
+    rack_interval_ratio = float(parameters[9])
+
+    scenarios = []
+    n = 10
+    while n < number_of_inputs:
+        scenarios.append(str(parameters[n]))
+        n += 1
 
     # Weather
     simulation_years = np.arange(2007, 2022, 1)
@@ -120,7 +124,7 @@ def run(file_name):
     # Cycle through alternative analysis scenarios
 
     def optimize(RACK_TYPE, MODULE_TYPE, INSTALL_YEAR, SCENARIO_LABEL, scenario_tables_combined, loss_params,
-                 number_racks=0, set_racks=False, ):
+                 number_racks=0, set_racks=False):
         module_type = MODULE_TYPE
         install_year = INSTALL_YEAR
         rack_type = RACK_TYPE
@@ -163,56 +167,39 @@ def run(file_name):
     # 2028 - assume modules PERC_2028_M10, etc
     # 2028 - assume modules PERC_2031_M10, etc
 
-    scenario_1 = [year_sc1, mount_tech_sc1, module_tech_sc2]
-    scenario_2 = [year_sc2, mount_tech_sc2, module_tech_sc2]
-    scenario_params = [scenario_1, scenario_2]
     scenario_tables_2024 = []
     scenario_tables_2026 = []
     scenario_tables_2028 = []
 
-
-    for scenario in scenario_params:
-        year = scenario[0]
-        mount_tech = scenario[1]
-        module_tech = scenario[2]
-        if year == 2024:
+    for scenario in scenarios:
+        x = re.split("_", scenario)
+        mount_tech = x[0]
+        module_tech = x[1]
+        year = x[2]
+        if year == "2024":
             if mount_tech == "SAT":
                 if module_tech == "PERC":
-                    results_SAT_PERC_2024 = optimize(SAT, PERC2023, 2024, 'SAT_PERC_2024', scenario_tables_2024,
-                                                     SAT_loss_params)
                     results_SAT_PERCa_2024 = optimize(SAT, PERC2025, 2024, 'SAT_PERCa_2024', scenario_tables_2024,
                                                       SAT_loss_params)
                 elif module_tech == "HJT":
-                    results_SAT_HJT_2024 = optimize(SAT, HJT2023, 2024, 'SAT_HJT_2024', scenario_tables_2024,
-                                                    SAT_loss_params)
                     results_SAT_HJTa_2024 = optimize(SAT, HJT2025, 2024, 'SAT_HJTa_2024', scenario_tables_2024,
                                                      SAT_loss_params)
                 elif module_tech == "TOPCON":
-                    results_SAT_TOP_2024 = optimize(SAT, TOP2023, 2024, 'SAT_TOP_2024', scenario_tables_2024,
-                                                    SAT_loss_params)
                     results_SAT_TOPa_2024 = optimize(SAT, TOP2025, 2024, 'SAT_TOPa_2024', scenario_tables_2024,
                                                      SAT_loss_params)
             elif mount_tech == "MAV":
                 if module_tech == "PERC":
-                    results_MAV_PERC_2024 = optimize(MAV, PERC2023, 2024, 'MAV_PERC_2024', scenario_tables_2024,
-                                                     MAV_loss_params)
                     results_MAV_PERCa_2024 = optimize(MAV, PERC2025, 2024, 'MAV_PERCa_2024', scenario_tables_2024,
                                                       MAV_loss_params)
                 if module_tech == "HJT":
-                    results_MAV_HJT_2024 = optimize(MAV, HJT2023, 2024, 'MAV_HJT_2024', scenario_tables_2024,
-                                                    MAV_loss_params)
                     results_MAV_HJTa_2024 = optimize(MAV, HJT2025, 2024, 'MAV_HJTa_2024', scenario_tables_2024,
                                                      MAV_loss_params)
                 if module_tech == "TOPCON":
-                    results_MAV_TOP_2024 = optimize(MAV, TOP2023, 2024, 'MAV_TOP_2024', scenario_tables_2024,
-                                                    MAV_loss_params)
                     results_MAV_TOPa_2024 = optimize(MAV, TOP2025, 2024, 'MAV_TOPa_2024', scenario_tables_2024,
                                                      MAV_loss_params)
-        elif year == 2026:
+        elif year == "2026":
             if mount_tech == "SAT":
                 if module_tech == "PERC":
-                    results_SAT_PERC_2026 = optimize(SAT, PERC2025, 2026, 'SAT_PERC_2026', scenario_tables_2026,
-                                                     SAT_loss_params)
                     results_SAT_PERCa_2026 = optimize(SAT, PERC2028, 2026, 'SAT_PERCa_2026', scenario_tables_2026,
                                                       SAT_loss_params)
                 elif module_tech == "HJT":
@@ -227,21 +214,15 @@ def run(file_name):
                                                      SAT_loss_params)
             elif mount_tech == "MAV":
                 if module_tech == "PERC":
-                    results_MAV_PERC_2026 = optimize(MAV, PERC2025, 2026, 'MAV_PERC_2026', scenario_tables_2026,
-                                                     MAV_loss_params)
                     results_MAV_PERCa_2026 = optimize(MAV, PERC2028, 2026, 'MAV_PERCa_2026', scenario_tables_2026,
                                                       MAV_loss_params)
                 if module_tech == "HJT":
-                    results_MAV_HJT_2026 = optimize(MAV, HJT2025, 2026, 'MAV_HJT_2026', scenario_tables_2026,
-                                                    MAV_loss_params)
                     results_MAV_HJTa_2026 = optimize(MAV, HJT2028, 2026, 'MAV_HJTa_2026', scenario_tables_2026,
                                                      MAV_loss_params)
                 if module_tech == "TOPCON":
-                    results_MAV_TOP_2026 = optimize(MAV, TOP2025, 2026, 'MAV_TOP_2026', scenario_tables_2026,
-                                                    MAV_loss_params)
                     results_MAV_TOPa_2026 = optimize(MAV, TOP2028, 2026, 'MAV_TOPa_2026', scenario_tables_2026,
                                                      MAV_loss_params)
-        elif year == 2028:
+        elif year == "2028":
             if mount_tech == "SAT":
                 if module_tech == "PERC":
                     results_SAT_PERCa_2028 = optimize(SAT, PERC2031, 2028, 'SAT_PERCa_2028', scenario_tables_2028,
@@ -268,7 +249,7 @@ def run(file_name):
     output_data = []
     output_dict = {}
 
-    for year in ['2028']:
+    for year in ['2024', '2026', '2028']:
         scenario_tables = locals()['scenario_tables_' + year]
         output_dict[year] = {}
         for results in scenario_tables:
@@ -294,8 +275,7 @@ def run(file_name):
     # %% ========================================
     # save results tables to pickl
 
-    for year in ['2028']:
+    for year in ['2024', '2026', '2028']:
         file_tag = 'scenario_tables_' + year + '.p'
         pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
-        cpickle.dump(output_dict[year], open(pickle_path, "wb"))
-    return year, iter_limit
+        dump = cpickle.dump(output_dict[year], open(pickle_path, "wb"))

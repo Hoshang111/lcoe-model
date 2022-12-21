@@ -291,7 +291,7 @@ def graph_histogram(input_data, scenario_list, title=None):
     plt.title(title)
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
-    file_name = os.path.join(parent_path, 'OutputFigures', title)
+    file_name = os.path.join(parent_path, '../OutputFigures', title)
     plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
     plt.close()
 
