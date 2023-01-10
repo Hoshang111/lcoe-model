@@ -102,7 +102,7 @@ def get_revenue(yield_series, export_limit, price_schedule, storage_capacity):
 
     return kwh_export, yearly_direct, yearly_storage, yearly_total
 
-def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025,end_year=2058, return_table_outputs=False):
+def get_costs(num_of_racks, rack_params, module_params, data_tables, install_year=2025, end_year=2058, return_table_outputs=False):
     '''
     Function to return a yearly timeseries of costs
     for installing different numbers of racks
@@ -239,8 +239,8 @@ def get_airtable(save_tables=False):
 
     # Airtable Import
     api_key = 'keyJSMV11pbBTdswc'
-    base_id = 'appjQftPtMrQK04Aw'
-
+    base_id = 'appKiQ6U3luqGyADI'
+    #appjQftPtMrQK04Aw
     data_tables = import_airtable_data(base_id=base_id, api_key=api_key, save_tables=save_tables)
 
     return data_tables
@@ -322,7 +322,7 @@ def get_npv_revenue(yearly_values,
     start_date = '1/1/' + str(start_year) + ' 00:00'
     end_date = '12/31/' + str(end_year) + ' 23:59'
     dummy_series = pd.date_range(start=start_date, end=end_date, freq='YS')
-    year_series = dummy_series.year()
+    year_series = dummy_series.year
     year_offset = pd.Series(range(0, len(year_series)))
     year_offset.index = year_series
 

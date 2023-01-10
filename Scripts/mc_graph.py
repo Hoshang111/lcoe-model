@@ -27,7 +27,7 @@ warnings.filterwarnings(action='ignore',
 current_path = os.getcwd()
 parent_path = os.path.dirname(current_path)
 
-pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary.p')
+pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', 'analysis_dictionary_phill_test.p')
 Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 
 

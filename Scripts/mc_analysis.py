@@ -21,10 +21,19 @@ from Functions.cost_functions import calculate_scenarios_iterations, create_iter
 import warnings
 from Functions.mc_yield_functions import weather_sort, generate_mc_timeseries, get_yield_datatables
 import _pickle as cpickle
+import _pickle as cpickle
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
 warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
+
+def pickl_it(file_name, tag):
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_tag = tag + '.p'
+    pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
+    print(pickle_path)
+    cpickle.dump(file_name, open(pickle_path, "wb"))
 
 def run_mc(projectID, iter, start_year, revenue_year, end_year):
     def dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, repeat_num, scenario_id):
@@ -154,19 +163,25 @@ def run_mc(projectID, iter, start_year, revenue_year, end_year):
     # Create iteration data
     data_tables_iter = create_iteration_tables(new_data_tables, iter_num, iteration_start=0)
 
-
+    pickl_it(data_tables_iter, 'data_tables')
     # calculate cost result
     for scenario in scenario_dict:
 
-        install_year = scenario[7]
-        outputs_iter = calculate_scenarios_iterations(data_tables_iter, year_start=install_year, year_end=end_year)
+        install_year = scenario_dict[scenario][7]
+        data_tables_0 = data_tables_iter[0][data_tables_iter[0]['ScenarioID'] == scenario]
+        data_tables_1 = data_tables_iter[1][data_tables_iter[1]['ScenarioID'] == scenario]
+        data_tables_update = (data_tables_0, data_tables_1, data_tables_iter[2], data_tables_iter[3], data_tables_iter[4],
+                              data_tables_iter[5], data_tables_iter[6])
+        pickl_it(data_tables_update, 'update')
+        outputs_iter = calculate_scenarios_iterations(data_tables_update, year_start=install_year, year_end=end_year)
         component_usage_y_iter, component_cost_y_iter, total_cost_y_iter, cash_flow_by_year_iter = outputs_iter
-
-        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, start_year)
-        cost_mc_dict = cost_dict
+        pickl_it(outputs_iter, 'outputs')
+        cost_dict = mc_func.get_cost_dict(cash_flow_by_year_iter, discount_rate, start_year, install_year, end_year)
+        pickl_it(cost_dict, scenario)
+        cost_mc_dict[scenario] = cost_dict[scenario]
 
         # output_iter_dict[year] = outputs_iter
-
+    pickl_it(cost_mc_dict, 'cost')
     # %% ==================================================
     # Assemble pickled data
 

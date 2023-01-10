@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pylab
 import Functions.simulation_functions as func
 import Functions.mc_yield_functions as mc_func
 from numpy.polynomial import Polynomial
@@ -173,7 +174,10 @@ def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None
                     this_title = 'Correlation to ' + cost_result_name
                 else:
                     this_title = 'Impact of ' + str(parameter) + ' on ' + cost_result_name
+            else:
+                this_title=title
             plt.title(this_title)
+
             if xlabel is None:
                 if short_titles:
                     this_xlabel = str(label)
@@ -261,6 +265,15 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
     y = input_data[parameter_y]
     z = input_data[parameter_z]
 
+    params = {'legend.fontsize': 'medium',
+              'figure.figsize': (15, 10),
+              'axes.labelsize': 'large',
+              'axes.titlesize': 'large',
+              'xtick.labelsize': 'small',
+              'ytick.labelsize': 'small'}
+
+    pylab.rcParams.update(params)
+
     fig, (ax0, ax1) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [25, 1]})
 
     scatterplot = ax0.scatter(x, y, c=z, cmap=None, s=None)
@@ -279,14 +292,26 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
         ax0.set_ylabel(parameter_y)
     if zlabel is not None:
         ax1.set_title(zlabel)
-
-    plt.show()
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
     plt.close()
 
 def graph_histogram(input_data, scenario_list, title=None):
     data = input_data
+
+    # Set general font size
+    plt.rcParams['font.size'] = 8
+    plt.rc('legend', fontsize='small')  # using a named size
+
+    fig, ax = plt.subplots(figsize=(1,1))
+    # Set tick font size
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(8)
+
     print(data)
-    data.plot.hist(bins=50, histtype='step', fontsize=8)
+    data.plot.hist(bins=50, histtype='step', fontsize=10)
     if title is None:
         title = 'Histogram'
     plt.title(title)
@@ -335,17 +360,32 @@ def extract_parameter_data(df, scenario1):
     loss_mc_flat = loss_mc_flat.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(loss_mc_flat)
 
+    loss_mc_flat2 = loss_mc['kWh_total_discounted']
+    loss_mc_flat2.columns = ['d_kWh_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
     # Get results for weather only Monte Carlo
     weather_mc_flat = weather_mc['npv_revenue']
     weather_mc_flat.columns = ['d_revenue_weather']
     weather_mc_flat = weather_mc_flat.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(weather_mc_flat)
 
+    weather_mc_flat2 = weather_mc['kWh_total_discounted']
+    weather_mc_flat2.columns = ['d_kWh_weather']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
     # Get results for combined_yield
     combined_yield_mc_flat = combined_yield_mc['npv_revenue']
     combined_yield_mc_flat.columns = ['d_revenue_combined']
     combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(scenario1 + '_')
     output_parameters = output_parameters.join(combined_yield_mc_flat)
+
+    combined_mc_flat2 = combined_yield_mc['kWh_total_discounted']
+    combined_mc_flat2.columns = ['d_kWh_combined']
+    combined_mc_flat2 = combined_mc_flat2.add_prefix(scenario1 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat2)
 
     output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
 
@@ -400,17 +440,32 @@ def extract_schedule_parameters(df, schedule1, ID1):
     loss_mc_flat = loss_mc_flat.add_prefix(ID1 + '_')
     output_parameters = output_parameters.join(loss_mc_flat)
 
+    loss_mc_flat2 = loss_mc['kWh_total_discounted']
+    loss_mc_flat2.columns = ['d_kWh_loss']
+    loss_mc_flat2 = loss_mc_flat2.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(loss_mc_flat2)
+
     # Get results for weather only Monte Carlo
     weather_mc_flat = weather_mc['npv_revenue']
     weather_mc_flat.columns = ['d_revenue_weather']
     weather_mc_flat = weather_mc_flat.add_prefix(ID1 + '_')
     output_parameters = output_parameters.join(weather_mc_flat)
 
+    weather_mc_flat2 = weather_mc['kWh_total_discounted']
+    weather_mc_flat2.columns = ['d_kWh_weather']
+    weather_mc_flat2 = weather_mc_flat2.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(weather_mc_flat2)
+
     # Get results for combined_yield
     combined_yield_mc_flat = combined_yield_mc['npv_revenue']
     combined_yield_mc_flat.columns = ['d_revenue_combined']
     combined_yield_mc_flat = combined_yield_mc_flat.add_prefix(ID1 + '_')
     output_parameters = output_parameters.join(combined_yield_mc_flat)
+
+    combined_mc_flat2 = combined_yield_mc['kWh_total_discounted']
+    combined_mc_flat2.columns = ['d_kWh_combined']
+    combined_mc_flat2 = combined_mc_flat2.add_prefix(ID1 + '_')
+    output_parameters = output_parameters.join(combined_mc_flat2)
 
     output_parameters = output_parameters.apply(pd.to_numeric, errors='ignore')
 
@@ -770,8 +825,10 @@ def prep_parameter_graphs(scenario1, input_parameters, output_parameters,
     elif output_metric == 'yield':
         rev_tag = scenario1 + '_d_kWh_' + scenario_tag
         outputa = output_parameters[rev_tag]
-
-    output = outputa.to_frame()
+    try:
+        output = outputa.to_frame()
+    except AttributeError:
+        output = outputa
     output.columns = [output_metric]
 
     return output
@@ -800,7 +857,7 @@ def calculate_variance_diff(projectID, scenario1, scenario2, loss_check,
         all_parameters = input_parameters.join(output_diff)
         output_table = calculate_variance_table(all_parameters, output_metric)
 
-    except NameError:
+    except KeyError:
         input_parameters, output_parameters = extract_parameter_data(results_dict, scenario1)
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                            loss_check, weather_check, cost_check,  output_metric)
@@ -812,40 +869,44 @@ def calculate_variance_diff(projectID, scenario1, scenario2, loss_check,
 
 def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
                    input_parameters, output_parameters,
-                   loss_check, weather_check, cost_check, output_metric):
+                   loss_check, weather_check, cost_check, output_metric,
+                   title, xlabel, ylabel):
     """"""
     try:
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                                loss_check, weather_check, cost_check,  output_metric)
         label_diff = '2D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
-        graph_scatter_2d(input_parameters, output_diff, parameter1, parameter2, output_metric, label_diff,
-                 title=None, xlabel=parameter1, ylabel=parameter2, zlabel=output_metric)
-    except NameError:
+        all_parameters = input_parameters.join(output_diff)
+        graph_scatter_2d(all_parameters, parameter1, parameter2, output_metric, title=title,
+                 xlabel=xlabel, ylabel=ylabel, zlabel=output_metric)
+    except KeyError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
         label = scenario1 + '_' + output_metric
-        graph_scatter_2d(input_parameters, output, parameter1, parameter2, output_metric,
-                         label, title=None, xlabel=parameter1, ylabel=parameter2,
+        all_parameters = input_parameters.join(output)
+        graph_scatter_2d(all_parameters, parameter1, parameter2, output_metric,
+                         title=title, xlabel=xlabel, ylabel=ylabel,
                          zlabel=output_metric)
 
 
 def run_1d_scatter(scenario1, scenario2, parameter_list,
                    input_parameters, output_parameters,
-                   loss_check, weather_check, cost_check, output_metric):
+                   loss_check, weather_check, cost_check, output_metric,
+                   title, xlabel):
     """"""
     try:
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                               loss_check, weather_check, cost_check,  output_metric)
         all_parameters = input_parameters.join(output_diff)
         label_diff = '1D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
-        graph_scatter_1d(all_parameters, output_metric, parameter_list, savename=label_diff)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, savename=label_diff)
 
-    except NameError:
+    except TypeError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
         all_parameters = input_parameters.join(output)
         label = scenario1 + '_' + output_metric
-        graph_scatter_1d(all_parameters, output_metric, parameter_list, savename=label_diff)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, savename=label)
 
 
 def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_check, output_metric):
@@ -859,7 +920,7 @@ def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_chec
         output_dict[scenario] = prep_parameter_graphs(scenario, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
 
-    label = output_metric + 'histogram'
+    label = output_metric + ' histogram'
 
     output_df = pd.DataFrame()
     for key in output_dict:
@@ -876,12 +937,19 @@ def gen_schedule(results_dict, scenario_list):
     test = 1;
 
     for key, multiplier in scenario_list:
-        schedule_dict[key] = {}
         if test ==1:
             for category in results_dict[key]:
                 schedule_dict[category] = {}
                 for df in results_dict[key][category]:
-                    schedule_dict[category][df] = {}
+                    if isinstance(results_dict[key][category][df], pd.DataFrame):
+                        dim = results_dict[key][category][df].shape
+                        schedule_dict[category][df] = pd.DataFrame(np.zeros(dim))
+                        schedule_dict[category][df].index = results_dict[key][category][df].index
+                        schedule_dict[category][df].columns = results_dict[key][category][df].columns
+                    elif isinstance(results_dict[key][category][df], pd.Series):
+                        dim = len(results_dict[key][category][df])
+                        schedule_dict[category][df] = pd.Series(np.zeros(dim))
+                        schedule_dict[category][df].index = results_dict[key][category][df].index
         else:
             pass
         test = 0;
@@ -889,7 +957,11 @@ def gen_schedule(results_dict, scenario_list):
     for key, multiplier in scenario_list:
         for category in results_dict[key]:
             for df in results_dict[key][category]:
-                schedule_dict[category][df] = schedule_dict[category][df] + results_dict[key][category][df] * multiplier
+                if isinstance(schedule_dict[category][df], pd.DataFrame):
+                    add_item = results_dict[key][category][df] * multiplier
+                    schedule_dict[category][df] = schedule_dict[category][df].add(add_item, fill_value=0)
+                elif isinstance(schedule_dict[category][df], pd.Series):
+                    schedule_dict[category][df] = schedule_dict[category][df] + results_dict[key][category][df] * multiplier
 
     return schedule_dict
 

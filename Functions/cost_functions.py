@@ -423,14 +423,14 @@ def generate_log_normal_apply(self, nom, low, hi):
     return generate_log_normal(nom, low, hi)
 
 
-def calculate_scenarios(input_tables, year_start, analyse_years):
+def calculate_scenarios(input_tables, year_start, year_end):
 
 
     data_tables_iter = create_iteration_tables(input_tables, 1, iteration_start=0)
     # scenario_iter, scenario_system_iter, system_iter, system_component_iter, component_iter, currency_iter, costcategory_iter = data_tables_iter
 
 
-    component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter = calculate_scenarios_iterations(data_tables_iter, year_start, analyse_years)
+    component_usage_by_year_iter, component_cost_by_year_iter, combined_cost_usage_iter, cash_flow_year_iter = calculate_scenarios_iterations(data_tables_iter, year_start, year_end)
 
 
     component_usage_by_year = component_usage_by_year_iter.drop(columns='Iteration')
@@ -457,10 +457,13 @@ def calculate_scenarios_iterations(iteration_input_tables, year_start, year_end)
     ###########################################
 
     component_usage_by_year_iter = scenario_system_iter.merge(system_component_iter, how='left',
-                                                              on=['Iteration', 'SystemID']).merge(costcategory_iter,
-                                                                                                  how='left',
-                                                                                                  on=['Iteration',
-                                                                                                      'CostCategoryID'])
+                                                              on=['Iteration', 'SystemID'])
+    #component_usage_by_year_iter = scenario_system_iter.merge(system_component_iter, how='left',
+    #                                                          on=['Iteration', 'SystemID']).merge(costcategory_iter,
+    #                                                                                              how='left',
+    #                                                                                              on=['Iteration',
+    #                                                                                                  'CostCategoryID'])
+    #
     component_usage_by_year_iter['Temp'] = 1
     component_usage_by_year_iter = component_usage_by_year_iter.merge(year_list, how='inner', on='Temp').drop(['Temp'],
                                                                                                               axis=1)
