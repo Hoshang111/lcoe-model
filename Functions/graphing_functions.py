@@ -166,6 +166,15 @@ def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None
 
     parameter_description_list = zip(parameter_list, parameter_list)
 
+    params = {'legend.fontsize': 'medium',
+              'figure.figsize': (15, 10),
+              'axes.labelsize': 'large',
+              'axes.titlesize': 'large',
+              'xtick.labelsize': 'small',
+              'ytick.labelsize': 'small'}
+
+    pylab.rcParams.update(params)
+
     for (parameter, label) in parameter_description_list:
         if parameter != cost_result_name:
             plt.scatter(input_factors[parameter], input_factors[cost_result_name], edgecolor='None')
@@ -191,6 +200,9 @@ def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None
                     this_ylabel = cost_result_name
                 else:
                     this_ylabel = 'Output Factor: ' + cost_result_name
+            else:
+                this_ylabel=ylabel
+
             plt.ylabel(this_ylabel)
 
             if show_regression:
@@ -210,11 +222,13 @@ def graph_scatter_1d(input_factors, cost_result_name, parameter_list, title=None
                     r2_value = r_value * r_value
                     text = text + '\nr$^2$ = {0:.2f}'.format(r2_value)
                 plt.annotate(text, xy=(0.5, 0.5), fontsize=20, xycoords='figure fraction')
+                plt.plot([xmin, xmax], [ymin, ymax], 'red', linestyle='--')
 
             if savename is not None:
                 file_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../OutputFigures/',
                                          savename + parameter)
                 plt.savefig(file_name)
+
             plt.show()
 
 def calculate_graph_variance_contributions(input_factors, cost_result_name, savename=None, num_table = 20, num_graphs=0):
@@ -267,8 +281,8 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
 
     params = {'legend.fontsize': 'medium',
               'figure.figsize': (15, 10),
-              'axes.labelsize': 'large',
-              'axes.titlesize': 'large',
+              'axes.labelsize': 'small',
+              'axes.titlesize': 'medium',
               'xtick.labelsize': 'small',
               'ytick.labelsize': 'small'}
 
@@ -292,29 +306,42 @@ def graph_scatter_2d(input_data, parameter_x, parameter_y, parameter_z,
         ax0.set_ylabel(parameter_y)
     if zlabel is not None:
         ax1.set_title(zlabel)
+
+    ax0.tick_params(axis='both', which='major', labelsize=14)
+    ax0.tick_params(axis='both', which='minor', labelsize=12)
+    ax1.tick_params(axis='both', which='major', labelsize=18)
+    ax1.tick_params(axis='both', which='minor', labelsize=16)
+
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
     file_name = os.path.join(parent_path, 'OutputFigures', title)
     plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
     plt.close()
 
-def graph_histogram(input_data, scenario_list, title=None):
+def graph_histogram(input_data, scenario_list, title=None, xlabel=None):
     data = input_data
 
     # Set general font size
-    plt.rcParams['font.size'] = 8
-    plt.rc('legend', fontsize='small')  # using a named size
+    params = {'legend.fontsize': 'small',
+              'figure.figsize': (15, 10),
+              'axes.labelsize': 'medium',
+              'axes.titlesize': 'medium',
+              'xtick.labelsize': 'small',
+              'ytick.labelsize': 'small'}
+
+    pylab.rcParams.update(params)
 
     fig, ax = plt.subplots(figsize=(1,1))
-    # Set tick font size
-    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-        label.set_fontsize(8)
 
     print(data)
     data.plot.hist(bins=50, histtype='step', fontsize=10)
     if title is None:
         title = 'Histogram'
     plt.title(title)
+
+    if xlabel is not None:
+        plt.xlabel(xlabel)
+
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
     file_name = os.path.join(parent_path, 'OutputFigures', title)
@@ -872,13 +899,22 @@ def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
                    loss_check, weather_check, cost_check, output_metric,
                    title, xlabel, ylabel):
     """"""
+    if output_metric == 'LCOE':
+        zlabel='LCOE (AU$/kWh)'
+    elif output_metric == 'NPV':
+        zlabel = 'NPV (AU$)'
+    elif output_metric == 'cost':
+        zlabel = 'Cost (AU$)'
+    elif output_metric == 'yield':
+        zlabel = 'Total Energy Output (kWh)'
+
     try:
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                                loss_check, weather_check, cost_check,  output_metric)
         label_diff = '2D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
         all_parameters = input_parameters.join(output_diff)
         graph_scatter_2d(all_parameters, parameter1, parameter2, output_metric, title=title,
-                 xlabel=xlabel, ylabel=ylabel, zlabel=output_metric)
+                 xlabel=xlabel, ylabel=ylabel, zlabel=zlabel)
     except KeyError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
@@ -886,7 +922,7 @@ def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
         all_parameters = input_parameters.join(output)
         graph_scatter_2d(all_parameters, parameter1, parameter2, output_metric,
                          title=title, xlabel=xlabel, ylabel=ylabel,
-                         zlabel=output_metric)
+                         zlabel=zlabel)
 
 
 def run_1d_scatter(scenario1, scenario2, parameter_list,
@@ -894,19 +930,28 @@ def run_1d_scatter(scenario1, scenario2, parameter_list,
                    loss_check, weather_check, cost_check, output_metric,
                    title, xlabel):
     """"""
+    if output_metric == 'LCOE':
+        ylabel='LCOE (AU$/kWh)'
+    elif output_metric == 'NPV':
+        ylabel = 'NPV (AU$)'
+    elif output_metric == 'cost':
+        ylabel = 'Cost (AU$)'
+    elif output_metric == 'yield':
+        ylabel = 'Total Energy Output (kWh)'
+
     try:
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                               loss_check, weather_check, cost_check,  output_metric)
         all_parameters = input_parameters.join(output_diff)
         label_diff = '1D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
-        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, savename=label_diff)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, ylabel=ylabel, savename=label_diff)
 
     except TypeError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
         all_parameters = input_parameters.join(output)
         label = scenario1 + '_' + output_metric
-        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, savename=label)
+        graph_scatter_1d(all_parameters, output_metric, parameter_list, title=title, xlabel=xlabel, ylabel=ylabel, savename=label)
 
 
 def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_check, output_metric):
@@ -928,7 +973,16 @@ def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_chec
 
     output_df.columns = scenario_list
 
-    graph_histogram(output_df, scenario_list, title=label)
+    if output_metric == 'LCOE':
+        xlabel='LCOE (AU$/kWh)'
+    elif output_metric == 'NPV':
+        xlabel = 'NPV (AU$)'
+    elif output_metric == 'cost':
+        xlabel = 'Cost (AU$)'
+    elif output_metric == 'yield':
+        xlabel = 'Total Energy Output (kWh)'
+
+    graph_histogram(output_df, scenario_list, title=label, xlabel=xlabel)
 
 def gen_schedule(results_dict, scenario_list):
     """"""

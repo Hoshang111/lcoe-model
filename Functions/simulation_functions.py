@@ -364,9 +364,9 @@ def dc_yield(DCTotal,
     num_of_strings_per_sat = rack_params['Modules_per_rack']/num_of_module_per_string
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
-    if temp_model == 'sapm':
+    if temp_model == 'SAPM':
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-    elif temp_model == 'pvsyst':
+    elif temp_model == 'PVSyst':
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')
@@ -844,9 +844,9 @@ def mc_dc( rack_params,
     modules_per_zone = racks_per_zone * rack_params['Modules_per_rack']
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
-    if temp_model == 'sapm':
+    if temp_model == 'SAPM':
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_glass']
-    elif temp_model == 'pvsyst':
+    elif temp_model == 'PVSyst':
         temperature_model_parameters = TEMPERATURE_MODEL_PARAMETERS['pvsyst']['freestanding']  # other option
     else:
         raise ValueError('Please choose temperature model as Sandia: or PVSyst')

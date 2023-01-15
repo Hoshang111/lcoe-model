@@ -1,2 +1,2 @@
 temp_model,storage_capacity,scheduled_price,export_lim,discount_rate,zone_area,num_of_zones
-pvsyst,50000000,0.00015,4444444.44,0.07,140000,720
+PVSyst,123,123.0,123.0,123.0,123,123
