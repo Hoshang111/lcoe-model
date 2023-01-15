@@ -12,11 +12,11 @@ import Functions.weather_functions as weather
 
 data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
 
-satellite_data_2016_path = os.path.join(data_path, "APSCL_2016.csv")
-satellite_data_2017_path = os.path.join(data_path, "APSCL_2017.csv")
-satellite_data_2018_path = os.path.join(data_path, "APSCL_2018.csv")
-satellite_data_2019_path = os.path.join(data_path, "APSCL_2019.csv")
-satellite_data_2020_path = os.path.join(data_path, "APSCL_2020.csv")
+satellite_data_2016_path = os.path.join(data_path, "jamalpur_2016.csv")
+satellite_data_2017_path = os.path.join(data_path, "jamalpur_2017.csv")
+satellite_data_2018_path = os.path.join(data_path, "jamalpur_2018.csv")
+satellite_data_2019_path = os.path.join(data_path, "jamalpur_2019.csv")
+satellite_data_2020_path = os.path.join(data_path, "jamalpur_2020.csv")
 
 satellite_data_2016 = pd.read_csv(satellite_data_2016_path, header=2)
 satellite_data_2017 = pd.read_csv(satellite_data_2017_path, header=2)
@@ -40,7 +40,7 @@ satellite_data = satellite_data.rename(columns={'GHI':'ghi',
                                                 'Cloud Type':'cloud type',
                                                 'Precipitable Water':'precipitable_water'})
 
-file_name = 'APSCL.csv'
+file_name = 'jamalpur.csv'
 file_path = os.path.join(data_path, file_name)
 satellite_data.to_csv(file_path)
 

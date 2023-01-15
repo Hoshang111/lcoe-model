@@ -8,10 +8,10 @@ import Functions.sizing_functions as sizing
 import _pickle as cpickle
 
 # %% ===================================================
-def pickl_it(file_name):
+def pickl_it(file_name, label):
     current_path = os.getcwd()
     parent_path = os.path.dirname(current_path)
-    file_tag = 'test_output2.p'
+    file_tag = label + '.p'
     pickle_path = os.path.join(parent_path, 'Data', 'mc_analysis', file_tag)
     print(pickle_path)
     dump = cpickle.dump(file_name, open(pickle_path, "wb"))
@@ -207,19 +207,17 @@ def gen_mcts(ordered_dict, generation_list, start_date, end_date):
 
     return mc_timeseries
 
-def mcts_multi(ordered_dict, generation_list, start_date, end_date, index):
+def mcts_multi(ordered_dict, generation_list, start_date, end_date):
     """"""
 
     months_list = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
     mc_timeseries = pd.DataFrame()
     ordered_dict.pop('label', None)
 
-    pickl_it(ordered_dict)
-
     for single_date, num in generation_list:
         month_num = single_date.month
         month = months_list[month_num-1]
-        dict_month = dict_percentile_multi(num, ordered_dict, month, index)
+        dict_month = dict_percentile(num, ordered_dict, month)
         mc_timeseries = pd.concat([mc_timeseries, dict_month], axis=0)
 
     mc_timeseries = mc_timeseries[~((mc_timeseries.index.month == 2) & (mc_timeseries.index.day == 29))]
@@ -277,14 +275,14 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_
     dc_power, dc_voltage = func.test_dc(rack, module, temp_model, mc_weather_file,
                               results['strings_per_inverter'], location,
                               results['inverter'], tilt_range)
-    #dc_results = func.mc_dc(rack, module, temp_model, mc_weather_file,
+    #dc_power, dc_voltage = func.mc_dc(rack, module, temp_model, mc_weather_file,
     #                        module_per_inverter,
     #                        results['strings_per_inverter'],
     #                        gcr, location, results['inverter'],
     #                        results['MW_per_inverter'],
     #                        results['MW_rating'])
-    # dc_df.rename(columns={0: "dc_out"}, inplace=True)
-    # dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
+    #dc_df.rename(columns={0: "dc_out"}, inplace=True)
+    #dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
 
     return dc_power, dc_voltage
 
@@ -482,16 +480,14 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     #random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
     #random_timeseries[:, 0][:, None] = 0.5
 
-    random_timeseries = np.random.random((len(dc_power.columns), len(month_series)))
-    random_timeseries[:,:] = 0.5
+    random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
 
     output_dict = {}
     ghi_interim = []
 
     # %%
-    for i in range(len(random_timeseries)):
-        generation_list = list(zip(month_series, random_timeseries[i]))
-        ghi_interim.append(gen_mcts(ghi_dict, generation_list, start_date, end_date))
+    generation_list = list(zip(month_series, random_timeseries))
+    ghi_interim.append(mcts_multi(ghi_dict, generation_list, start_date, end_date))
     mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
     mc_ghi.columns = np.arange(len(mc_ghi.columns))
 
@@ -499,16 +495,13 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
 
     dc_output = []
     vdc_output = []
-    for i in range(len(random_timeseries)):
-        generation_list = list(zip(month_series, random_timeseries[i]))
-        dc_output.append(mcts_multi(dc_ordered, generation_list, start_date, end_date, tilt_range[i]))
-        vdc_output.append(mcts_multi(vdc_ordered, generation_list, start_date, end_date, tilt_range[i]))
+    generation_list = list(zip(month_series, random_timeseries))
+    dc_output.append(mcts_multi(dc_ordered, generation_list, start_date, end_date))
+    vdc_output.append(mcts_multi(vdc_ordered, generation_list, start_date, end_date))
     output_dict = pd.concat(dc_output, axis=1, ignore_index=False)
-    output_dict.columns = tilt_range
     v_output_dict = pd.concat(vdc_output, axis=1, ignore_index=False)
-    v_output_dict.columns = tilt_range
 
-    pickl_it(output_dict)
+    pickl_it(output_dict, 'dc_dict')
     # since GHI was first of our scenarios
     # %% ===========================================================
     # calculate discounted ghi
@@ -527,17 +520,15 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     default_soiling = [(1, 0.02), (2, 0.02), (3, 0.02), (4, 0.02), (5, 0.02), (6, 0.02), (7, 0.02), (8, 0.02),
                        (9, 0.02), (10, 0.02), (11, 0.02), (12, 0.02)]
     temp_coefficient = -0.0025
-    loss_df_init = get_dcloss(yield_datatables, mc_ghi, default_soiling, temp_coefficient)
+    loss_df = get_dcloss(yield_datatables, mc_ghi, default_soiling, temp_coefficient)
 
-    loss_df = pd.concat([loss_df_init[0]]*2, axis=1, ignore_index=True)
-    loss_df.columns = tilt_range
-
-    pickl_it(loss_df)
+    pickl_it(loss_df, 'loss_df')
     # %% =========================================================
     # creating three different datatables
 
     combined_mc_dict = combine_variance(output_dict, v_output_dict, loss_df, results_dict)
 
+    pickl_it(combined_mc_dict, 'combined_df')
 
     # %% ==========================================================
     # calculate revenue from yield dictionary

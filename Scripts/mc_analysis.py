@@ -251,7 +251,7 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
-site = 'APSCL'
+site = 'jamalpur'
 site_params = get_site_params(site)
 
 input_params = {}
@@ -342,7 +342,7 @@ if iter_num > iter_limit:
         loss_datatables_split = {}
         loss_datatables_split = loss_datatables[i * iter_limit:(i + 1) * iter_limit]
         combined_mc_dict, ghi_df = \
-            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables_split, location)
+            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables_split, location, 20)
         dump_iter(combined_mc_dict, i, scenario_dict['scenario_ID'])
 else:
     combined_mc_dict, ghi_df = \

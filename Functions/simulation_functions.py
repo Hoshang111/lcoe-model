@@ -1045,37 +1045,24 @@ def test_dc( rack_params,
 
         if module_params['Bifacial'] > 0:
             bifacial_array = []
-            for tilt in tilt_range:
-                print(tilt)
-                mount = bifacial_pvsystem.FixedMount(surface_tilt=tilt, surface_azimuth=180,
-                                                             racking_model='open_rack',
-                                                             module_height=2)
+            mount = bifacial_pvsystem.FixedMount(surface_tilt=tilt_range, surface_azimuth=180,
+                                                    racking_model='open_rack',
+                                                    module_height=2)
 
-                bifacial_array_dummy = bifacial_pvsystem.Array(mount=mount,
+            bifacial_array = bifacial_pvsystem.Array(mount=mount,
                                                      module_parameters=module_params,
                                                      temperature_model_parameters=temperature_model_parameters,
                                                      modules_per_string=num_of_modules_per_string,
                                                      strings= strings_per_inverter)
-                bifacial_array.append(bifacial_array_dummy)
 
-            inverter_system = bifacial_pvsystem.PVSystem(arrays=bifacial_array,
+            inverter_system = bifacial_pvsystem.PVSystem(arrays=[bifacial_array],
                                                          inverter_parameters=inverter)
             mc = bifacial_modelchain.ModelChain(inverter_system, location)
             mc.run_model_bifacial(weather_simulation)
-            dc_power_list = []
-            dc_voltage_list = []
-            for dc_out in mc.results.dc:
-                dc_power_list.append(dc_out['p_mp'])
-                dc_voltage_list.append(dc_out['v_mp'])
-
-            dc_power = pd.DataFrame(dc_power_list).T
-            dc_voltage = pd.DataFrame(dc_voltage_list).T
-            dc_power.columns = tilt_range
-            dc_voltage.columns = tilt_range
+            dc_power = mc.results.dc['p_mp']
+            dc_voltage = mc.results.dc['v_mp']
             dc_power.index = dc_power.index.shift(periods=-30, freq='T')
             dc_voltage.index = dc_voltage.index.shift(periods=-30, freq='T')
-            pickl_it(dc_power)
-
         else:
             mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=180,
                                                  racking_model='open_rack',
