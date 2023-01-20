@@ -54,9 +54,9 @@ site_params = get_site_params(site)
 
 costs_series = Analysis_dict['cost_mc']['cost_npv']
 cost_df = pd.DataFrame(costs_series)
-NPV = Analysis_dict['combined_yield_mc']['npv_revenue']*200-cost_df
-LCOE = cost_df/(Analysis_dict['combined_yield_mc']['kWh_total_discounted']*200)
-year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]*200
+NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-cost_df
+LCOE = cost_df/(Analysis_dict['combined_yield_mc']['kWh_total_discounted'])
+year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
 module_cost = Analysis_dict['data_tables']['modules_pMW']/1e6
 site = Analysis_dict['data_tables']['site_prep_pm2']
 capital_cost = Analysis_dict['cost_mc']['yearly_costs'][2022]

@@ -479,15 +479,16 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     # need to create a wrapper function to call for each set of random numbers
     #random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
     #random_timeseries[:, 0][:, None] = 0.5
-
     random_timeseries = np.random.random((len(month_series), len(yield_datatables)))
+    random_timeseries[:, 0][:, None] = 0.5
 
     output_dict = {}
     ghi_interim = []
 
     # %%
-    generation_list = list(zip(month_series, random_timeseries))
-    ghi_interim.append(mcts_multi(ghi_dict, generation_list, start_date, end_date))
+    for column in random_timeseries.T:
+        generation_list = list(zip(month_series, column))
+        ghi_interim.append(gen_mcts(ghi_dict, generation_list, start_date, end_date))
     mc_ghi = pd.concat(ghi_interim, axis=1, ignore_index=False)
     mc_ghi.columns = np.arange(len(mc_ghi.columns))
 
@@ -495,13 +496,14 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
 
     dc_output = []
     vdc_output = []
-    generation_list = list(zip(month_series, random_timeseries))
-    dc_output.append(mcts_multi(dc_ordered, generation_list, start_date, end_date))
-    vdc_output.append(mcts_multi(vdc_ordered, generation_list, start_date, end_date))
+    for column in random_timeseries.T:
+        generation_list = list(zip(month_series, column))
+        dc_output.append(gen_mcts(dc_ordered, generation_list, start_date, end_date))
+        vdc_output.append(gen_mcts(vdc_ordered, generation_list, start_date, end_date))
     output_dict = pd.concat(dc_output, axis=1, ignore_index=False)
     v_output_dict = pd.concat(vdc_output, axis=1, ignore_index=False)
-
-    pickl_it(output_dict, 'dc_dict')
+    output_dict.columns = np.arange(len(output_dict.columns))
+    v_output_dict.columns = np.arange(len(v_output_dict.columns))
     # since GHI was first of our scenarios
     # %% ===========================================================
     # calculate discounted ghi
