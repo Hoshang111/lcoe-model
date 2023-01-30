@@ -900,21 +900,22 @@ def run_2d_scatter(scenario1, scenario2, parameter1, parameter2,
                    title, xlabel, ylabel):
     """"""
     if output_metric == 'LCOE':
-        zlabel='LCOE (AU$/kWh)'
+        zlabel='LCOE \n(AU$/kWh)'
     elif output_metric == 'NPV':
-        zlabel = 'NPV (AU$)'
+        zlabel = 'NPV \n(AU$)'
     elif output_metric == 'cost':
-        zlabel = 'Cost (AU$)'
+        zlabel = 'Cost \n(AU$)'
     elif output_metric == 'yield':
-        zlabel = 'Total Energy Output (kWh)'
+        zlabel = 'Total Energy Output \n(kWh)'
 
     try:
         output_diff = prep_difference_graphs(scenario1, scenario2, input_parameters, output_parameters,
                                loss_check, weather_check, cost_check,  output_metric)
         label_diff = '2D_Scatter_' + scenario1 + '_vs_' + scenario2 + '_' + output_metric
         all_parameters = input_parameters.join(output_diff)
+        zlabel_diff = '\u0394 ' + zlabel
         graph_scatter_2d(all_parameters, parameter1, parameter2, output_metric, title=title,
-                 xlabel=xlabel, ylabel=ylabel, zlabel=zlabel)
+                 xlabel=xlabel, ylabel=ylabel, zlabel=zlabel_diff)
     except KeyError:
         output = prep_parameter_graphs(scenario1, input_parameters, output_parameters,
                                        loss_check, weather_check, cost_check, output_metric)
@@ -972,6 +973,7 @@ def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_chec
         output_df = pd.concat([output_df, output_dict[key]], axis=1)
 
     output_df.columns = scenario_list
+    #output_df.columns = ['RackA_LowEffModule', 'RackB_LowEffModule', 'RackB_HighEffModule', 'RackC_LowEffModule', 'RackC_HighEffModule']
 
     if output_metric == 'LCOE':
         xlabel='LCOE (AU$/kWh)'
