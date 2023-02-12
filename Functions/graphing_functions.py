@@ -973,10 +973,10 @@ def run_histogram(projectID, scenario_list, loss_check, weather_check, cost_chec
         output_df = pd.concat([output_df, output_dict[key]], axis=1)
 
     output_df.columns = scenario_list
-    #output_df.columns = ['RackA_LowEffModule', 'RackB_LowEffModule', 'RackB_HighEffModule', 'RackC_LowEffModule', 'RackC_HighEffModule']
+    output_df.columns = ['RackA_LowEffModule', 'RackB_LowEffModule', 'RackB_HighEffModule', 'RackC_LowEffModule', 'RackC_HighEffModule']
 
     if output_metric == 'LCOE':
-        xlabel='LCOE (AU$/kWh)'
+        xlabel='LCOE'
     elif output_metric == 'NPV':
         xlabel = 'NPV (AU$)'
     elif output_metric == 'cost':
