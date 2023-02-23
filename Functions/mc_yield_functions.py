@@ -272,7 +272,7 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_
     rack = results['rack']
     module_per_inverter = results['modules_per_inverter']
     gcr = (module_per_inverter*module['A_c']) / zone_area
-    dc_power, dc_voltage = func.test_dc(rack, module, temp_model, mc_weather_file,
+    dc_power_init, dc_voltage = func.test_dc(rack, module, temp_model, mc_weather_file,
                               results['strings_per_inverter'], location,
                               results['inverter'], tilt_range)
     #dc_power, dc_voltage = func.mc_dc(rack, module, temp_model, mc_weather_file,
@@ -283,6 +283,7 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_
     #                        results['MW_rating'])
     #dc_df.rename(columns={0: "dc_out"}, inplace=True)
     #dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
+    dc_power = dc_power_init*190/30
 
     return dc_power, dc_voltage
 
@@ -374,7 +375,7 @@ def gen_revenue(yield_dict, datatables, discount_rate, num_inverters):
     """"""
 
     NPV_outputs = {}
-    revenue_init = yield_dict*datatables['scheduled_price']
+    revenue_init = yield_dict*datatables['scheduled_price']*num_inverters
     revenue = revenue_init.groupby(revenue_init.index.year).sum()
     kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()
     NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(kWh_yearly, discount_rate=0)

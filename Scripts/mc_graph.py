@@ -36,7 +36,12 @@ def get_site_params(site_name):
     site_dict['site_area'] = float(site_params[site_name]['site_area'])
     site_dict['MW_rating'] = float(site_params[site_name]['MW_rating'])
     site_dict['timezone'] = site_params[site_name]['timezone']
-    site_dict['num_inverters'] = site_params[site_name]['num_inverters']
+    site_dict['num_inverters'] = float(site_params[site_name]['num_inverters'])
+    site_dict['dist_road'] = float(site_params[site_name]['dist_road'])
+    site_dict['dist_substation'] = float(site_params[site_name]['dist_substation'])
+    site_dict['discount_rate'] = float(site_params[site_name]['discount_rate'])
+    site_dict['tariff'] = float(site_params[site_name]['tariff'])
+    site_dict['flood_multiplier'] = float(site_params[site_name]['flood_multiplier'])
 
     return site_dict
 
@@ -52,10 +57,20 @@ Analysis_dict = cpickle.load(open(pickle_path, 'rb'))
 site = 'jamalpur'
 site_params = get_site_params(site)
 
+costs_cat = ['Ex_works', 'transmission', 'site_prep', 'roads']
+costs_values = [Analysis_dict['data_tables']['base_pMW'][0]*site_params['MW_rating'],
+                Analysis_dict['data_tables']['transmission'][0]*site_params['MW_rating']*site_params['dist_substation'],
+                Analysis_dict['data_tables']['site_prep'][0]*site_params['MW_rating']*site_params['flood_multiplier'],
+                Analysis_dict['data_tables']['roads'][0]*site_params['dist_road']]
+# costs_dict = {Analysis_dict['data_tables']['base_pMW']*site_params['MW_rating'],
+#                Analysis_dict['data_tables']['transmission']*site_params['MW_rating']*site_params['dist_substation'],
+#                Analysis_dict['data_tables']['site_prep']*site_params['MW_rating']*site_params['flood_multiplier'],
+#                Analysis_dict['data_tables']['roads']*site_params['dist_road']}
+
 costs_series = Analysis_dict['cost_mc']['cost_npv']
 cost_df = pd.DataFrame(costs_series)
-NPV = Analysis_dict['combined_yield_mc']['npv_revenue']-cost_df
-LCOE = cost_df/(Analysis_dict['combined_yield_mc']['kWh_total_discounted'])
+NPV = Analysis_dict['combined_yield_mc']['kWh_total_discounted']*site_params['num_inverters']/10000-cost_df
+LCOE = cost_df/(Analysis_dict['combined_yield_mc']['kWh_total_discounted']*site_params['num_inverters']/1000)
 year1_output = Analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
 module_cost = Analysis_dict['data_tables']['modules_pMW']/1e6
 site = Analysis_dict['data_tables']['site_prep_pm2']
@@ -76,7 +91,7 @@ max_NPV = max(NPV[0])/1e6
 min_NPV = min(NPV[0])/1e6
 max_LCOE = max(LCOE[0])
 min_LCOE = min(LCOE[0])
-specific_yield = year1_output/site_params['MW_rating']
+specific_yield = year1_output/(3000)
 # %% ==============================
 # Function to extract data tables from the analysis_dict
 
