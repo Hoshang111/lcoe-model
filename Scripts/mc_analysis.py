@@ -119,7 +119,7 @@ def run_mc(projectID, iter, start_year, revenue_year, end_year):
             dump_iter(weather_mc_dict, loss_mc_dict, combined_mc_dict, i, projectID)
     else:
         weather_mc_dict, loss_mc_dict, combined_mc_dict, ghi_df = \
-            mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables)
+            mc_func.run_yield_mc(dc_ordered, input_params, ghi_dict, loss_datatables, start_year, revenue_year, end_year)
 
     # %% ===========================================================
     # Now calculate AC output (currently not used)

@@ -10,7 +10,7 @@ from PyQt5.QtGui import QPixmap
 from mc_opt import run
 from mc_analysis import run_mc
 from Functions.graphing_functions import calculate_variance_diff
-from db import add_params, add_scenario
+from db import add_params, add_scenario, add_opt_targets
 
 this_module = sys.modules[__name__]
 this_module.file = 'no file loaded'
@@ -66,7 +66,58 @@ class MonteExternal(QThread):
             self.countChanged.emit(count)
 
 
-class MainWindow(QMainWindow):
+class Home(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Suncable LCO Suite")
+        self.setFixedSize(QSize(1500, 800))
+        self.setStyleSheet("background-color: white")
+        self.click_lcoe()
+        self.click_lcos()
+
+        home = QLabel(self)
+        home.resize(500, 200)
+        home.move(500, 100)
+        home.setText("Suncable LCO Suite")
+        home.setWordWrap(True)
+        home.setStyleSheet("font-size: 42pt; color: #152053")
+        home.setAlignment(Qt.AlignCenter)
+
+        self.sc_logo = QLabel(self)
+        self.pixmap = QPixmap('../Scripts/suncable_logo.png')
+        smaller_pixmap = self.pixmap.scaled(150, 150, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.sc_logo.resize(150, 150)
+        self.sc_logo.setPixmap(smaller_pixmap)
+        self.sc_logo.move(675, 300)
+
+    def click_lcoe(self):
+        s_button = QPushButton('LCOE', self)
+        s_button.setStyleSheet("background-color: #152053; color: white; font-size: 10pt")
+        s_button.resize(200, 50)
+        s_button.move(650, 500)
+        s_button.clicked.connect(self.clicked_lcoe)
+
+    def click_lcos(self):
+        b_button = QPushButton('LCOS', self)
+        b_button.setStyleSheet("background-color: #152053; color: white; font-size: 10pt")
+        b_button.resize(200, 50)
+        b_button.move(650, 580)
+        b_button.clicked.connect(self.clicked_lcos)
+        self.close()
+
+    def clicked_lcoe(self):
+        self.lcoe = MainLCOEWindow()
+        self.lcoe.show()
+        self.close()
+
+    def clicked_lcos(self):
+        self.bangladesh = BangladeshWindow()
+        self.bangladesh.show()
+        self.close()
+
+
+class MainLCOEWindow(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -190,11 +241,9 @@ class CreateLoadWindow(QWidget):
         l_button.clicked.connect(self.click_load_project)
 
     def click_load_project(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        filename, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*)", options=options)
-        set_file(filename)
+        filename = QFileDialog.getOpenFileName(self, "Load Project", "", "All Files (*)")
+        set_file(filename[0])
+        print(filename[0])
         self.optimise = OptimiseWindow()
         self.optimise.show()
         self.close()
@@ -241,42 +290,42 @@ class ParametersWindow(QWidget):
 
         dc_label = QLabel(self)
         dc_label.resize(200, 50)
-        dc_label.move(550, 200)
+        dc_label.move(350, 200)
         dc_label.setText("DC Total")
         dc_label.setStyleSheet("font-size: 12pt; color: #152053")
         dc_label.setAlignment(Qt.AlignCenter)
 
         nzones_label = QLabel(self)
         nzones_label.resize(200, 50)
-        nzones_label.move(550, 300)
+        nzones_label.move(550, 200)
         nzones_label.setText("Number of Zones")
         nzones_label.setStyleSheet("font-size: 12pt; color: #152053")
         nzones_label.setAlignment(Qt.AlignCenter)
 
         zarea_label = QLabel(self)
         zarea_label.resize(200, 50)
-        zarea_label.move(550, 400)
+        zarea_label.move(750, 200)
         zarea_label.setText("Zone Area")
         zarea_label.setStyleSheet("font-size: 12pt; color: #152053")
         zarea_label.setAlignment(Qt.AlignCenter)
 
         tmodel_label = QLabel(self)
         tmodel_label.resize(200, 50)
-        tmodel_label.move(550, 500)
+        tmodel_label.move(950, 200)
         tmodel_label.setText("Temperature Model")
         tmodel_label.setStyleSheet("font-size: 12pt; color: #152053")
         tmodel_label.setAlignment(Qt.AlignCenter)
 
         numracks_label = QLabel(self)
         numracks_label.resize(200, 50)
-        numracks_label.move(550, 600)
+        numracks_label.move(350, 300)
         numracks_label.setText("Number of Racks")
         numracks_label.setStyleSheet("font-size: 12pt; color: #152053")
         numracks_label.setAlignment(Qt.AlignCenter)
 
         elimit_label = QLabel(self)
         elimit_label.resize(200, 50)
-        elimit_label.move(750, 200)
+        elimit_label.move(550, 300)
         elimit_label.setText("Export Limit")
         elimit_label.setStyleSheet("font-size: 12pt; color: #152053")
         elimit_label.setAlignment(Qt.AlignCenter)
@@ -290,59 +339,80 @@ class ParametersWindow(QWidget):
 
         sprice_label = QLabel(self)
         sprice_label.resize(200, 50)
-        sprice_label.move(750, 400)
+        sprice_label.move(950, 300)
         sprice_label.setText("Scheduled Price")
         sprice_label.setStyleSheet("font-size: 12pt; color: #152053")
         sprice_label.setAlignment(Qt.AlignCenter)
 
         drate_label = QLabel(self)
         drate_label.resize(200, 50)
-        drate_label.move(750, 500)
+        drate_label.move(350, 400)
         drate_label.setText("Discount Rate")
         drate_label.setStyleSheet("font-size: 12pt; color: #152053")
         drate_label.setAlignment(Qt.AlignCenter)
 
         rackratio_label = QLabel(self)
         rackratio_label.resize(200, 50)
-        rackratio_label.move(750, 600)
+        rackratio_label.move(550, 400)
         rackratio_label.setText("Rack Interval Ratio")
         rackratio_label.setStyleSheet("font-size: 12pt; color: #152053")
         rackratio_label.setAlignment(Qt.AlignCenter)
 
+        start_year_label = QLabel(self)
+        start_year_label.resize(200, 50)
+        start_year_label.move(750, 400)
+        start_year_label.setText("Start Year")
+        start_year_label.setStyleSheet("font-size: 12pt; color: #152053")
+        start_year_label.setAlignment(Qt.AlignCenter)
+
+        end_year_label = QLabel(self)
+        end_year_label.resize(200, 50)
+        end_year_label.move(950, 400)
+        end_year_label.setText("End Year")
+        end_year_label.setStyleSheet("font-size: 12pt; color: #152053")
+        end_year_label.setAlignment(Qt.AlignCenter)
+
+        revenue_year_label = QLabel(self)
+        revenue_year_label.resize(200, 50)
+        revenue_year_label.move(350, 500)
+        revenue_year_label.setText("Revenue Year")
+        revenue_year_label.setStyleSheet("font-size: 12pt; color: #152053")
+        revenue_year_label.setAlignment(Qt.AlignCenter)
+
     def param_boxes(self):
         self.dc_box = QLineEdit(self)
         self.dc_box.resize(100, 25)
-        self.dc_box.move(600, 250)
+        self.dc_box.move(400, 250)
         self.dc_box.setStyleSheet("color: black; border: 1px solid black;")
         self.dc_box.setAlignment(Qt.AlignCenter)
 
         self.nzones_box = QLineEdit(self)
         self.nzones_box.resize(100, 25)
-        self.nzones_box.move(600, 350)
+        self.nzones_box.move(600, 250)
         self.nzones_box.setStyleSheet("color: black; border: 1px solid black;")
         self.nzones_box.setAlignment(Qt.AlignCenter)
 
         self.zarea_box = QLineEdit(self)
         self.zarea_box.resize(100, 25)
-        self.zarea_box.move(600, 450)
+        self.zarea_box.move(800, 250)
         self.zarea_box.setStyleSheet("color: black; border: 1px solid black;")
         self.zarea_box.setAlignment(Qt.AlignCenter)
 
         self.tmodel_box = QComboBox(self)
         self.tmodel_box.addItems(["PVSyst", "SAPM"])
         self.tmodel_box.resize(100, 25)
-        self.tmodel_box.move(600, 550)
+        self.tmodel_box.move(1000, 250)
         self.tmodel_box.setStyleSheet("color: black")
 
         self.numracks_box = QLineEdit(self)
         self.numracks_box.resize(100, 25)
-        self.numracks_box.move(600, 650)
+        self.numracks_box.move(400, 350)
         self.numracks_box.setStyleSheet("color: black; border: 1px solid black;")
         self.numracks_box.setAlignment(Qt.AlignCenter)
 
         self.elimit_box = QLineEdit(self)
         self.elimit_box.resize(100, 25)
-        self.elimit_box.move(800, 250)
+        self.elimit_box.move(600, 350)
         self.elimit_box.setStyleSheet("color: black; border: 1px solid black;")
         self.elimit_box.setAlignment(Qt.AlignCenter)
 
@@ -354,21 +424,39 @@ class ParametersWindow(QWidget):
 
         self.sprice_box = QLineEdit(self)
         self.sprice_box.resize(100, 25)
-        self.sprice_box.move(800, 450)
+        self.sprice_box.move(1000, 350)
         self.sprice_box.setStyleSheet("color: black; border: 1px solid black;")
         self.sprice_box.setAlignment(Qt.AlignCenter)
 
         self.drate_box = QLineEdit(self)
         self.drate_box.resize(100, 25)
-        self.drate_box.move(800, 550)
+        self.drate_box.move(400, 450)
         self.drate_box.setStyleSheet("color: black; border: 1px solid black;")
         self.drate_box.setAlignment(Qt.AlignCenter)
 
         self.rackratio_box = QLineEdit(self)
         self.rackratio_box.resize(100, 25)
-        self.rackratio_box.move(800, 650)
+        self.rackratio_box.move(600, 450)
         self.rackratio_box.setStyleSheet("color: black; border: 1px solid black;")
         self.rackratio_box.setAlignment(Qt.AlignCenter)
+
+        self.startyear_box = QLineEdit(self)
+        self.startyear_box.resize(100, 25)
+        self.startyear_box.move(800, 450)
+        self.startyear_box.setStyleSheet("color: black; border: 1px solid black;")
+        self.startyear_box.setAlignment(Qt.AlignCenter)
+
+        self.endyear_box = QLineEdit(self)
+        self.endyear_box.resize(100, 25)
+        self.endyear_box.move(1000, 450)
+        self.endyear_box.setStyleSheet("color: black; border: 1px solid black;")
+        self.endyear_box.setAlignment(Qt.AlignCenter)
+
+        self.revenueyear_box = QLineEdit(self)
+        self.revenueyear_box.resize(100, 25)
+        self.revenueyear_box.move(400, 550)
+        self.revenueyear_box.setStyleSheet("color: black; border: 1px solid black;")
+        self.revenueyear_box.setAlignment(Qt.AlignCenter)
 
     def create_project(self):
         c_button = QPushButton('Create Project', self)
@@ -410,7 +498,7 @@ class ParametersWindow(QWidget):
         g_button.clicked.connect(self.clicked_graphs)
 
     def clicked_home(self):
-        self.home = MainWindow()
+        self.home = MainLCOEWindow()
         self.home.show()
         self.close()
 
@@ -430,33 +518,33 @@ class ParametersWindow(QWidget):
         self.close()
 
     def click_create_project(self):
+
         dc_total = self.dc_box.text()
         num_zones = self.nzones_box.text()
         zone_area = self.zarea_box.text()
+        rack_interval_ratio = self.rackratio_box.text()
         temp_model = self.tmodel_box.currentText()
         export_limit = self.elimit_box.text()
         storage_capacity = self.scapacity_box.text()
         scheduled_price = self.sprice_box.text()
         discount_rate = self.drate_box.text()
         num_racks = self.numracks_box.text()
-        rack_interval_ratio = self.rackratio_box.text()
+        start_year = self.startyear_box.text()
+        revenue_year = self.revenueyear_box.text()
+        end_year = self.endyear_box.text()
 
-        if dc_total == "" or num_zones == "" or zone_area == "" or temp_model == "" or export_limit == "" or \
-                storage_capacity == "" or scheduled_price == "" or discount_rate == "" or num_racks == "" \
-                or rack_interval_ratio == "":
+        inputs = [dc_total, num_zones, zone_area, temp_model, export_limit, storage_capacity, scheduled_price,
+                  discount_rate, num_racks, rack_interval_ratio, start_year, revenue_year, end_year]
+        if "" in inputs:
             msg = QMessageBox()
             msg.setWindowTitle("Invalid Inputs")
             msg.setText("Some input fields were left blank!")
             msg.exec()
         else:
-            options = QFileDialog.Options()
-            options |= QFileDialog.DontUseNativeDialog
-            fileName, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "", "All Files (*);",
-                                                      options=options)
-            add_params(fileName, dc_total, num_zones, zone_area, temp_model, export_limit, storage_capacity,
-                       scheduled_price
-                       , discount_rate, num_racks, rack_interval_ratio)
-            set_file(fileName)
+            fileName = QFileDialog.getSaveFileName(self, 'Save Project')
+            print(fileName[0])
+            add_params(fileName[0], inputs)
+            set_file(fileName[0])
             self.optimise = OptimiseWindow()
             self.optimise.show()
             self.close()
@@ -531,27 +619,34 @@ class OptimiseWindow(QWidget):
         modtech_label.setAlignment(Qt.AlignCenter)
 
         self.year = QComboBox(self)
-        self.year.addItems(["2024", "2026", "2028"])
+        self.year.addItems(["2025", "2026", "2027", "2028", "2029"])
         self.year.resize(100, 25)
         self.year.move(700, 250)
         self.year.setStyleSheet("color: black")
 
         self.m_tech = QComboBox(self)
-        self.m_tech.addItems(["SAT", "MAV", "Fixed"])
+        self.m_tech.addItems(["SAT", "SAT_84_600W", "SAT_84_660W", "MAV", "MAV_6g_10", "MAV_5P13B", "Fixed"])
         self.m_tech.resize(100, 25)
         self.m_tech.move(700, 350)
         self.m_tech.setStyleSheet("color: black")
 
         self.mod_tech = QComboBox(self)
-        self.mod_tech.addItems(["PERC", "TOPCON", "HJT"])
+        self.mod_tech.addItems(["550W_M10", "600W_M10", "MAV_custom_1377", "650W_M10", "MAV_custom_1688", ])
         self.mod_tech.resize(100, 25)
         self.mod_tech.move(700, 450)
         self.mod_tech.setStyleSheet("color: black")
 
-        self.pbar = QProgressBar(self)
-        self.pbar.setGeometry(30, 40, 200, 25)
-        self.pbar.move(660, 650)
-        self.pbar.hide()
+        self.opt_for_box = QComboBox(self)
+        self.opt_for_box.addItems(["2025", "2026", "2027", "2028", "2029"])
+        self.opt_for_box.resize(100, 25)
+        self.opt_for_box.move(750, 350)
+        self.opt_for_box.setStyleSheet("color: black")
+
+        self.opt_target_box = QLineEdit(self)
+        self.opt_target_box.resize(100, 25)
+        self.opt_target_box.move(900, 350)
+        self.opt_target_box.setStyleSheet("color: black; border: 1px solid black;")
+        self.opt_target_box.setAlignment(Qt.AlignCenter)
 
     def add_scenario(self):
         self.as_button = QPushButton('Add Scenario', self)
@@ -571,27 +666,11 @@ class OptimiseWindow(QWidget):
         msg.exec()
 
     def optimise_project(self):
-        self.o_button = QPushButton('Optimise', self)
+        self.o_button = QPushButton('Add Targets', self)
         self.o_button.setStyleSheet("background-color: #152053; color:white; font-size: 10pt")
         self.o_button.resize(200, 50)
         self.o_button.move(650, 575)
-        self.o_button.clicked.connect(self.opt_inputs)
-
-    def opt_inputs(self):
-        self.optimiser = Optimiser()
-        self.optimiser.finished.connect(self.clicked_montecarlo)
-        self.optimiser.start()
-        self.pbar.show()
-        self.calc = OptExternal()
-        self.calc.countChanged.connect(self.onCountChanged)
-        self.calc.start()
-        msg = QMessageBox()
-        msg.setWindowTitle("Optimiser is running!")
-        msg.setText("Optimiser is currently running, do not close tabs.")
-        msg.exec()
-
-    def onCountChanged(self, value):
-        self.pbar.setValue(value)
+        self.o_button.clicked.connect(self.opt_for)
 
     def optimise_nav_bar(self):
         h_button = QPushButton('Home', self)
@@ -627,7 +706,7 @@ class OptimiseWindow(QWidget):
         g_button.clicked.connect(self.clicked_graphs)
 
     def clicked_home(self):
-        self.home = MainWindow()
+        self.home = MainLCOEWindow()
         self.home.show()
         self.close()
 
@@ -644,6 +723,60 @@ class OptimiseWindow(QWidget):
     def clicked_graphs(self):
         self.graphs = GraphWindow()
         self.graphs.show()
+        self.close()
+
+
+    def input_labels(self):
+        year_label = QLabel(self)
+        year_label.resize(200, 50)
+        year_label.move(650, 200)
+        year_label.setText("Select what you are optimising and set optimisation target")
+        year_label.setStyleSheet("color: #152053; font-size: 15pt")
+        year_label.setAlignment(Qt.AlignCenter)
+
+        opt_for_label = QLabel(self)
+        opt_for_label.resize(200, 50)
+        opt_for_label.move(650, 300)
+        opt_for_label.setText("Optimising For")
+        opt_for_label.setStyleSheet("color: #152053; font-size: 15pt")
+        opt_for_label.setAlignment(Qt.AlignCenter)
+
+        opt_target_label = QLabel(self)
+        opt_target_label.resize(200, 50)
+        opt_target_label.move(850, 300)
+        opt_target_label.setText("Optimising Target")
+        opt_target_label.setStyleSheet("color: #152053; font-size: 15pt")
+        opt_target_label.setAlignment(Qt.AlignCenter)
+
+    def add_opts(self):
+        self.as_button = QPushButton('Optimise', self)
+        self.as_button.setStyleSheet("background-color: #152053; color:white; font-size: 10pt")
+        self.as_button.resize(200, 50)
+        self.as_button.move(650, 500)
+        self.as_button.clicked.connect(self.opt_inputs)
+        self.close()
+
+    def opt_inputs(self):
+        opt_for = self.opt_for_box.currentText()
+        opt_target = self.opt_target_box.text()
+        add_opt_targets(this_module.file, opt_for, opt_target)
+        self.optimiser = Optimiser()
+        self.optimiser.finished.connect(self.clicked_montecarlo)
+        self.optimiser.start()
+        self.pbar.show()
+        self.calc = OptExternal()
+        self.calc.countChanged.connect(self.onCountChanged)
+        self.calc.start()
+        msg = QMessageBox()
+        msg.setWindowTitle("Optimiser is running!")
+        msg.setText("Optimiser is currently running, do not close tabs.")
+        msg.exec()
+    def onCountChanged(self, value):
+        self.pbar.setValue(value)
+
+    def clicked_montecarlo(self):
+        self.montecarlo = MontecarloWindow()
+        self.montecarlo.show()
         self.close()
 
 
@@ -774,7 +907,7 @@ class MontecarloWindow(QWidget):
         g_button.clicked.connect(self.clicked_graphs)
 
     def clicked_home(self):
-        self.home = MainWindow()
+        self.home = MainLCOEWindow()
         self.home.show()
         self.close()
 
@@ -967,7 +1100,7 @@ class GraphWindow(QWidget):
         graph_label.setStyleSheet("background-color: white; color: #152053; font-size: 10pt")
 
     def clicked_home(self):
-        self.home = MainWindow()
+        self.home = MainLCOEWindow()
         self.home.show()
         self.close()
 
@@ -993,7 +1126,7 @@ class GraphWindow(QWidget):
 
 
 app = QApplication(sys.argv)
-window = MainWindow()
+window = Home()
 window.show()
 
 app.exec()

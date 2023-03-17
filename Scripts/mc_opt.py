@@ -56,197 +56,30 @@ def run(file_name):
 
     # Financial Parameters
     discount_rate = float(parameters[8])
-    start_year = int(parameters[9])
-    revenue_year = int(parameters[10])
-    end_year = int(parameters[11])
+    num_racks = float(parameters[9])
+    start_year = int(parameters[10])
+    revenue_year = int(parameters[11])
+    end_year = int(parameters[12])
 
     # Optimising Parameters
-    year_sc1 = int(parameters[12])
-    mount_tech_sc1 = str(parameters[13])
-    module_tech_sc1 = str(parameters[14])
+    year_sc1 = int(parameters[13])
+    mount_tech_sc1 = str(parameters[14])
+    module_tech_sc1 = str(parameters[15])
     try:
-        set_racks1 = int(parameters[15])
+        set_racks1 = int(parameters[16])
     except ValueError:
         set_racks1 = None
-    year_sc2 = int(parameters[16])
-    mount_tech_sc2 = str(parameters[17])
-    module_tech_sc2 = str(parameters[18])
-    try:
-        set_racks2 = int(parameters[19])
-    except ValueError:
-        set_racks2 = None
-    year_sc3 = int(parameters[20])
-    mount_tech_sc3 = str(parameters[21])
-    module_tech_sc3 = str(parameters[22])
-    try:
-        set_racks3 = int(parameters[23])
-    except ValueError:
-        set_racks3 = None
-    year_sc4 = int(parameters[24])
-    mount_tech_sc4 = str(parameters[25])
-    module_tech_sc4 = str(parameters[26])
-    try:
-        set_racks4 = int(parameters[27])
-    except ValueError:
-        set_racks4 = None
-    year_sc5 = int(parameters[28])
-    mount_tech_sc5 = str(parameters[29])
-    module_tech_sc5 = str(parameters[30])
-    try:
-        set_racks5 = int(parameters[31])
-    except ValueError:
-        set_racks5 = None
-    year_sc6 = int(parameters[32])
-    mount_tech_sc6 = str(parameters[33])
-    module_tech_sc6 = str(parameters[34])
-    try:
-        set_racks6 = int(parameters[35])
-    except ValueError:
-        set_racks6 = None
-    year_sc7 = int(parameters[36])
-    mount_tech_sc7 = str(parameters[37])
-    module_tech_sc7 = str(parameters[38])
-    try:
-        set_racks7 = int(parameters[39])
-    except ValueError:
-        set_racks7 = None
-    year_sc8 = int(parameters[40])
-    mount_tech_sc8 = str(parameters[41])
-    module_tech_sc8 = str(parameters[42])
-    try:
-        set_racks8 = int(parameters[43])
-    except ValueError:
-        set_racks3 = None
-    year_sc9 = int(parameters[44])
-    mount_tech_sc9 = str(parameters[45])
-    module_tech_sc9 = str(parameters[46])
-    try:
-        set_racks9 = int(parameters[47])
-    except ValueError:
-        set_racks9 = None
-    year_sc10 = int(parameters[48])
-    mount_tech_sc10 = str(parameters[49])
-    module_tech_sc10 = str(parameters[50])
-    try:
-        set_racks10 = int(parameters[51])
-    except ValueError:
-        set_racks10 = None
-    year_sc11 = int(parameters[52])
-    mount_tech_sc11 = str(parameters[53])
-    module_tech_sc11 = str(parameters[54])
-    try:
-        set_racks11 = int(parameters[55])
-    except ValueError:
-        set_racks11 = None
-    year_sc12 = int(parameters[56])
-    mount_tech_sc12 = str(parameters[57])
-    module_tech_sc12 = str(parameters[58])
-    try:
-        set_racks12 = int(parameters[59])
-    except ValueError:
-        set_racks12 = None
-    year_sc13 = int(parameters[60])
-    mount_tech_sc13 = str(parameters[61])
-    module_tech_sc13 = str(parameters[62])
-    try:
-        set_racks13 = int(parameters[63])
-    except ValueError:
-        set_racks13 = None
-    year_sc14 = int(parameters[64])
-    mount_tech_sc14 = str(parameters[65])
-    module_tech_sc14 = str(parameters[66])
-    try:
-        set_racks14 = int(parameters[67])
-    except ValueError:
-        set_racks14 = None
-    year_sc15 = int(parameters[68])
-    mount_tech_sc15 = str(parameters[69])
-    module_tech_sc15 = str(parameters[70])
-    try:
-        set_racks15 = int(parameters[71])
-    except ValueError:
-        set_racks15 = None
-    year_sc16 = int(parameters[72])
-    mount_tech_sc16 = str(parameters[73])
-    module_tech_sc16 = str(parameters[74])
-    try:
-        set_racks16 = int(parameters[75])
-    except ValueError:
-        set_racks16 = None
-    year_sc17 = int(parameters[76])
-    mount_tech_sc17 = str(parameters[77])
-    module_tech_sc17 = str(parameters[78])
-    try:
-        set_racks17 = int(parameters[79])
-    except ValueError:
-        set_racks17 = None
-    year_sc18 = int(parameters[80])
-    mount_tech_sc18 = str(parameters[81])
-    module_tech_sc18 = str(parameters[82])
-    try:
-        set_racks18 = int(parameters[83])
-    except ValueError:
-        set_racks18 = None
-    year_sc19 = int(parameters[84])
-    mount_tech_sc19 = str(parameters[85])
-    module_tech_sc19 = str(parameters[86])
-    try:
-        set_racks19 = int(parameters[87])
-    except ValueError:
-        set_racks19 = None
-    year_sc20 = int(parameters[88])
-    mount_tech_sc20 = str(parameters[89])
-    module_tech_sc20 = str(parameters[90])
-    try:
-        set_racks20 = int(parameters[91])
-    except ValueError:
-        set_racks20 = None
-    year_sc21 = int(parameters[92])
-    mount_tech_sc21 = str(parameters[93])
-    module_tech_sc21 = str(parameters[94])
-    try:
-        set_racks21 = int(parameters[95])
-    except ValueError:
-        set_racks21 = None
-    year_sc22 = int(parameters[96])
-    mount_tech_sc22 = str(parameters[97])
-    module_tech_sc22 = str(parameters[98])
-    try:
-        set_racks22 = int(parameters[99])
-    except ValueError:
-        set_racks22 = None
-    year_sc23 = int(parameters[100])
-    mount_tech_sc23 = str(parameters[101])
-    module_tech_sc23 = str(parameters[102])
-    try:
-        set_racks23 = int(parameters[103])
-    except ValueError:
-        set_racks23 = None
-    year_sc24 = int(parameters[104])
-    mount_tech_sc24 = str(parameters[105])
-    module_tech_sc24 = str(parameters[106])
-    try:
-        set_racks24 = int(parameters[107])
-    except ValueError:
-        set_racks24 = None
-    year_sc25 = int(parameters[108])
-    mount_tech_sc25 = str(parameters[109])
-    module_tech_sc25 = str(parameters[110])
-    try:
-        set_racks25 = int(parameters[111])
-    except ValueError:
-        set_racks25 = None
+    year_sc2 = int(parameters[17])
+    mount_tech_sc2 = str(parameters[18])
+    module_tech_sc2 = str(parameters[19])
 
-    iter_limit = int(parameters[112])
-    optimize_for = str(parameters[113])
+    optimize_for = str(parameters[20])
     try:
-        optimize_target = float(parameters[114])
+        optimize_target = float(parameters[21])
     except ValueError:
         optimize_target = None
-    projectID = str(parameters[115])
+    projectID = str(parameters[22])
 
-    print(parameters)
-    print(optimize_for)
     # Weather
     simulation_years = np.arange(2007, 2022, 1)
     weather_dnv_file = 'SunCable_TMY_HourlyRes_bifacial_545_4m_result.csv'

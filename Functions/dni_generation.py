@@ -101,5 +101,3 @@ pw_final = solcast_empty.fillna(pw_df)
 
 pw_final.to_csv(os.path.join('../Data', 'WeatherData', 'pw_full.csv'),
                      header='PrecipitableWater')
-
-
