@@ -41,6 +41,7 @@ Later, we will convert this to an optimization process which will give the optim
 During the optimisation process/simulations, cost function will give deterministic values. Once the optimum NPV is found
 cost function also give the Monte-Carlo distribution.
 """
+import datetime
 
 # %% Import
 import pandas as pd
@@ -48,9 +49,34 @@ import numpy as np
 import Functions.simulation_functions as func
 import Functions.sizing_functions as sizing
 import Functions.plotting_functions as plot_func
-import Functions.testing as testing
 
-# mpl.use('Qt5Agg')
+
+def align_years(yield_series, cost_series):
+
+    yield_series=yield_series[~((yield_series.index.month==2)&(yield_series.index.day==29))]
+    start_date = datetime.datetime(cost_series.index[0], 1, 1, hour=0)
+    end_date = datetime.datetime(cost_series.index[-1], 12, 31, hour=23)
+    dt_index=pd.date_range(start_date, end_date,
+                           freq='H')
+    dt_index = dt_index[~((dt_index.month==2)&(dt_index.day==29))]
+    aligned_years=pd.concat([yield_series]*cost_series.shape[0], ignore_index=True)
+    aligned_years.index=dt_index
+    return aligned_years, dt_index
+
+
+def apply_degradation(yield_series, first_year_degradation, degradation_rate):
+
+    years = yield_series.index.year
+    year_df = pd.Series(years)
+    year_df.index = yield_series.index
+    delta_years = year_df-year_df[0]
+    fiddle = delta_years-1
+    fiddle[fiddle<0] = 0
+    degradation_factor = 1-delta_years*(degradation_rate+first_year_degradation)+fiddle*first_year_degradation
+    degraded_series = yield_series.mul(degradation_factor, axis=0)
+
+    return degradation_factor, degraded_series
+
 
 def optimise_layout(weather_simulation, rack_type, module_type, install_year, start_year, revenue_year,
                     end_year, DCTotal, num_of_zones, zone_area, rack_interval_ratio, temp_model,
@@ -320,8 +346,8 @@ def analyse_layout(weather_simulation, rack_type, module_type, install_year,
 
     #%% ==========================================
     # resize yield output to match cost time series and apply degradation
-    kWh_series, test_index = testing.align_years(dc_df, cash_flow_by_year)
-    degradation_factor, kWh_degraded = testing.apply_degradation(kWh_series, first_year_degradation, degradation_rate)
+    kWh_series, test_index = align_years(dc_df, cash_flow_by_year)
+    degradation_factor, kWh_degraded = apply_degradation(kWh_series, first_year_degradation, degradation_rate)
 
     # %% ==========================================
     # Revenue and storage behaviour

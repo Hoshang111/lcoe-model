@@ -24,15 +24,19 @@ def add_params(fileName, inputs):
     conn.close()
 
 
-def add_scenario(fileName, scenario, scenario_num):
+def add_scenario(fileName, year, mounting_tech, module_tech, set_racks):
     conn = sqlite3.connect(fileName)
     cur = conn.cursor()
     cur.execute(""" CREATE TABLE IF NOT EXISTS INPUTS (
                                             NAME TEXT NOT NULL,
                                             INPUT TEXT NOT NULL);""")
-    cur.execute("INSERT INTO INPUTS(NAME, INPUT) VALUES (?, ?)", (scenario_num, scenario))
+    cur.execute("INSERT INTO INPUTS(NAME, INPUT) VALUES (?, ?)", ('year', year))
+    cur.execute("INSERT INTO INPUTS(NAME, INPUT) VALUES (?, ?)", ('mounting_tech', mounting_tech))
+    cur.execute("INSERT INTO INPUTS(NAME, INPUT) VALUES (?, ?)", ('module_tech', module_tech))
+    cur.execute("INSERT INTO INPUTS(NAME, INPUT) VALUES (?, ?)", ('set_racks', set_racks))
     conn.commit()
     conn.close()
+
 
 def add_opt_targets(fileName, opt_for, opt_target):
     conn = sqlite3.connect(fileName)
