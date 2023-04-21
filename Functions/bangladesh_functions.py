@@ -1,91 +1,191 @@
-# %% Import
+import requests
 import pandas as pd
-import Functions.simulation_functions as func
-import Functions.sizing_functions as sizing
-import Functions.plotting_functions as plot_func
-import Functions.testing as testing
+import urllib.parse
+import time
+import pvlib
+import os
+import ast
 
-def get_tilts():
-    """"""
+def get_nsrdb(api_key, email, base_url, lat, long, datasets):
+
+    input_data = {
+        'wkt': "POINT(" + str(long) + " " + str(lat) + ")",
+        'attributes': 'air_temperature,dew_point,dhi,dni,surface_albedo,surface_pressure,wind_speed,ghi,cloud_type,relative_humidity,wind_direction,total_precipitable_water',
+        'interval': '60',
+        'api_key': api_key,
+        'email': email,
+    }
+    for name in datasets:
+        print(f"Processing name: {name}")
+
+        input_data['names'] = [name]
+
+        if '.csv' in base_url:
+            url = base_url + urllib.parse.urlencode(input_data, True)
+            print(url)
+            # Note: CSV format is only supported for single point requests
+            # Suggest that you might append to a larger data frame
+            data = pd.read_csv(url)
+            print(f'Response data (you should replace this print statement with your processing): {data}')
+            # You can use the following code to write it to a file
+            # data.to_csv('SingleBigDataPoint.csv')
+        else:
+            headers = {
+                'x-api-key': api_key
+            }
+            data = get_response_json_and_handle_errors(requests.post(BASE_URL, input_data, headers=headers))
+            download_url = data['outputs']['downloadUrl']
+            # You can do with what you will the download url
+            print(data['outputs']['message'])
+            print(f"Data can be downloaded from this url when ready: {download_url}")
+
+            # Delay for 1 second to prevent rate limiting
+            time.sleep(1)
+        print(f'Processed')
+
+        return data
+
+
+def get_response_json_and_handle_errors(response: requests.Response) -> dict:
+    """Takes the given response and handles any errors, along with providing
+    the resulting json
+
+    Parameters
+    ----------
+    response : requests.Response
+        The response object
+
+    Returns
+    -------
+    dict
+        The resulting json
+    """
+    if response.status_code != 200:
+        print(
+            f"An error has occurred with the server or the request. The request response code/status: {response.status_code} {response.reason}")
+        print(f"The response body: {response.text}")
+        exit(1)
+
+    try:
+        response_json = response.json()
+    except:
+        print(
+            f"The response couldn't be parsed as JSON, likely an issue with the server, here is the text: {response.text}")
+        exit(1)
+
+    if len(response_json['errors']) > 0:
+        errors = '\n'.join(response_json['errors'])
+        print(f"The request errored out, here are the errors: {errors}")
+        exit(1)
+    return response_json
+
+
+def get_module(module_type):
+    """
+        rack_module_params function extracts the relevant rack and module variables for simulations
+
+        Parameters
+        ----------
+        rack_type: str
+            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
+
+        module_type: str
+            Type of module to be used in solar farm
+
+        Returns
+        -------
+        rack_params, module_params : Dataframe
+            Rack and module parameters to be used in PVlib simulations
+    """
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
+    # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
+
+    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+                                   skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
+
+    module_params = suncable_modules[module_type]
+
+    return module_params
+
+def get_inverter():
+    """
+        rack_module_params function extracts the relevant rack and module variables for simulations
+
+        Parameters
+        ----------
+        rack_type: str
+            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
+
+        module_type: str
+            Type of module to be used in solar farm
+
+        Returns
+        -------
+        rack_params, module_params : Dataframe
+            Rack and module parameters to be used in PVlib simulations
+    """
+    invdb = pvlib.pvsystem.retrieve_sam('CECInverter')
+    inverter_params = invdb.SMA_America__SC_2500_EV_US__550V_
+
+    return inverter_params
+
+
+def get_module(module_type):
+    """
+        rack_module_params function extracts the relevant rack and module variables for simulations
+
+        Parameters
+        ----------
+        rack_type: str
+            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
+
+        module_type: str
+            Type of module to be used in solar farm
+
+        Returns
+        -------
+        rack_params, module_params : Dataframe
+            Rack and module parameters to be used in PVlib simulations
+    """
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
+    # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
+
+    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+                                   skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
+
+    module_params = suncable_modules[module_type]
+
+    return module_params
+
+def get_inverter():
+    """
+        rack_module_params function extracts the relevant rack and module variables for simulations
+
+        Parameters
+        ----------
+        rack_type: str
+            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
+
+        module_type: str
+            Type of module to be used in solar farm
+
+        Returns
+        -------
+        rack_params, module_params : Dataframe
+            Rack and module parameters to be used in PVlib simulations
+    """
+    invdb = pvlib.pvsystem.retrieve_sam('CECInverter')
+    inverter_params = invdb.SMA_America__SC_2500_EV_US__550V_
+
+    return inverter_params
 
 
 
-def optimise_layout(weather_simulation, rack_params, module_params, land_area,
-                    temp_model, export_lim, storage_capacity, scheduled_price,
-                    data_tables, discount_rate, fig_title=None):
-
-
-    # %%
-    # Sizing/rack and module numbers
-    # Call the constants from the database - unneeded if we just pass module class?
-    rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCTotal, num_of_zones, module_params,
-                                                                                 rack_params, zone_area, rack_interval_ratio)
-    # %% ========================================
-    # DC yield
-
-    dc_results, dc_df, dc_size = func.dc_yield(DCTotal, rack_params, module_params, temp_model, weather_simulation,
-                                               rack_per_zone_num_range, module_per_zone_num_range, gcr_range, num_of_zones)
-
-
-    #%% ==========================================
-    # Revenue and storage behaviour
-
-    kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-
-    #%% ==========================================
-    # Cost
-
-    cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
-    component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-    #%% ==========================================
-    # Net present value (NPV)
-    # resize yield output to match cost time series
-    kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
-    revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-
-    # ==========================================
-    npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-    LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
-    # %% =======================================
-    # Simulations to find optimum NPV according to number of racks per zone
-
-    rack_interval = rack_per_zone_num_range[2]-rack_per_zone_num_range[1]
-    num_of_zones_sim = 1  # find the results per zone for now
-    npv_array = []
-    npv_cost_array = []
-    npv_revenue_array = []
-    gcr_range_array = []
-    rack_per_zone_num_range_array = []
-    iteration = 1
-
-    while rack_interval > 1:
-        print('Max NPV is %d' % npv.max())
-        print('Iteration = %d' % iteration)
-        npv_array.append(npv)
-        npv_cost_array.append(npv_cost)
-        npv_revenue_array.append(npv_revenue)
-        gcr_range_array.append(gcr_range)
-        rack_per_zone_num_range_array.append(rack_per_zone_num_range)
-        index_max = npv.idxmax()
-        DCpower_min = index_max * rack_params['Modules_per_rack'] * module_params['STC'] / 1e6
-        new_interval_ratio = rack_interval / index_max / 5
-        if index_max == npv.index[0] or index_max == npv.index[10]:
-            new_interval_ratio = 0.04
-
-        rack_per_zone_num_range, module_per_zone_num_range, gcr_range = func.get_racks(DCpower_min, num_of_zones_sim,
-                                                                                       module_params, rack_params, zone_area,
-                                                                                       new_interval_ratio)
-        rack_interval = rack_per_zone_num_range[2] - rack_per_zone_num_range[1]
-        dc_results, dc_df, dc_size = func.dc_yield(DCpower_min, rack_params, module_params, temp_model, weather_simulation,
-                                                   rack_per_zone_num_range, module_per_zone_num_range, gcr_range,
-                                                   num_of_zones)
-        kWh_export, direct_revenue, store_revenue, total_revenue = sizing.get_revenue(dc_df, export_lim, scheduled_price, storage_capacity)
-        cost_outputs = sizing.get_costs(rack_per_zone_num_range, rack_params, module_params, data_tables, install_year=install_year)
-        component_usage_y, component_cost_y, total_cost_y, cash_flow_by_year = cost_outputs
-        kWh_series = sizing.align_cashflows(cash_flow_by_year, kWh_export)
-        revenue_series = sizing.align_cashflows(cash_flow_by_year, total_revenue)
-        npv, yearly_npv, npv_cost, npv_revenue, Yearly_NPV_revenue, Yearly_NPV_costs = sizing.get_npv(cash_flow_by_year, revenue_series, discount_rate)
-        LCOE, kWh_discounted = sizing.get_lcoe(cash_flow_by_year, kWh_series)
-        iteration += 1
-        if iteration >= 11:
-            break
+API_KEY = "gHAuzn9Uv6qRgQ8EYgTdIQRkWk2hpfqNjTxItLQk"
+EMAIL = "p.hamer@unsw.edu.au"
+BASE_URL = "https://developer.nrel.gov/api/nsrdb/v2/solar/himawari-tmy-download.csv?"
+DATASET = ['tmy-2020']
+LAT = -21.47
+LONG = 129.04
+POINTS = '1511107'
+weather_data = get_nsrdb(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET)
