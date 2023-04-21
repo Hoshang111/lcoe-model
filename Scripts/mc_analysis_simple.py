@@ -29,10 +29,19 @@ warnings.filterwarnings(action='ignore',
                                 message='divide by zero encountered in true_divide*')
 
  # %% ===========================================================
+ # Need to replace API_KEY and EMAIL with appropriate account
+
+API_KEY = "gHAuzn9Uv6qRgQ8EYgTdIQRkWk2hpfqNjTxItLQk"
+EMAIL = "p.hamer@unsw.edu.au"
+BASE_URL = "https://developer.nrel.gov/api/nsrdb/v2/solar/himawari-tmy-download.csv?"
+DATASET = ['tmy-2020']
+
+
+ # %% ===========================================================
 def dump_iter(combined_mc_dict, repeat_num, scenario_id):
      """"""
 
-     bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
+     bng_path = 'Data\OutputData'
      dump_dict = {'combined_yield_mc': combined_mc_dict,
                       'discounted_ghi': ghi_df}
      file_name = "analysis_dict" + '_' +str(scenario_id) + "_" + str(repeat_num) + '.p'
@@ -78,9 +87,9 @@ def gen_costs(cost_datatables, site_params, discount_rate):
 def get_site_params(site_name):
     """"""
 
-    parent_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files'
+    data_path = 'Data\SystemData'
     filename = site_name + '.csv'
-    file_path = os.path.join(parent_path, filename)
+    file_path = os.path.join(data_path, filename)
     site_params = pd.read_csv(file_path, index_col=0)
     site_dict = {}
     site_dict['latitude'] = float(site_params[site_name]['latitude'])
@@ -143,7 +152,7 @@ scenario_dict['MW_per_inverter'] = input_params['MW_per_inverter']
  # %% ===========================================================
  # define cost breakdown and generate cost datatables
 
-cost_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\\bang_costs_new.csv'
+cost_path = 'Data\CostData\\bang_costs.csv'
 cost_tables = pd.read_csv(cost_path)
 cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
                                         index_description='ScenarioName', num_iterations=iter_num,
@@ -152,7 +161,7 @@ cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
  # %% ===========================================================
  # code defining loss factors and generating mc dataframe
 
-loss_path = 'C:\\Users\phill\Documents\Bangladesh Application\input_files\\bang_loss.csv'
+loss_path = 'Data\SystemData\\bang_loss.csv'
 loss_tables = pd.read_csv(loss_path)
 loss_datatables = generate_iterations(loss_tables, index_name='YieldID',
                                         index_description='YieldName', num_iterations=iter_num,
@@ -173,11 +182,9 @@ def weather_import(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET):
 
     return weather_file, ghi
 
-mc_weather_name = 'feni.csv' #site + '.csv'
-data_path = "C:\\Users\phill\Documents\Bangladesh Application\input_files\weather"
-file_path = os.path.join(data_path, "corrections.p")
-corrections = cpickle.load(open(file_path, 'rb'))
-mc_weather_file, yearly_ghi, uncorrected_ghi = weather_import(mc_weather_name, location, corrections)
+
+mc_weather_file, yearly_ghi = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
+                                             site_params['longitude'], DATASET)
 
 
 
@@ -247,19 +254,16 @@ for iteration in yield_iter_dict:
                         axis=0, ignore_index=True)
 
 # %% ==================================================
-# Generate cost dict
-
-
-
-
-
-# %% ==================================================
 # Export relevant data
 
 analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_yield_mc_dict,
                  'discounted_ghi': discounted_ghi_full, 'loss_parameters': loss_datatables,
                  'data_tables': cost_datatables}
 
-output_name = site + '_output_dict.p'
-pickle_path = os.path.join(bng_path, 'mc_analysis', output_name)
-cpickle.dump(analysis_dict, open(pickle_path, "wb"))
+# %% ==================================================
+# Generate Report
+
+
+# output_name = site + '_output_dict.p'
+# pickle_path = os.path.join(bng_path, 'mc_analysis', output_name)
+# cpickle.dump(analysis_dict, open(pickle_path, "wb"))
