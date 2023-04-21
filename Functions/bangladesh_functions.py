@@ -100,7 +100,7 @@ def get_module(module_type):
     os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
     # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
 
-    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0,
                                    skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
     module_params = suncable_modules[module_type]
@@ -150,10 +150,10 @@ def get_module(module_type):
     os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
     # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
 
-    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+    bang_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0,
                                    skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
-    module_params = suncable_modules[module_type]
+    module_params = bang_modules[module_type]
 
     return module_params
 

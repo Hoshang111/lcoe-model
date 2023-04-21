@@ -92,12 +92,12 @@ weather['precipitable_water'] = weather['precipitable_water']/10
 
 # Import Suncable Module Database
 
-suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0, skiprows=[1, 2]).T
+suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0, skiprows=[1, 2]).T
 
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
 # Import Rack Data from database
-suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0, skiprows=[1]).T
+suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_rack_database.csv'), index_col=0, skiprows=[1]).T
 
 rack = suncable_racks['SAT_1']
 

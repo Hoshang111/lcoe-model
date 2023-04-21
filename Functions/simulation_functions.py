@@ -198,10 +198,10 @@ def rack_module_params(rack_type,
     """
     os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
     # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
-    suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_rack_database.csv'), index_col=0,
+    suncable_racks = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_rack_database.csv'), index_col=0,
                                  skiprows=[1], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
-    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0,
                                    skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
 
     rack_params = suncable_racks[rack_type]

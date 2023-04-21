@@ -45,7 +45,7 @@ simulation_year = str(2020)  # for now try to run a simulation with one year (36
 weather_simulation = weather[['ghi', 'dni', 'dhi', 'temp_air', 'wind_speed', 'precipitable_water']].copy()[simulation_year]
 weather_simulation['precipitable_water'] = weather_simulation['precipitable_water']/10  # formatting for PV-lib
 # %% Modules
-suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'Suncable_module_database.csv'), index_col=0,
+suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0,
                                skiprows=[1, 2]).T
 module = suncable_modules['Jinko_JKM575M_7RL4_TV_PRE']
 
