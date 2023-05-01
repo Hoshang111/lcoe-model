@@ -5,6 +5,7 @@ import time
 import pvlib
 import os
 import ast
+import math
 
 def get_nsrdb(api_key, email, base_url, lat, long, datasets):
 
@@ -178,6 +179,23 @@ def get_inverter():
     inverter_params = invdb.SMA_America__SC_2500_EV_US__550V_
 
     return inverter_params
+
+def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt):
+    """"""
+
+    theta = 23.45+lat
+    area_ratio_raw = math.tan(theta)/(math.cos(tilt)*math.tan(theta)+math.sin(tilt))
+    module_number_raw = 0.9*site_area*area_ratio_raw/module['Area']
+    inverter_num = math.floor(module_number_raw/modules_per_inverter)
+    provisional_mw = inverter_num*modules_per_inverter*module['STC']
+
+    if provisional_mw < mw_rating:
+        final_mw = provisional_mw
+    else:
+        inverter_num = math.floor(mw_rating/(module['STC']*modules_per_inverter))
+        final_mw = inverter_num*modules_per_inverter*module['STC']
+
+    return final_mw, inverter_num
 
 
 

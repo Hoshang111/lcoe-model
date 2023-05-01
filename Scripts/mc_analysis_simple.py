@@ -114,7 +114,7 @@ iter_limit = 50
 
  # %% ===========================================================
  # define input and scenario data
-site = 'jamalpur'
+site = 'test'
 site_params = get_site_params(site)
 
 input_params = {}
@@ -122,16 +122,15 @@ input_params['temp_model'] = 'pvsyst'
 input_params['albedo'] = 0.2
 input_params['bdt_to_usd'] = 0.0096
 input_params['zone_area'] = 28000
-input_params['num_of_zones'] = site_params['num_inverters']
 input_params['discount_rate'] = site_params['discount_rate']
 input_params['MW_rating'] = site_params['MW_rating']
 input_params['MW_per_inverter'] = 3.0096
-input_params['site_area'] = 4046.86*site_params['site_area']
+input_params['site_area'] = site_params['site_area']
 
 location = {}
 location['latitude'] = site_params['latitude']
 location['longitude'] = site_params['longitude']
-location['name'] = site
+location['name'] = site_params['site_name']
 location['altitude'] = site_params['altitude']
 location['timezone'] = site_params['timezone']
 
@@ -143,11 +142,13 @@ scenario_dict['strings_per_inverter'] = 24
 scenario_dict['modules_per_string'] = 190
 scenario_dict['modules_per_inverter'] = 4560
 scenario_dict['rack'] = 'fixed'
-scenario_dict['MW_rating'] = site_params['MW_rating']
 scenario_dict['MW_per_inverter'] = input_params['MW_per_inverter']
 
- # %% ==========================================================
- #code to define number of zones from provided land area
+scenario_dict['MW_rating'], input_params['num_of_inverter'] = b_func.get_layout(input_params['site_area'],
+                                                                                input_params['MW_rating'],
+                                                                                location['latitude'],
+                                                                                scenario_dict['module'],
+                                                                                scenario_dict['modules_per_inverter'])
 
  # %% ===========================================================
  # define cost breakdown and generate cost datatables
