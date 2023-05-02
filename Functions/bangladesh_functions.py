@@ -211,13 +211,3 @@ def get_flood_mul(flood_risk):
 
     return flood_mul
 
-
-
-API_KEY = "gHAuzn9Uv6qRgQ8EYgTdIQRkWk2hpfqNjTxItLQk"
-EMAIL = "p.hamer@unsw.edu.au"
-BASE_URL = "https://developer.nrel.gov/api/nsrdb/v2/solar/himawari-tmy-download.csv?"
-DATASET = ['tmy-2020']
-LAT = -21.47
-LONG = 129.04
-POINTS = '1511107'
-weather_data = get_nsrdb(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET)
