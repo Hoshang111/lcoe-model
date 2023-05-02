@@ -80,13 +80,15 @@ def gen_costs(cost_datatables, site_params, input_params, discount_rate):
 
 def get_site_params(site_name):
     """"""
-
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
     data_path = 'Data\SystemData'
-    filename = site_name + '.csv'
-    file_path = os.path.join(data_path, filename)
+    filename = 'test.csv'
+    file_path = os.path.join(parent_path, data_path, filename)
     site_params = pd.read_csv(file_path, index_col=0)
     site_dict = {}
-    site_dict['site_name'] = site_params[site_name]['site_name']
+    site_name = site_params.columns[0]
+    site_dict['site_name'] = site_name
     site_dict['latitude'] = float(site_params[site_name]['latitude'])
     site_dict['longitude'] = float(site_params[site_name]['longitude'])
     site_dict['altitude'] = float(site_params[site_name]['altitude'])

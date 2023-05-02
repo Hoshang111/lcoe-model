@@ -180,7 +180,7 @@ def get_inverter():
 
     return inverter_params
 
-def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt):
+def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt=20):
     """"""
 
     theta = 23.45+lat
