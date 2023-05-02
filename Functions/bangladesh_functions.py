@@ -185,7 +185,7 @@ def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt=20)
 
     theta = 23.45+lat
     area_ratio_raw = math.tan(theta)/(math.cos(tilt)*math.tan(theta)+math.sin(tilt))
-    module_number_raw = 0.9*site_area*area_ratio_raw/module['Area']
+    module_number_raw = 0.9*site_area*area_ratio_raw/module['A_c']
     inverter_num = math.floor(module_number_raw/modules_per_inverter)
     provisional_mw = inverter_num*modules_per_inverter*module['STC']
 # Need to check whether MW rating is referred to as AC or DC...
