@@ -48,14 +48,14 @@ def dump_iter(combined_mc_dict, repeat_num, scenario_id):
      pickle_path = os.path.join(bng_path, 'mc_analysis', file_name)
      cpickle.dump(dump_dict, open(pickle_path, "wb"))
 
-def gen_costs(cost_datatables, site_params, discount_rate):
+def gen_costs(cost_datatables, site_params, input_params, discount_rate):
     """"""
 
-    cost_capital_pMW = cost_datatables['base_pMW']+cost_datatables['transmission']*site_params['dist_substation']\
-        +cost_datatables['site_prep']*site_params['flood_multiplier']
+    cost_capital_pMW = cost_datatables['base_pMW']+cost_datatables['transmission']*site_params['dist_substation']
+    cost_capital_pm2 = cost_datatables['site_prep']+cost_datatables['site_prep_flood']*input_params['flood_multiplier']
     cost_capital_other = cost_datatables['roads']*site_params['dist_road']
     ongoing_costs_pMW = cost_datatables['om_pMWpy']
-    capital_cost = cost_capital_pMW*site_params['num_inverters']*2.5+cost_capital_other
+    capital_cost = cost_capital_pMW*site_params['num_inverters']*2.5+cost_capital_pm2*input_params['site_area']+cost_capital_other
 
     cost_dict = {}
     for i in range(31):
@@ -92,18 +92,17 @@ def get_site_params(site_name):
     file_path = os.path.join(data_path, filename)
     site_params = pd.read_csv(file_path, index_col=0)
     site_dict = {}
+    site_dict['site_name'] = site_params[site_name]['site_name']
     site_dict['latitude'] = float(site_params[site_name]['latitude'])
     site_dict['longitude'] = float(site_params[site_name]['longitude'])
     site_dict['altitude'] = float(site_params[site_name]['altitude'])
     site_dict['site_area'] = float(site_params[site_name]['site_area'])
     site_dict['MW_rating'] = float(site_params[site_name]['MW_rating'])
     site_dict['timezone'] = site_params[site_name]['timezone']
-    site_dict['num_inverters'] = float(site_params[site_name]['num_inverters'])
     site_dict['dist_road'] = float(site_params[site_name]['dist_road'])
     site_dict['dist_substation'] = float(site_params[site_name]['dist_substation'])
     site_dict['discount_rate'] = float(site_params[site_name]['discount_rate'])
-    site_dict['tariff'] = float(site_params[site_name]['tariff'])
-    site_dict['flood_multiplier'] = float(site_params[site_name]['flood_multiplier'])
+    site_dict['flood_risk'] = site_params[site_name]['flood_risk']
 
     return site_dict
  # %% ===========================================================
@@ -126,6 +125,7 @@ input_params['discount_rate'] = site_params['discount_rate']
 input_params['MW_rating'] = site_params['MW_rating']
 input_params['MW_per_inverter'] = 3.0096
 input_params['site_area'] = site_params['site_area']
+input_params['flood_multiplier'] = b_func.get_flood_mul(site_params['flood_risk'])
 
 location = {}
 location['latitude'] = site_params['latitude']
@@ -135,7 +135,7 @@ location['altitude'] = site_params['altitude']
 location['timezone'] = site_params['timezone']
 
 scenario_dict = {}
-scenario_dict['scenario_ID'] = site
+scenario_dict['scenario_ID'] = site_params['site_name']
 scenario_dict['module'] = b_func.get_module('Trina_TSM_DEG21C_20')
 scenario_dict['inverter'] = b_func.get_inverter()
 scenario_dict['strings_per_inverter'] = 24
@@ -153,7 +153,7 @@ scenario_dict['MW_rating'], input_params['num_of_inverter'] = b_func.get_layout(
  # %% ===========================================================
  # define cost breakdown and generate cost datatables
 
-cost_path = 'Data\CostData\\bang_costs.csv'
+cost_path = 'Data\CostData\\bang_costs_new.csv'
 cost_tables = pd.read_csv(cost_path)
 cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
                                         index_description='ScenarioName', num_iterations=iter_num,

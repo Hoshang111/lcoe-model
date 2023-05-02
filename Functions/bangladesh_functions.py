@@ -188,7 +188,7 @@ def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt):
     module_number_raw = 0.9*site_area*area_ratio_raw/module['Area']
     inverter_num = math.floor(module_number_raw/modules_per_inverter)
     provisional_mw = inverter_num*modules_per_inverter*module['STC']
-
+# Need to check whether MW rating is referred to as AC or DC...
     if provisional_mw < mw_rating:
         final_mw = provisional_mw
     else:
@@ -196,6 +196,20 @@ def get_layout(site_area, mw_rating, lat, module, modules_per_inverter, tilt):
         final_mw = inverter_num*modules_per_inverter*module['STC']
 
     return final_mw, inverter_num
+
+def get_flood_mul(flood_risk):
+
+
+    if flood_risk == 'none':
+        flood_mul = 0
+    elif flood_risk == 'low':
+        flood_mul = 1
+    elif flood_risk == 'moderate':
+        flood_mul = 2
+    elif flood_risk == 'severe':
+        flood_mul = 3
+
+    return flood_mul
 
 
 
