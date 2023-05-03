@@ -175,17 +175,19 @@ def weather_import(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET):
     """"""
 
     metadata, weather_file = b_func.get_nsrdb(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET)
+    weather_file.index = pd.to_datetime(weather_file[['Year', 'Month', 'Day', 'Hour', 'Minute']]
+                   .astype(str).agg('-'.join, axis=1), format='%Y-%m-%d-%H-%M')
     #weather_file.index = pd.to_datetime(weather_file.index, utc=True)
-    ghi = weather_file['ghi'].groupby(weather_file.index.year).sum()
+    #ghi = weather_file['ghi'].groupby(weather_file.index.year).sum()
 
-    return metadata, weather_file, ghi
+    return metadata, weather_file, #ghi
 
 #, yearly_ghi
-metadata, mc_weather_file, ghi = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
+metadata, mc_weather_file = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
                                              site_params['longitude'], DATASET)
 
 
-
+breakpoint()
 # %%
 
 weather_mc_dict = {}

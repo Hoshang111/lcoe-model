@@ -1037,8 +1037,6 @@ def test_dc( rack_params,
     print('this_worked')
     location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
 
-    weather_simulation.index = weather_simulation.index.shift(periods=30, freq='T')
-
     num_of_modules_per_string = 30
 
     if rack_params == 'fixed':
@@ -1083,6 +1081,5 @@ def test_dc( rack_params,
     else:
         raise ValueError("Please choose racking as one of these options: fixed")
 
-    weather_simulation.index = weather_simulation.index.shift(periods=-30, freq='T')
 
     return dc_power, dc_voltage
