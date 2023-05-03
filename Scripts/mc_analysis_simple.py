@@ -148,8 +148,9 @@ scenario_dict['MW_rating'], input_params['num_of_inverter'] = b_func.get_layout(
 
  # %% ===========================================================
  # define cost breakdown and generate cost datatables
-
-cost_path = 'Data\CostData\\bang_costs_new.csv'
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+cost_path = os.path.join(parent_path, 'Data\SystemData\\bang_costs_new.csv')
 cost_tables = pd.read_csv(cost_path)
 cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
                                         index_description='ScenarioName', num_iterations=iter_num,
@@ -158,7 +159,7 @@ cost_datatables = generate_iterations(cost_tables, index_name='ScenarioID',
  # %% ===========================================================
  # code defining loss factors and generating mc dataframe
 
-loss_path = 'Data\SystemData\\bang_loss.csv'
+loss_path = os.path.join(parent_path, 'Data\SystemData\\bang_loss.csv')
 loss_tables = pd.read_csv(loss_path)
 loss_datatables = generate_iterations(loss_tables, index_name='YieldID',
                                         index_description='YieldName', num_iterations=iter_num,
@@ -173,14 +174,14 @@ loss_datatables = generate_iterations(loss_tables, index_name='YieldID',
 def weather_import(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET):
     """"""
 
-    weather_file = b_func.get_nsrdb(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET)
-    weather_file.index = pd.to_datetime(weather_file.index, utc=True)
+    metadata, weather_file = b_func.get_nsrdb(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET)
+    #weather_file.index = pd.to_datetime(weather_file.index, utc=True)
     ghi = weather_file['ghi'].groupby(weather_file.index.year).sum()
 
-    return weather_file, ghi
+    return metadata, weather_file, ghi
 
-
-mc_weather_file, yearly_ghi = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
+#, yearly_ghi
+metadata, mc_weather_file, ghi = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
                                              site_params['longitude'], DATASET)
 
 

@@ -44,7 +44,18 @@ def get_nsrdb(api_key, email, base_url, lat, long, datasets):
             time.sleep(1)
         print(f'Processed')
 
-        return data
+        metadata = data.loc[0].copy(deep=True)
+        data.rename(columns={'Source':'Year', 'Location ID':'Month', 'City':'Day',
+                             'State': 'Hour', 'Country':'Minute', 'Latitude':'Temperature',
+                             'Longitude':'Dew Point', 'Time Zone':'dhi', 'Elevation':'dni',
+                             'Local Time Zone':'Surface Albedo', 'Clearsky DHI Units':'Pressure',
+                             'Clearsky DNI Units':'Wind Speed', 'Clearsky GHI Units':'ghi',
+                             'Dew Point Units':'Cloud Type','DHI Units':'Relative Humidity',
+                             'DNI Units':'Wind Direction', 'GHI Units':'Precipitable Water'}, inplace=True)
+        data.drop([0,1], axis=0, inplace=True)
+
+
+        return metadata, data
 
 
 def get_response_json_and_handle_errors(response: requests.Response) -> dict:
@@ -79,57 +90,6 @@ def get_response_json_and_handle_errors(response: requests.Response) -> dict:
         print(f"The request errored out, here are the errors: {errors}")
         exit(1)
     return response_json
-
-
-def get_module(module_type):
-    """
-        rack_module_params function extracts the relevant rack and module variables for simulations
-
-        Parameters
-        ----------
-        rack_type: str
-            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
-
-        module_type: str
-            Type of module to be used in solar farm
-
-        Returns
-        -------
-        rack_params, module_params : Dataframe
-            Rack and module parameters to be used in PVlib simulations
-    """
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))  # Change the directory to the current folder
-    # Note that for the cost_components columns, the text needs to be converted into a list of tuples. ast.literal_eval does this.
-
-    suncable_modules = pd.read_csv(os.path.join('../Data', 'SystemData', 'bang_module_database.csv'), index_col=0,
-                                   skiprows=[1, 2], converters={"cost_components": lambda x: ast.literal_eval(str(x))}).T
-
-    module_params = suncable_modules[module_type]
-
-    return module_params
-
-def get_inverter():
-    """
-        rack_module_params function extracts the relevant rack and module variables for simulations
-
-        Parameters
-        ----------
-        rack_type: str
-            Type of rack to be used in solar farm. Two options: '5B_MAV' or 'SAT_1'
-
-        module_type: str
-            Type of module to be used in solar farm
-
-        Returns
-        -------
-        rack_params, module_params : Dataframe
-            Rack and module parameters to be used in PVlib simulations
-    """
-    invdb = pvlib.pvsystem.retrieve_sam('CECInverter')
-    inverter_params = invdb.SMA_America__SC_2500_EV_US__550V_
-
-    return inverter_params
-
 
 def get_module(module_type):
     """
