@@ -964,6 +964,7 @@ def test_dc( rack_params,
              temp_model,
              weather_simulation,
              strings_per_inverter,
+             num_of_modules_per_string,
              site,
              inverter,
              tilt_range
@@ -1037,8 +1038,6 @@ def test_dc( rack_params,
     print('this_worked')
     location = Location(site['latitude'], site['longitude'], name=site['name'], altitude=site['altitude'], tz=site['timezone'])
 
-    num_of_modules_per_string = 30
-
     if rack_params == 'fixed':
 
         if module_params['Bifacial'] > 0:
@@ -1059,8 +1058,6 @@ def test_dc( rack_params,
             mc.run_model_bifacial(weather_simulation)
             dc_power = mc.results.dc['p_mp']
             dc_voltage = mc.results.dc['v_mp']
-            dc_power.index = dc_power.index.shift(periods=-30, freq='T')
-            dc_voltage.index = dc_voltage.index.shift(periods=-30, freq='T')
         else:
             mount = pvsys.FixedMount(surface_tilt=20, surface_azimuth=180,
                                                  racking_model='open_rack',
@@ -1077,7 +1074,6 @@ def test_dc( rack_params,
             mc = ModelChain(inverter_sat_system, location)
             mc.run_model(weather_simulation)
             dc_results = pd.concat([mc.results.dc['p_mp'], mc.results.dc['v_mp']], axis=1)
-            dc_results.index = dc_results.index.shift(periods=-30, freq='T')
     else:
         raise ValueError("Please choose racking as one of these options: fixed")
 

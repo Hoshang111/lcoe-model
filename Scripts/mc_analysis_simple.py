@@ -44,11 +44,11 @@ def dump_iter(combined_mc_dict, repeat_num, scenario_id):
      pickle_path = os.path.join(parent_path, bng_path, 'mc_analysis', file_name)
      cpickle.dump(dump_dict, open(pickle_path, "wb"))
 
-def gen_costs(cost_datatables, site_params, input_params, discount_rate):
+def gen_costs(cost_datatables, site_params, input_params):
     """"""
-
+    discount_rate = input_params['discount_rate']
     cost_capital_pMW = cost_datatables['base_pMW']+cost_datatables['transmission']*site_params['dist_substation']
-    cost_capital_pm2 = cost_datatables['site_prep']+cost_datatables['site_prep_flood']*input_params['flood_multiplier']
+    cost_capital_pm2 = cost_datatables['site_prep_base']+cost_datatables['site_prep_flood']*input_params['flood_multiplier']
     cost_capital_other = cost_datatables['roads']*site_params['dist_road']
     ongoing_costs_pMW = cost_datatables['om_pMWpy']
     capital_cost = cost_capital_pMW*site_params['num_inverters']*2.5+cost_capital_pm2*input_params['site_area']+cost_capital_other
@@ -196,7 +196,7 @@ else:
 
 # %% ==================================================
 # Generate costs
-cost_iter_dict = gen_costs(cost_datatables, site_params, input_params['discount_rate'])
+cost_iter_dict = gen_costs(cost_datatables, site_params, input_params)
 
 # %% ==================================================
 # Assemble pickled data
