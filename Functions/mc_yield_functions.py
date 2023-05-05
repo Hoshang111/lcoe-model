@@ -273,7 +273,7 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_
     module_per_inverter = results['modules_per_inverter']
     gcr = (module_per_inverter*module['A_c']) / zone_area
     dc_power_init, dc_voltage = func.test_dc(rack, module, temp_model, mc_weather_file,
-                              results['strings_per_inverter'], results['modules_per_string'],
+                              results['strings_per_inverter'],
                                 location, results['inverter'], tilt_range)
     #dc_power, dc_voltage = func.mc_dc(rack, module, temp_model, mc_weather_file,
     #                        module_per_inverter,
@@ -283,7 +283,7 @@ def mc_dc_yield(results, zone_area, temp_model, mc_weather_file, location, tilt_
     #                        results['MW_rating'])
     #dc_df.rename(columns={0: "dc_out"}, inplace=True)
     #dc_df.rename(columns={'p_mp': "dc_out"}, inplace=True)
-    dc_power = dc_power_init*190/30
+    dc_power = dc_power_init*results['modules_per_string']/30
 
     return dc_power, dc_voltage
 

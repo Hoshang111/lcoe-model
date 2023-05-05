@@ -964,7 +964,6 @@ def test_dc( rack_params,
              temp_model,
              weather_simulation,
              strings_per_inverter,
-             num_of_modules_per_string,
              site,
              inverter,
              tilt_range
@@ -1027,6 +1026,7 @@ def test_dc( rack_params,
             dc rated power (MW) of the solar farm according to range of number of racks per zone
 
     """
+    num_of_modules_per_string=30
 
     # Todo: Temperature model parameters will be modified as we have more inputs from Ruby's thesis and CFD model
     if temp_model == 'sapm':

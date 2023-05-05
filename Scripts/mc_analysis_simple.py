@@ -51,7 +51,7 @@ def gen_costs(cost_datatables, site_params, input_params):
     cost_capital_pm2 = cost_datatables['site_prep_base']+cost_datatables['site_prep_flood']*input_params['flood_multiplier']
     cost_capital_other = cost_datatables['roads']*site_params['dist_road']
     ongoing_costs_pMW = cost_datatables['om_pMWpy']
-    capital_cost = cost_capital_pMW*site_params['num_inverters']*2.5+cost_capital_pm2*input_params['site_area']+cost_capital_other
+    capital_cost = cost_capital_pMW*site_params['num_of_inverter']*2.5+cost_capital_pm2*input_params['site_area']+cost_capital_other
 
     cost_dict = {}
     for i in range(31):
