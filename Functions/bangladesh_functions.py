@@ -34,7 +34,7 @@ def get_nsrdb(api_key, email, base_url, lat, long, datasets):
             headers = {
                 'x-api-key': api_key
             }
-            data = get_response_json_and_handle_errors(requests.post(BASE_URL, input_data, headers=headers))
+            data = get_response_json_and_handle_errors(requests.post(base_url, input_data, headers=headers))
             download_url = data['outputs']['downloadUrl']
             # You can do with what you will the download url
             print(data['outputs']['message'])
@@ -51,7 +51,7 @@ def get_nsrdb(api_key, email, base_url, lat, long, datasets):
                              'Local Time Zone':'Surface Albedo', 'Clearsky DHI Units':'Pressure',
                              'Clearsky DNI Units':'Wind Speed', 'Clearsky GHI Units':'ghi',
                              'Dew Point Units':'Cloud Type','DHI Units':'Relative Humidity',
-                             'DNI Units':'Wind Direction', 'GHI Units':'Precipitable Water'}, inplace=True)
+                             'DNI Units':'Wind Direction', 'GHI Units':'precipitable_water'}, inplace=True)
         data.drop([0,1], axis=0, inplace=True)
 
         data.index = pd.to_datetime(data[['Year', 'Month', 'Day', 'Hour', 'Minute']]
