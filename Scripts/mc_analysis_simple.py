@@ -186,8 +186,6 @@ def weather_import(API_KEY, EMAIL, BASE_URL, LAT, LONG, DATASET):
 metadata, mc_weather_file = weather_import(API_KEY, EMAIL, BASE_URL, site_params['latitude'],
                                              site_params['longitude'], DATASET)
 
-
-breakpoint()
 # %%
 
 weather_mc_dict = {}

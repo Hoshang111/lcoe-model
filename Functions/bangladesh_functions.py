@@ -54,6 +54,7 @@ def get_nsrdb(api_key, email, base_url, lat, long, datasets):
                              'DNI Units':'Wind Direction', 'GHI Units':'Precipitable Water'}, inplace=True)
         data.drop([0,1], axis=0, inplace=True)
 
+        data = data.astype('float')
 
         return metadata, data
 
