@@ -58,6 +58,7 @@ def get_nsrdb(api_key, email, base_url, lat, long, datasets):
                                             .astype(str).agg('-'.join, axis=1), format='%Y-%m-%d-%H-%M')
 
         data = data.astype('float')
+        data['precipitable_water'] = data['precipitable_water']
 
         return metadata, data
 
