@@ -437,15 +437,13 @@ def combine_variance(weather_dict, voltage_dict, loss_df, results_dict):
 
  # %% ===================================================
 
-def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, location, tilt_range):
+def run_dc_sort(results_dict, input_params, mc_weather_file, location, tilt_range):
     """"""
 
     # %% ===========================================
     # first to get appropriate values from dataframe
     temp_model = input_params['temp_model']
-    discount_rate = input_params['discount_rate']
     zone_area = input_params['zone_area']
-    yield_datatables = loss_datatables.reset_index()
 
     # %% ===========================================
     # create a dict of ordered dicts with dc output, including weather GHI as first column
@@ -471,6 +469,14 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
         for df in vdc_ordered[month].values():
             df.drop('ghi', axis=1, inplace=True)
 
+    return dc_ordered, vdc_ordered, ghi_dict,
+
+
+def run_yield_mc(results_dict, input_params, loss_datatables, dc_ordered, vdc_ordered, ghi_dict):
+    """"""
+
+    discount_rate = input_params['discount_rate']
+    yield_datatables = loss_datatables.reset_index()
     # %% ===========================================================
     # Create data tables for yield parameters
 
@@ -536,7 +542,7 @@ def run_yield_mc(results_dict, input_params, mc_weather_file, loss_datatables, l
     # %% ==========================================================
     # calculate revenue from yield dictionary
 
-    combined_mc_outputs = gen_revenue(combined_mc_dict['AC'], yield_datatables, discount_rate, input_params['num_of_zones'])
+    combined_mc_outputs = gen_revenue(combined_mc_dict['AC'], yield_datatables, discount_rate, input_params['num_of_inverter'])
 
     return combined_mc_outputs, ghi_discount,
 

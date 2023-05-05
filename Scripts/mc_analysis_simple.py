@@ -35,11 +35,13 @@ DATASET = ['tmy-2020']
 def dump_iter(combined_mc_dict, repeat_num, scenario_id):
      """"""
 
+     current_path = os.getcwd()
+     parent_path = os.path.dirname(current_path)
      bng_path = 'Data\OutputData'
      dump_dict = {'combined_yield_mc': combined_mc_dict,
                       'discounted_ghi': ghi_df}
      file_name = "analysis_dict" + '_' +str(scenario_id) + "_" + str(repeat_num) + '.p'
-     pickle_path = os.path.join(bng_path, 'mc_analysis', file_name)
+     pickle_path = os.path.join(parent_path, bng_path, 'mc_analysis', file_name)
      cpickle.dump(dump_dict, open(pickle_path, "wb"))
 
 def gen_costs(cost_datatables, site_params, input_params, discount_rate):
@@ -104,7 +106,7 @@ def get_site_params(site_name):
  # %% ===========================================================
  # define iteration scenarios
 
-iter_num = 500
+iter_num = 200
 iter_limit = 50
 
  # %% ===========================================================
@@ -179,17 +181,18 @@ metadata, mc_weather_file = b_func.get_nsrdb(API_KEY, EMAIL, BASE_URL, site_para
 weather_mc_dict = {}
 loss_mc_dict = {}
 combined_mc_dict = {}
+dc_ordered, vdc_ordered, ghi_dict = mc_func.run_dc_sort(scenario_dict, input_params, mc_weather_file, location, 20)
 if iter_num > iter_limit:
     repeats = iter_num // iter_limit + (iter_num % iter_limit > 0)
     for i in range(repeats):
         loss_datatables_split = {}
         loss_datatables_split = loss_datatables[i * iter_limit:(i + 1) * iter_limit]
         combined_mc_dict, ghi_df = \
-            mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables_split, location, 20)
+            mc_func.run_yield_mc(scenario_dict, input_params, loss_datatables_split, dc_ordered, vdc_ordered, ghi_dict)
         dump_iter(combined_mc_dict, i, scenario_dict['scenario_ID'])
 else:
     combined_mc_dict, ghi_df = \
-        mc_func.run_yield_mc(scenario_dict, input_params, mc_weather_file, loss_datatables, location)
+        mc_func.run_yield_mc(scenario_dict, input_params, loss_datatables, dc_ordered, vdc_ordered, ghi_dict)
 
 # %% ==================================================
 # Generate costs
