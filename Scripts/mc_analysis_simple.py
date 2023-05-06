@@ -17,6 +17,11 @@ from Functions.cost_functions import generate_iterations
 import warnings
 import _pickle as cpickle
 import Functions.bangladesh_functions as b_func
+import scipy.special
+import numpy as np
+
+from bokeh.layouts import gridplot
+from bokeh.plotting import figure, show
 
 # This suppresses a divide be zero warning message that occurs in pvlib tools.py.
 warnings.filterwarnings(action='ignore',
@@ -103,6 +108,25 @@ def get_site_params(site_name):
     site_dict['flood_risk'] = site_params[site_name]['flood_risk']
 
     return site_dict
+
+ # %% ===========================================================
+ # Plotting Functions
+
+def make_plot(title, hist, edges, x, pdf, cdf):
+    p = figure(title=title, tools='', background_fill_color="#fafafa")
+    p.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
+           fill_color="navy", line_color="white", alpha=0.5)
+    p.line(x, pdf, line_color="#ff8888", line_width=4, alpha=0.7, legend_label="PDF")
+    p.line(x, cdf, line_color="orange", line_width=2, alpha=0.7, legend_label="CDF")
+
+    p.y_range.start = 0
+    p.legend.location = "center_right"
+    p.legend.background_fill_color = "#fefefe"
+    p.xaxis.axis_label = 'x'
+    p.yaxis.axis_label = 'Pr(x)'
+    p.grid.grid_line_color = "white"
+    return p
+
  # %% ===========================================================
  # define iteration scenarios
 
@@ -205,9 +229,11 @@ yield_iter_dict = {}
 i =0
 test=True
 while test:
-    bng_path = 'C:\\Users\phill\Documents\Bangladesh Application\output_files'
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    bng_path = 'Data\OutputData'
     tag = 'analysis_dict' + '_' + scenario_dict['scenario_ID'] + '_' + str(i) + '.p'
-    iter_path = os.path.join(bng_path, 'mc_analysis', tag)
+    iter_path = os.path.join(parent_path, bng_path, 'mc_analysis', tag)
     if os.path.isfile(iter_path):
         yield_iter_dict[i] = cpickle.load(open(iter_path, 'rb'))
         i = i + 1
@@ -250,9 +276,24 @@ analysis_dict = {'cost_mc': cost_iter_dict, 'combined_yield_mc': combined_yield_
                  'data_tables': cost_datatables}
 
 # %% ==================================================
+# calculate output metrics
+
+costs_cat = ['Ex_works', 'transmission', 'site_prep', 'roads']
+costs_values = [analysis_dict['data_tables']['base_pMW'][0]*scenario_dict['MW_rating'],
+                analysis_dict['data_tables']['transmission'][0]*scenario_dict['MW_rating']*site_params['dist_substation'],
+                (analysis_dict['data_tables']['site_prep_base'][0]+analysis_dict['data_tables']['site_prep_flood'][0]*input_params['flood_multiplier'])*site_params['site_area'],
+                analysis_dict['data_tables']['roads'][0]*site_params['dist_road']]
+
+costs_series = analysis_dict['cost_mc']['cost_npv']
+cost_df = pd.DataFrame(costs_series)
+LCOE = cost_df/analysis_dict['combined_yield_mc']['kWh_total_discounted']
+year1_output = analysis_dict['combined_yield_mc']['kWh_yearly'][2023]
+capital_cost = analysis_dict['cost_mc']['yearly_costs'][2022]
+ongoing_cost = analysis_dict['cost_mc']['yearly_costs'][2023]
+specific_yield = year1_output / 3009.6 / input_params['num_of_inverter']
+
+# %% ==================================================
 # Generate Report
 
+hist, edges = np.histogram(LCOE, density=True, bins=20)
 
-# output_name = site + '_output_dict.p'
-# pickle_path = os.path.join(bng_path, 'mc_analysis', output_name)
-# cpickle.dump(analysis_dict, open(pickle_path, "wb"))

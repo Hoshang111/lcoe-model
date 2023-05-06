@@ -377,7 +377,7 @@ def gen_revenue(yield_dict, datatables, discount_rate, num_inverters):
     NPV_outputs = {}
     revenue_init = yield_dict*datatables['scheduled_price']*num_inverters
     revenue = revenue_init.groupby(revenue_init.index.year).sum()
-    kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()
+    kWh_yearly = yield_dict.groupby(yield_dict.index.year).sum()*num_inverters/1e3
     NPV_outputs['kWh_total'], NPV_outputs['kWh_yearly'] = sizing.get_npv_revenue(kWh_yearly, discount_rate=0)
     NPV_outputs['kWh_total_discounted'], NPV_outputs['kWh_yearly_discounted'] = sizing.get_npv_revenue(kWh_yearly, discount_rate)
     NPV_outputs['revenue_total'], NPV_outputs['revenue_yearly'] = sizing.get_npv_revenue(revenue, discount_rate=0)
