@@ -334,31 +334,31 @@ def graph_histogram(input_data, scenario_list, title, xlabel):
 
     pylab.rcParams.update(params)
 
-    # fig, ax = plt.subplots(figsize=(1, 1))
-    #
-    # print(data)
-    # data.plot.hist(bins=50, histtype='step', fontsize=10)
-    # if title is None:
-    #     title = 'Histogram'
-    # plt.title(title)
-    #
-    # if xlabel is not None:
-    #     plt.xlabel(xlabel)
+    fig, ax = plt.subplots(figsize=(1, 1))
 
-    bins = np.linspace(0.02,  0.06, 100)
-    hist, edges = np.histogram(data, bins=bins)
-    p = figure(width=1000, height=1000, toolbar_location=None, title=title)
-    p.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
-           fill_color="orange", line_color="white",
-           legend_label="Sample")
-    p.yaxis.axis_label = title
-    p.xaxis.axis_label = xlabel
-    show(p)
-    # current_path = os.getcwd()
-    # parent_path = os.path.dirname(current_path)
-    # file_name = os.path.join(parent_path, 'OutputFigures', title)
-    # plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
-    # plt.close()
+    print(data)
+    data.plot.hist(bins=50, histtype='step', fontsize=10)
+    if title is None:
+        title = 'Histogram'
+    plt.title(title)
+
+    if xlabel is not None:
+        plt.xlabel(xlabel)
+
+    # bins = np.linspace(0.02,  0.06, 100)
+    # hist, edges = np.histogram(data, bins=bins)
+    # p = figure(width=1000, height=1000, toolbar_location=None, title=title)
+    # p.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:],
+    #        fill_color="orange", line_color="white",
+    #        legend_label="Sample")
+    # p.yaxis.axis_label = title
+    # p.xaxis.axis_label = xlabel
+    # show(p)
+    current_path = os.getcwd()
+    parent_path = os.path.dirname(current_path)
+    file_name = os.path.join(parent_path, 'OutputFigures', title)
+    plt.savefig(file_name, format='png', dpi=300, bbox_inches='tight')
+    plt.close()
 
 
 def graph_stacked(cost_data, scenario_list, title=None):
